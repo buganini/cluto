@@ -139,6 +139,8 @@ class Extractager(object):
 		self.zoom_image()
 
 	def zoom_image(self, *arg):
+		if not self.current_image:
+			return
 		img=self.current_image.get_zoomed_gtk_image(self.zoom.get_value())
 		workarea=self.builder.get_object("workarea")
 		for c in workarea.get_children():
