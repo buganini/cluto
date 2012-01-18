@@ -23,12 +23,37 @@ from gi.repository import Gtk, Gdk
 import md5
 import Image
 
+tempdir=tempfile.mkdtemp(prefix='extractager_')
+
+class ZoomedImage(object):
+	def __init__(self, path, tname):
+		self.image=Image.open(path).convert('RGBA')
+		self.tname=tname
+	def get_zoomed_gtk_image(self, scale):
+		w,h=self.image.size
+		factor=scale*0.01
+		w=int(w*factor)
+		h=int(h*factor)
+		tfile=os.path.join(tempdir, "%s_%dx%d.png" % (self.tname, w, h))
+		if not os.path.exists(tfile):
+			im=self.image.resize((w,h))
+			im.save(tfile)
+		return Gtk.Image.new_from_file(tfile)
+		
+
 class Extractager(object):
 	def __init__(self):
+		self.current_image=None
 		self.focus=None
-		self.tempdir=tempfile.mkdtemp(prefix='extractager_')
 		self.id_map={}
 		self.files=[]
+		self.current_image=None
+		self.zoom=Gtk.Adjustment()
+		self.zoom.set_lower(1)
+		self.zoom.set_upper(400)
+		self.zoom.set_value(100)
+		self.zoom.set_step_increment(10)
+		self.zoom.connect("value-changed", self.zoom_image)
 		self.builder = Gtk.Builder()
 		for datadir in ['.','/usr/local/share/extractager']:
 			fullpath=os.path.join(datadir, 'extractager.xml')
@@ -43,10 +68,18 @@ class Extractager(object):
 		self.window.connect("delete-event", Gtk.main_quit)
 
 		#toolbar
-		button=Gtk.ToolButton.new_from_stock(Gtk.STOCK_ADD)
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ADD, Gtk.IconSize.DND)
+		button.set_image(btn_img)
 		button.connect("clicked", self.add_item)
 		button.show()
-		self.builder.get_object('toolbar').insert(button, -1)
+		btn_img.show()
+		self.builder.get_object('toolbar').pack_start(button, False, False, 0)
+
+		scale=Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=self.zoom)
+		self.builder.get_object('toolbar').pack_start(scale, True, True, 0)
+		scale.show()
+		
 
 		#filechooser
 		self.builder.get_object('btn_item_add').connect('clicked', self.add_item_r)
@@ -76,7 +109,7 @@ class Extractager(object):
 	def redraw_items_list(self):
 		for path in self.files:
 			id=self.id_map[path]
-			tfile=os.path.join(self.tempdir, "%s.png" % id)
+			tfile=os.path.join(tempdir, "%s.png" % id)
 			im=Image.open(path).convert('RGBA')
 			im=im.resize(self.thumbsize(im.size, (160,240)))
 			im.save(tfile)
@@ -101,16 +134,18 @@ class Extractager(object):
 
 	def item_select(self, path):
 		self.focus=path
-		img=Gtk.Image.new_from_file(path)
+		id=self.id_map[path]
+		self.current_image=ZoomedImage(path, id)
+		self.zoom_image()
+
+	def zoom_image(self, *arg):
+		img=self.current_image.get_zoomed_gtk_image(self.zoom.get_value())
 		workarea=self.builder.get_object("workarea")
 		for c in workarea.get_children():
 			workarea.remove(c)
 			c.destroy()
 		workarea.add(img)
 		img.show()
-
-	def debug(*arg):
-		print arg
 
 	def thumbsize(self, o,n):
 		ow,oh=o
