@@ -1,0 +1,87 @@
+#!/usr/bin/env python
+"""
+ Copyright (c) 2011 Kuan-Chung Chiu <buganini@gmail.com>
+
+ Permission to use, copy, modify, and distribute this software for any
+ purpose with or without fee is hereby granted, provided that the above
+ copyright notice and this permission notice appear in all copies.
+
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF MIND, USE, DATA OR PROFITS, WHETHER
+ IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+"""
+
+import os
+import sys
+import tempfile
+from gi.repository import Gtk, Gdk
+import md5
+import Image
+
+class Extractager(object):
+	def __init__(self):
+		self.tempdir=tempfile.mkdtemp(prefix='extractager_')
+		self.files=[]
+		self.builder = Gtk.Builder()
+		loaded=False
+		for datadir in ['.','/usr/local/share/extractager']:
+			fullpath=os.path.join(datadir, 'extractager.xml')
+			if os.path.exists(fullpath):
+				self.builder.add_from_file(fullpath)
+				loaded=True
+				break
+		if not loaded:
+			sys.stderr.write('Unable to find extractager.xml\n')
+			sys.exit(1)
+		self.window = self.builder.get_object("main_window")
+		self.window.connect("delete-event", Gtk.main_quit)
+
+		#toolbar
+		button=Gtk.ToolButton.new_from_stock(Gtk.STOCK_ADD)
+		button.connect("clicked", self.add_item)
+		button.show()
+		self.builder.get_object('toolbar').insert(button, -1)
+
+		#filechooser
+		self.builder.get_object('btn_item_add').connect('clicked', self.add_item_r)
+		self.builder.get_object('btn_item_cancel').connect('clicked', self.hide_filechooser)
+
+		#launch
+		self.window.show()
+
+	def hide_filechooser(self, *arg):
+		self.builder.get_object('filechooserdialog').hide()
+
+	def add_item(self, *arg):
+		self.builder.get_object('filechooserdialog').show()
+
+	def add_item_r(self, *arg):
+		for path in self.builder.get_object("filechooserdialog").get_filenames():
+			try:
+				im=Image.open(path)
+				del(im)
+			except:
+				continue
+			self.files.append((path, md5.new(path).hexdigest()))
+		self.hide_filechooser()
+		self.redraw_items_list()
+
+	def redraw_items_list(self):
+		for path,id in self.files:
+			tfile=os.path.join(self.tempdir, "%s.png" % id)
+			im=Image.open(path).convert('RGBA').resize((180,270))
+			im.save(tfile)
+			del(im)
+			img=Gtk.Image.new_from_file(tfile)
+			self.builder.get_object("items_list").pack_start(img, False, False, 5)
+			img.show()
+
+
+if __name__ == "__main__":
+	app = Extractager()
+	Gtk.main()
