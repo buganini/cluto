@@ -158,3 +158,4 @@ class Extractager(object):
 if __name__ == "__main__":
 	app = Extractager()
 	Gtk.main()
+	os.execvp("rm",["rm","-rf",tempdir])
