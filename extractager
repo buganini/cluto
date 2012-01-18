@@ -25,19 +25,20 @@ import Image
 
 class Extractager(object):
 	def __init__(self):
+		self.focus=None
 		self.tempdir=tempfile.mkdtemp(prefix='extractager_')
+		self.id_map={}
 		self.files=[]
 		self.builder = Gtk.Builder()
-		loaded=False
 		for datadir in ['.','/usr/local/share/extractager']:
 			fullpath=os.path.join(datadir, 'extractager.xml')
 			if os.path.exists(fullpath):
-				self.builder.add_from_file(fullpath)
-				loaded=True
 				break
-		if not loaded:
+		else:
 			sys.stderr.write('Unable to find extractager.xml\n')
 			sys.exit(1)
+
+		self.builder.add_from_file(fullpath)
 		self.window = self.builder.get_object("main_window")
 		self.window.connect("delete-event", Gtk.main_quit)
 
@@ -67,20 +68,57 @@ class Extractager(object):
 				del(im)
 			except:
 				continue
-			self.files.append((path, md5.new(path).hexdigest()))
+			self.id_map[path]=md5.new(path).hexdigest()
+			self.files.append(path)
 		self.hide_filechooser()
 		self.redraw_items_list()
 
 	def redraw_items_list(self):
-		for path,id in self.files:
+		for path in self.files:
+			id=self.id_map[path]
 			tfile=os.path.join(self.tempdir, "%s.png" % id)
-			im=Image.open(path).convert('RGBA').resize((180,270))
+			im=Image.open(path).convert('RGBA')
+			im=im.resize(self.thumbsize(im.size, (160,240)))
 			im.save(tfile)
 			del(im)
+			evtbox=Gtk.EventBox()
+			box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 			img=Gtk.Image.new_from_file(tfile)
-			self.builder.get_object("items_list").pack_start(img, False, False, 5)
+			label=Gtk.Label(os.path.basename(path))
+			box.pack_start(img, False, False, 0)
+			box.pack_start(label, False, False, 0)
+			evtbox.add(box)
+			evtbox.connect("button-press-event", self.item_button_press, path)
+			self.builder.get_object("items_list").pack_start(evtbox, False, False, 5)
+			evtbox.show()
+			box.show()
 			img.show()
+			label.show()
 
+	def item_button_press(self, obj, evt, path):
+		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
+			self.item_select(path)
+
+	def item_select(self, path):
+		self.focus=path
+		img=Gtk.Image.new_from_file(path)
+		workarea=self.builder.get_object("workarea")
+		for c in workarea.get_children():
+			workarea.remove(c)
+			c.destroy()
+		workarea.add(img)
+		img.show()
+
+	def debug(*arg):
+		print arg
+
+	def thumbsize(self, o,n):
+		ow,oh=o
+		nw,nh=n
+		if ow>oh:
+			return (nw, int(float(nw)*oh/ow))
+		else:
+			return (int(float(nh)*ow/oh), nh)
 
 if __name__ == "__main__":
 	app = Extractager()
