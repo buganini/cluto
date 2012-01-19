@@ -287,7 +287,7 @@ class Extractager(object):
 	def thumbsize(self, o,n):
 		ow,oh=o
 		nw,nh=n
-		if ow>oh:
+		if float(ow)/oh>float(nw)/nh:
 			return (nw, int(float(nw)*oh/ow))
 		else:
 			return (int(float(nh)*ow/oh), nh)
