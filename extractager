@@ -26,8 +26,9 @@ import Image
 tempdir=tempfile.mkdtemp(prefix='extractager_')
 
 class ZoomedImage(object):
-	def __init__(self, path, tname):
-		self.image=Image.open(path).convert('RGBA')
+	def __init__(self, cpath, tname):
+		self.path, self.x1, self.y1, self.x2, self.y2=cpath
+		self.image=Image.open(self.path).convert('RGBA').crop((self.x1, self.y1, self.x2, self.y2))
 		self.tname=tname
 	def get_zoomed_gtk_image(self, scale):
 		w,h=self.image.size
@@ -43,10 +44,11 @@ class ZoomedImage(object):
 
 class Extractager(object):
 	def __init__(self):
+		self.max_level=-1
 		self.current_image=None
 		self.focus=None
 		self.id_map={}
-		self.files=[]
+		self.clips=[]
 		self.current_image=None
 		self.zoom=Gtk.Adjustment()
 		self.zoom.set_lower(1)
@@ -54,6 +56,7 @@ class Extractager(object):
 		self.zoom.set_value(100)
 		self.zoom.set_step_increment(10)
 		self.zoom.connect("value-changed", self.zoom_image)
+		self.selstart=(-1,-1)
 		self.builder = Gtk.Builder()
 		for datadir in ['.','/usr/local/share/extractager']:
 			fullpath=os.path.join(datadir, 'extractager.xml')
@@ -66,6 +69,11 @@ class Extractager(object):
 		self.builder.add_from_file(fullpath)
 		self.window = self.builder.get_object("main_window")
 		self.window.connect("delete-event", Gtk.main_quit)
+
+		level=self.builder.get_object("level")
+		level.set_entry_text_column(0)
+		level.connect("changed", self.redraw_items_list)
+		self.level_sanitize()
 
 		#toolbar
 		button=Gtk.Button()
@@ -98,19 +106,31 @@ class Extractager(object):
 		for path in self.builder.get_object("filechooserdialog").get_filenames():
 			try:
 				im=Image.open(path)
-				del(im)
 			except:
 				continue
 			self.id_map[path]=md5.new(path).hexdigest()
-			self.files.append(path)
+			self.clips[0].append((path,0,0,im.size[0],im.size[1]))
+			del(im)
 		self.hide_filechooser()
 		self.redraw_items_list()
+		self.level_sanitize()
 
-	def redraw_items_list(self):
-		for path in self.files:
+	def redraw_items_list(self, *arg):
+		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
+			return
+		items_list=self.builder.get_object("items_list")
+		for c in items_list.get_children():
+			items_list.remove(c)
+			c.destroy()
+		flag=0
+		for cpath in self.clips[int(self.builder.get_object("level").get_active_text())]:
+			if not flag:
+				flag=1
+				self.item_select(cpath)
+			path,x1,y1,x2,y2=cpath
 			id=self.id_map[path]
 			tfile=os.path.join(tempdir, "%s.png" % id)
-			im=Image.open(path).convert('RGBA')
+			im=Image.open(path).convert("RGBA").crop((x1,y1,x2,y2))
 			im=im.resize(self.thumbsize(im.size, (160,240)))
 			im.save(tfile)
 			del(im)
@@ -121,33 +141,74 @@ class Extractager(object):
 			box.pack_start(img, False, False, 0)
 			box.pack_start(label, False, False, 0)
 			evtbox.add(box)
-			evtbox.connect("button-press-event", self.item_button_press, path)
-			self.builder.get_object("items_list").pack_start(evtbox, False, False, 5)
+			evtbox.connect("button-press-event", self.item_button_press, cpath)
+			items_list.pack_start(evtbox, False, False, 5)
 			evtbox.show()
 			box.show()
 			img.show()
 			label.show()
 
-	def item_button_press(self, obj, evt, path):
-		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
-			self.item_select(path)
+	def level_sanitize(self):
+		level=self.builder.get_object("level")
+		if len(self.clips)==0 or self.clips[-1]!=[]:
+			self.clips.append([])
+		i=len(self.clips)-1
+		while i>=0 and len(self.clips[i])==0:
+			i-=1
+		for i in xrange(0,i+1):
+			if i>self.max_level:
+				level.append_text(str(i))
+				self.max_level=i
+		if self.max_level==0:
+			level.set_active(0)
 
-	def item_select(self, path):
-		self.focus=path
+	def item_button_press(self, obj, evt, cpath):
+		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
+			self.item_select(cpath)
+
+	def item_select(self, cpath):
+		self.focus=cpath
+		path,x1,y1,x2,y2=cpath
 		id=self.id_map[path]
-		self.current_image=ZoomedImage(path, id)
+		self.current_image=ZoomedImage(cpath, id)
 		self.zoom_image()
 
 	def zoom_image(self, *arg):
 		if not self.current_image:
 			return
+		evtbox=Gtk.EventBox()
 		img=self.current_image.get_zoomed_gtk_image(self.zoom.get_value())
+		evtbox.add(img)
+		evtbox.connect("button-press-event", self.workarea_button)
+		evtbox.connect("button-release-event", self.workarea_button)
 		workarea=self.builder.get_object("workarea")
 		for c in workarea.get_children():
 			workarea.remove(c)
 			c.destroy()
-		workarea.add(img)
+		workarea.add(evtbox)
+		evtbox.show()
 		img.show()
+
+	def workarea_button(self, obj, evt):
+		print evt.x, evt.y
+		factor=self.zoom.get_value()*0.01
+		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
+			self.selstart=(evt.x/factor, evt.y/factor)
+		elif evt.button==1 and evt.type==Gdk.EventType.BUTTON_RELEASE:
+			x1,y1=self.selstart
+			if x1<0 or y1<0:
+				return
+			x2=evt.x
+			y2=evt.y
+			path,xoff,yoff,n,n=self.focus
+			if x1>x2:
+				(x1,x2)=(x2,x1)
+			if y1>y2:
+				(y1,y2)=(y2,y1)
+			self.clips[int(self.builder.get_object("level").get_active_text())+1].append((path, int(x1+xoff), int(y1+yoff), int(x2/factor+xoff), int(y2/factor+yoff)))
+			self.level_sanitize()
+		elif evt.button==3:
+			self.selstart=(-1,-1)
 
 	def thumbsize(self, o,n):
 		ow,oh=o
