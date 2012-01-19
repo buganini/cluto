@@ -198,15 +198,16 @@ class Extractager(object):
 			x1,y1=self.selstart
 			if x1<0 or y1<0:
 				return
-			x2=evt.x
-			y2=evt.y
+			x2=evt.x/factor
+			y2=evt.y/factor
 			path,xoff,yoff,n,n=self.focus
 			if x1>x2:
-				(x1,x2)=(x2,x1)
+				x1,x2=x2,x1
 			if y1>y2:
-				(y1,y2)=(y2,y1)
-			self.clips[int(self.builder.get_object("level").get_active_text())+1].append((path, int(x1+xoff), int(y1+yoff), int(x2/factor+xoff), int(y2/factor+yoff)))
+				y1,y2=y2,y1
+			self.clips[int(self.builder.get_object("level").get_active_text())+1].append((path, int(x1+xoff), int(y1+yoff), int(x2+xoff), int(y2+yoff)))
 			self.level_sanitize()
+			self.selstart=(-1,-1)
 		elif evt.button==3:
 			self.selstart=(-1,-1)
 
