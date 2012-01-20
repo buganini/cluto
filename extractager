@@ -90,6 +90,14 @@ class Extractager(object):
 		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ZOOM_FIT, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.zoom_fit)
+		button.show()
+		btn_img.show()
+		toolbar.pack_start(button, False, False, 0)
+
 		workarea=self.builder.get_object("workarea")
 		workarea.connect("button-press-event", self.workarea_mouse)
 		workarea.connect("button-release-event", self.workarea_mouse)
@@ -127,6 +135,21 @@ class Extractager(object):
 		if self.selstart!=(-1,-1):
 			cr.rectangle(self.selstart[0], self.selstart[1], self.selend[0]-self.selstart[0], self.selend[1]-self.selstart[1])
 		cr.stroke()
+
+	def zoom_fit(self, *arg):
+		if not self.focus:
+			return
+		p=self.focus
+		workarea_window=self.builder.get_object('workarea_window')
+#		workarea_window.set_policy(Gtk.PolicyType.ALWAYS, Gtk.PolicyType.ALWAYS)
+		alloc=workarea_window.get_allocation()
+		win_width=alloc.width
+		win_height=alloc.height
+		width=p['x2']-p['x1']
+		height=p['y2']-p['y1']
+		if width>win_width*0.8:
+			self.zoom=(win_width*0.8/width)*100
+		self.canvas.queue_draw()
 
 	def zoom_100(self, *arg):
 		self.zoom=100
@@ -237,6 +260,7 @@ class Extractager(object):
 		workarea.add(canvas)
 		canvas.connect("draw", self.canvas_draw)
 		canvas.show()
+		self.zoom_fit()
 
 	def workarea_mouse(self, obj, evt):
 		if not self.canvas:
