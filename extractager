@@ -37,6 +37,7 @@ class Extractager(object):
 		self.clips=[]
 		self.zoom=100
 		self.selstart=(-1,-1)
+		self.tags=[]
 		self.builder = Gtk.Builder()
 		for datadir in ['.','/usr/local/share/extractager']:
 			fullpath=os.path.join(datadir, 'extractager.xml')
@@ -103,6 +104,7 @@ class Extractager(object):
 		workarea.connect("button-release-event", self.workarea_mouse)
 		workarea.connect("motion-notify-event", self.workarea_mouse)
 
+		self.builder.get_object('btn_add_tag').connect('clicked', self.add_tag)
 
 		#filechooser
 		self.builder.get_object('btn_item_add').connect('clicked', self.add_item_r)
@@ -110,6 +112,12 @@ class Extractager(object):
 
 		#launch
 		self.window.show()
+
+	def add_tag(self, *arg):
+		tag=self.builder.get_object('new_tag').get_buffer().get_text()
+		if not tag in self.tags:
+			self.tags.append(tag)
+		self.tags_refresh()
 
 	def canvas_draw(self, widget, cr):
 		if not self.focus:
@@ -141,7 +149,6 @@ class Extractager(object):
 			return
 		p=self.focus
 		workarea_window=self.builder.get_object('workarea_window')
-#		workarea_window.set_policy(Gtk.PolicyType.ALWAYS, Gtk.PolicyType.ALWAYS)
 		alloc=workarea_window.get_allocation()
 		win_width=alloc.width
 		win_height=alloc.height
@@ -177,7 +184,7 @@ class Extractager(object):
 			except:
 				continue
 			self.id_map[path]=md5.new(path).hexdigest()
-			self.clips.append({'level':0,'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[]})
+			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{}, 'parent':None})
 			del(im)
 		self.hide_filechooser()
 		self.redraw_items_list()
@@ -242,9 +249,48 @@ class Extractager(object):
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 			self.item_select(cpath)
 
+	def tags_refresh(self, *arg):
+		if not self.focus:
+			return
+		self.builder.get_object('new_tag').show()
+		self.builder.get_object('btn_add_tag').show()
+		t=self.focus
+		tags={}
+		while t:
+			for tag in t['tags']:
+				if tag not in tags:
+					tags[tag]=t['tags'][tag]
+			t=t['parent']
+		for tag in self.tags:
+			if tag not in tags:
+				tags[tag]=""
+
+		tagsbox=self.builder.get_object('tags')
+		c=tagsbox.get_child()
+		if c:
+			tagsbox.remove(c)
+		tags_table=Gtk.Grid()
+		tagsbox.add(tags_table)
+		tags_table.show()
+		for i,tag in enumerate(self.tags):
+			text=Gtk.Entry()
+			text.set_text(tags[tag])
+			text.connect('changed', self.set_tag, tag)
+			label=Gtk.Label(tag)
+			tags_table.attach(label,0,i,1,1)
+			tags_table.attach(text,1,i,1,1)
+			label.show()
+			text.show()
+
+	def set_tag(self, obj, tag):
+		self.focus['tags'][tag]=obj.get_buffer().get_text()
+
 	def item_select(self, p):
 		self.focus=p
 		id=self.id_map[p['path']]
+
+		self.tags_refresh()
+
 		tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.png" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
 		if not os.path.exists(tfile):
 			im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
@@ -281,7 +327,7 @@ class Extractager(object):
 					x1,x2=x2,x1
 				if y1>y2:
 					y1,y2=y2,y1
-				p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x2+p['x1']), 'y2':int(y2+p['y1']), 'children':[]})
+				p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x2+p['x1']), 'y2':int(y2+p['y1']), 'children':[], 'parent':p, 'tags':{}})
 				self.level_sanitize()
 				self.selstart=(-1,-1)
 				self.canvas.queue_draw()
