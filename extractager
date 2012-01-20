@@ -19,7 +19,7 @@
 import os
 import sys
 import tempfile
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, cairo
 import md5
 import Image
 import ImageDraw
@@ -27,46 +27,14 @@ import time
 
 tempdir=tempfile.mkdtemp(prefix='extractager_')
 
-class ZoomedImage(object):
-	def __init__(self, p, tname):
-		self.p=p
-		self.image=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
-		self.tname=tname
-	def get_zoomed_gtk_image(self, scale, extra=None):
-		p=self.p
-		w,h=self.image.size
-		factor=scale*0.01
-		w=int(w*factor)
-		h=int(h*factor)
-		tfile=os.path.join(tempdir, "%s_%dx%d.png" % (self.tname, w, h))
-		if not os.path.exists(tfile):
-			im=self.image.resize((w,h))
-			im.save(tfile)
-			del(im)
-		im=Image.open(tfile)
-		draw=ImageDraw.Draw(im)
-		for c in p['children']:
-			x1=(c['x1']-p['x1'])*factor
-			y1=(c['y1']-p['y1'])*factor
-			x2=(c['x2']-p['x1'])*factor
-			y2=(c['y2']-p['y1'])*factor
-			draw.rectangle([(x1,y1),(x2,y2)], outline=(200,0,0))
-		if extra:
-			draw.rectangle(extra, outline=(200,0,0))
-		tfile2=os.path.join(tempdir, "t_%d.png" % time.clock())
-		im.save(tfile2)
-		img=Gtk.Image.new_from_file(tfile2)
-		os.unlink(tfile2)
-		return img
-
 class Extractager(object):
 	def __init__(self):
 		self.max_level=-1
 		self.current_image=None
 		self.focus=None
+		self.canvas=None
 		self.id_map={}
 		self.clips=[]
-		self.current_image=None
 		self.zoom=100
 		self.selstart=(-1,-1)
 		self.builder = Gtk.Builder()
@@ -135,18 +103,43 @@ class Extractager(object):
 		#launch
 		self.window.show()
 
+	def canvas_draw(self, widget, cr):
+		if not self.focus:
+			return
+		factor=self.zoom*0.01
+		p=self.focus
+		width=p['x2']-p['x1']
+		height=p['y2']-p['y1']
+
+		cr.scale(factor, factor)
+		self.canvas.set_size_request(int(width*factor), int(height*factor))
+
+		Gdk.cairo_set_source_pixbuf(cr, self.current_image.get_pixbuf(), 0, 0)
+		cr.paint()
+
+		cr.set_source_rgba(200,0,0,60)
+		for c in p['children']:
+			x1=(c['x1']-p['x1'])
+			y1=(c['y1']-p['y1'])
+			x2=(c['x2']-p['x1'])
+			y2=(c['y2']-p['y1'])
+			cr.rectangle(x1, y1, x2-x1, y2-y1)
+		if self.selstart!=(-1,-1):
+			cr.rectangle(self.selstart[0], self.selstart[1], self.selend[0]-self.selstart[0], self.selend[1]-self.selstart[1])
+		cr.stroke()
+
 	def zoom_100(self, *arg):
 		self.zoom=100
-		self.zoom_image()
+		self.canvas.queue_draw()
 
 	def zoom_in(self, *arg):
 		self.zoom+=5
-		self.zoom_image()
+		self.canvas.queue_draw()
 
 	def zoom_out(self, *arg):
 		if self.zoom>5:
 			self.zoom-=5
-		self.zoom_image()
+		self.canvas.queue_draw()
 
 	def hide_filechooser(self, *arg):
 		self.builder.get_object('filechooserdialog').hide()
@@ -229,23 +222,26 @@ class Extractager(object):
 	def item_select(self, p):
 		self.focus=p
 		id=self.id_map[p['path']]
-		self.current_image=ZoomedImage(p, id)
-		self.zoom_image()
-
-	def zoom_image(self, *arg):
-		if not self.current_image:
-			return
-		evtbox=Gtk.EventBox()
-		img=self.current_image.get_zoomed_gtk_image(self.zoom)
-		workarea=self.builder.get_object("workarea")
+		tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.png" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
+		if not os.path.exists(tfile):
+			im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
+			im.save(tfile)
+		self.current_image=Gtk.Image.new_from_file(tfile)
+		workarea=self.builder.get_object('workarea')
 		c=workarea.get_child()
 		if c:
 			workarea.remove(c)
 			c.destroy()
-		workarea.add(img)
-		img.show()
+		canvas=Gtk.DrawingArea()
+		self.canvas=canvas
+		workarea.add(canvas)
+		canvas.connect("draw", self.canvas_draw)
+		canvas.show()
 
 	def workarea_mouse(self, obj, evt):
+		if not self.canvas:
+			return
+		factor=1
 		factor=self.zoom*0.01
 		if str(type(evt))==repr(Gdk.EventButton):
 			if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
@@ -261,28 +257,16 @@ class Extractager(object):
 					x1,x2=x2,x1
 				if y1>y2:
 					y1,y2=y2,y1
-				p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x2+p['x1']), 'y2':int(y2+p['y1']), 'children':{}})
+				p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x2+p['x1']), 'y2':int(y2+p['y1']), 'children':[]})
 				self.level_sanitize()
 				self.selstart=(-1,-1)
+				self.canvas.queue_draw()
 			elif evt.button==3:
 				self.selstart=(-1,-1)
-			img=self.current_image.get_zoomed_gtk_image(self.zoom)
-			workarea=self.builder.get_object("workarea")
-			c=workarea.get_child()
-			if c:
-				workarea.remove(c)
-				c.destroy()
-			workarea.add(img)
-			img.show()
 		elif str(type(evt))==repr(Gdk.EventMotion):
-			img=self.current_image.get_zoomed_gtk_image(self.zoom, extra=[self.selstart,(evt.x,evt.y)])
 			workarea=self.builder.get_object("workarea")
-			c=workarea.get_child()
-			if c:
-				workarea.remove(c)
-				c.destroy()
-			workarea.add(img)
-			img.show()			
+			self.selend=(evt.x/factor,evt.y/factor)
+			self.canvas.queue_draw()
 
 	def thumbsize(self, o,n):
 		ow,oh=o
