@@ -22,8 +22,7 @@ import tempfile
 from gi.repository import Gtk, Gdk, cairo
 import md5
 import Image
-import ImageDraw
-import time
+import re
 
 tempdir=tempfile.mkdtemp(prefix='extractager_')
 
@@ -131,9 +130,45 @@ class Extractager(object):
 		#export
 		self.builder.get_object('btn_append_tag').connect('clicked', self.append_tag)
 		self.builder.get_object('btn_export_close').connect('clicked', lambda x: self.builder.get_object('export_window').hide())
+		self.builder.get_object('btn_export').connect('clicked', self.do_export)
 
 		#launch
 		self.window.show()
+
+	def do_export(self, *arg):
+		s=self.clips
+		while s:
+			ns=[]
+			for p in s:
+				if not p['children']:
+					t=p
+					tags={}
+					while t:
+						for tag in t['tags']:
+							if tag not in tags:
+								tags[tag]=t['tags'][tag]
+						t=t['parent']
+					for tag in self.tags:
+						if tag not in tags:
+							tags[tag]=""						
+
+					path=self.builder.get_object('path_pattern').get_text()
+					path=path.split("${")
+					for i,t in enumerate(path):
+						t2=t.split("}",1)
+						if t2[0] in tags:
+							t2[0]=tags[t2[0]]
+						path[i]=''.join(t2)
+
+					path=''.join(path)
+					path=os.path.join(self.builder.get_object('output_dir').get_filename(), path)
+					pdir=os.path.dirname(path)
+					if not os.path.exists(pdir):
+						os.makedirs(pdir)		
+					im=Image.open(p['path']).convert("RGBA").crop((p['x1'],p['y1'],p['x2'],p['y2']))
+					im.save(path)
+				ns.extend(p['children'])
+			s=ns
 
 	def append_tag(self, *arg):
 		b=self.builder.get_object('path_pattern')
@@ -149,7 +184,7 @@ class Extractager(object):
 
 	def add_tag(self, *arg):
 		tag=self.builder.get_object('new_tag').get_text()
-		if not tag in self.tags:
+		if tag and not tag in self.tags:
 			self.tags.append(tag)
 		self.tags_refresh()
 
