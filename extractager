@@ -346,13 +346,24 @@ class Extractager(object):
 			text.set_text(tags[tag])
 			text.connect('changed', self.set_tag, tag)
 			label=Gtk.Label(tag)
+			button=Gtk.Button()
+			btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
+			button.set_image(btn_img)
+			button.connect("clicked", self.clear_tag, tag)
 			tags_table.attach(label,0,i,1,1)
 			tags_table.attach(text,1,i,1,1)
+			tags_table.attach(button,2,i,1,1)
 			label.show()
 			text.show()
+			button.show()
+			btn_img.show()
 
 	def set_tag(self, obj, tag):
 		self.focus['tags'][tag]=obj.get_buffer().get_text()
+
+	def clear_tag(self, obj, tag):
+		del(self.focus['tags'][tag])
+		self.tags_refresh()
 
 	def item_select(self, p):
 		self.focus=p
