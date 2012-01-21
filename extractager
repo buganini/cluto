@@ -233,6 +233,8 @@ class Extractager(object):
 		height=p['y2']-p['y1']
 		if width>win_width*0.8:
 			self.zoom=(win_width*0.8/width)*100
+		else:
+			self.zoom=100
 		self.canvas.queue_draw()
 
 	def zoom_100(self, *arg):
