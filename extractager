@@ -67,6 +67,10 @@ class Extractager(object):
 		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
+		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+		sep.show()
+		toolbar.pack_start(sep, False, False, 1)
+
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ZOOM_IN, Gtk.IconSize.DND)
 		button.set_image(btn_img)
@@ -99,22 +103,52 @@ class Extractager(object):
 		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
+		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+		sep.show()
+		toolbar.pack_start(sep, False, False, 1)
+
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SAVE, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.export_show)
+		button.show()
+		btn_img.show()
+		toolbar.pack_start(button, False, False, 0)
+
+		#workarea
 		workarea=self.builder.get_object("workarea")
 		workarea.connect("button-press-event", self.workarea_mouse)
 		workarea.connect("button-release-event", self.workarea_mouse)
 		workarea.connect("motion-notify-event", self.workarea_mouse)
 
+		#tag
 		self.builder.get_object('btn_add_tag').connect('clicked', self.add_tag)
 
 		#filechooser
 		self.builder.get_object('btn_item_add').connect('clicked', self.add_item_r)
 		self.builder.get_object('btn_item_cancel').connect('clicked', self.hide_filechooser)
 
+		#export
+		self.builder.get_object('btn_append_tag').connect('clicked', self.append_tag)
+		self.builder.get_object('btn_export_close').connect('clicked', lambda x: self.builder.get_object('export_window').hide())
+
 		#launch
 		self.window.show()
 
+	def append_tag(self, *arg):
+		b=self.builder.get_object('path_pattern')
+		b.set_text("%s${%s}" % (b.get_text(), self.builder.get_object('tags_list').get_active_text()))
+
+	def export_show(self, *arg):
+		tags_list=self.builder.get_object('tags_list')
+		tags_list.set_entry_text_column(0)
+		tags_list.remove_all()
+		for tag in self.tags:
+			tags_list.append_text(tag)
+		self.builder.get_object('export_window').show()
+
 	def add_tag(self, *arg):
-		tag=self.builder.get_object('new_tag').get_buffer().get_text()
+		tag=self.builder.get_object('new_tag').get_text()
 		if not tag in self.tags:
 			self.tags.append(tag)
 		self.tags_refresh()
