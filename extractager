@@ -28,7 +28,7 @@ tempdir=tempfile.mkdtemp(prefix='extractager_')
 
 class Extractager(object):
 	def __init__(self):
-		self.max_level=-1
+		self.last_level=None
 		self.current_image=None
 		self.focus=None
 		self.canvas=None
@@ -52,7 +52,7 @@ class Extractager(object):
 
 		level=self.builder.get_object("level")
 		level.set_entry_text_column(0)
-		level.connect("changed", self.redraw_items_list)
+		level.connect("changed", self.change_level)
 		self.level_sanitize()
 
 		#toolbar
@@ -62,6 +62,14 @@ class Extractager(object):
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ADD, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.add_item)
+		button.show()
+		btn_img.show()
+		toolbar.pack_start(button, False, False, 0)
+
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_REMOVE, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.remove_item)
 		button.show()
 		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
@@ -243,6 +251,27 @@ class Extractager(object):
 	def hide_filechooser(self, *arg):
 		self.builder.get_object('filechooserdialog').hide()
 
+	def remove_item(self, *arg):
+		if not self.focus:
+			return
+		parent=self.focus['parent']
+		if not parent:
+			idx=self.clips.index(self.focus)
+			del(self.clips[idx])
+			if idx<len(self.clips):
+				self.item_select(self.clips[idx])
+			else:
+				self.focus=None
+		else:
+			idx=parent['children'].index(self.focus)
+			del(parent['children'][idx])
+			if idx<len(parent['children']):
+				self.item_select(parent['children'][idx])
+			else:
+				self.focus=None
+		self.level_sanitize()
+		self.redraw_items_list()
+
 	def add_item(self, *arg):
 		self.builder.get_object('filechooserdialog').show()
 
@@ -258,6 +287,13 @@ class Extractager(object):
 		self.hide_filechooser()
 		self.redraw_items_list()
 		self.level_sanitize()
+
+	def change_level(self, *arg):
+		level=self.builder.get_object("level").get_active_text()
+		if level!=self.last_level and level:
+			self.last_level=level
+			self.focus=None
+			self.redraw_items_list()
 
 	def redraw_items_list(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
@@ -276,7 +312,8 @@ class Extractager(object):
 		for p in s:
 			if not flag:
 				flag=1
-				self.item_select(p)
+				if not self.focus:
+					self.item_select(p)
 			id=self.id_map[p['path']]
 			tfile=os.path.join(tempdir, "%s.png" % id)
 			im=Image.open(p['path']).convert("RGBA").crop((p['x1'],p['y1'],p['x2'],p['y2']))
@@ -299,20 +336,25 @@ class Extractager(object):
 
 	def level_sanitize(self):
 		level=self.builder.get_object("level")
-		i=0
+		l=0
 		s=self.clips
 		while s:
-			i+=1
+			l+=1
 			ns=[]
 			for x in s:
 				ns.extend(x['children'])
 			s=ns
-		for i in xrange(0,i):
-			if i>self.max_level:
-				level.append_text(str(i))
-				self.max_level=i
-		if self.max_level==0:
-			level.set_active(0)
+		try:
+			active=int(level.get_active_text())
+		except:
+			active=0
+		level.remove_all()
+		for i in xrange(0,l):
+			level.append_text(str(i))
+		if active<l:
+			level.set_active(active)
+		else:
+			level.set_active(l-1)			
 
 	def item_button_press(self, obj, evt, cpath):
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
