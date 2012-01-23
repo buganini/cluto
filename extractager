@@ -253,11 +253,14 @@ class Extractager(object):
 			y2=(c['y2']-p['y1'])
 			if i in self.selections:
 				cr.set_source_rgba(200,200,0,60)
+				xoff=self.selend[0]-self.selstart[0]
+				yoff=self.selend[1]-self.selstart[1]
+				cr.rectangle(x1+xoff, y1+yoff, x2-x1, y2-y1)
 			else:
 				cr.set_source_rgba(200,0,0,60)
-			cr.rectangle(x1, y1, x2-x1, y2-y1)
+				cr.rectangle(x1, y1, x2-x1, y2-y1)
 			cr.stroke()
-		if self.selstart!=(-1,-1):
+		if self.selstart!=(-1,-1) and len(self.selections)==0:
 			cr.set_source_rgba(200,0,200,60)
 			cr.rectangle(self.selstart[0], self.selstart[1], self.selend[0]-self.selstart[0], self.selend[1]-self.selstart[1])
 			cr.stroke()
@@ -495,14 +498,30 @@ class Extractager(object):
 								self.selections.remove(i)
 							else:
 								self.selections.append(i)
+				elif len(self.selections):
+					xoff=self.selend[0]-self.selstart[0]
+					yoff=self.selend[1]-self.selstart[1]
+					todo=[]
+					for i in self.selections:
+						todo.append(p['children'][i])
+					while todo:
+						newtodo=[]
+						for i in todo:
+							i['x1']+=int(xoff)
+							i['y1']+=int(yoff)
+							i['x2']+=int(xoff)
+							i['y2']+=int(yoff)
+						newtodo.extend(i['children'])
+						todo=newtodo
 				else:
 					if x1>x2:
 						x1,x2=x2,x1
 					if y1>y2:
 						y1,y2=y2,y1
 					p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x2+p['x1']), 'y2':int(y2+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}})
-					self.level_sanitize()
+					self.level_sanitize()					
 				self.selstart=(-1,-1)
+				self.selend=(-1,-1)
 				self.canvas.queue_draw()
 			elif evt.button==3:
 				self.selstart=(-1,-1)
