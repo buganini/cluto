@@ -23,6 +23,7 @@ from gi.repository import Gtk, Gdk, cairo
 import md5
 import Image
 import re
+import pickle
 
 tempdir=tempfile.mkdtemp(prefix='extractager_')
 
@@ -61,6 +62,26 @@ class Extractager(object):
 
 		#toolbar
 		toolbar=self.builder.get_object('toolbar')
+
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_OPEN, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.open_project)
+		button.show()
+		btn_img.show()
+		toolbar.pack_start(button, False, False, 0)
+
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SAVE, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.save_project)
+		button.show()
+		btn_img.show()
+		toolbar.pack_start(button, False, False, 0)
+
+		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+		sep.show()
+		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ADD, Gtk.IconSize.DND)
@@ -147,7 +168,7 @@ class Extractager(object):
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SAVE, Gtk.IconSize.DND)
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_JUMP_TO, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.export_show)
 		button.show()
@@ -177,6 +198,27 @@ class Extractager(object):
 
 		#launch
 		self.window.show()
+
+	def open_project(self, *arg):
+		filec=Gtk.FileChooserDialog("Open", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
+		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
+			fp=open(filec.get_filename(),'r')
+			data=pickle.load(fp)
+			fp.close()
+			self.id_map, self.clips, self.tags, self.copy_tag=data
+		filec.destroy()
+		self.level_sanitize()
+		self.redraw_items_list()
+		self.tags_refresh()
+
+	def save_project(self, *arg):
+		filec=Gtk.FileChooserDialog("Save", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
+		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
+			data=[self.id_map, self.clips, self.tags, self.copy_tag]
+			fp=open(filec.get_filename(),'w')
+			pickle.dump(data, fp)
+			fp.close()
+		filec.destroy()
 
 	def copy_setting(self, obj, *arg):
 		tagsbox=self.builder.get_object("copy_setting_tags")
