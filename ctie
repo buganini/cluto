@@ -341,16 +341,16 @@ class CTIE(object):
 			x2=(c['x2']-p['x1'])
 			y2=(c['y2']-p['y1'])
 			if i in self.selections:
-				cr.set_source_rgba(200,200,0,60)
+				cr.set_source_rgba(0,0,255,255)
 				xoff=self.selend[0]-self.selstart[0]
 				yoff=self.selend[1]-self.selstart[1]
 				cr.rectangle(x1+xoff, y1+yoff, x2-x1, y2-y1)
 			else:
-				cr.set_source_rgba(200,0,0,60)
+				cr.set_source_rgba(255,0,0,255)
 				cr.rectangle(x1, y1, x2-x1, y2-y1)
 			cr.stroke()
 		if self.selstart!=(-1,-1) and len(self.selections)==0:
-			cr.set_source_rgba(200,0,200,60)
+			cr.set_source_rgba(255,0,255,255)
 			cr.rectangle(self.selstart[0], self.selstart[1], self.selend[0]-self.selstart[0], self.selend[1]-self.selstart[1])
 			cr.stroke()
 
