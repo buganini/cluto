@@ -545,6 +545,7 @@ class CTIE(object):
 	def item_select(self, p):
 		self.focus=p
 		id=self.id_map[p['path']]
+		self.selections=[]
 
 		self.tags_refresh()
 
