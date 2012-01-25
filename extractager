@@ -40,6 +40,7 @@ class Extractager(object):
 		self.selstart=(-1,-1)
 		self.selend=(-1,-1)
 		self.tags=['filename']
+		self.copy_tag=[]
 		self.builder = Gtk.Builder()
 		for datadir in ['.','/usr/local/share/extractager']:
 			fullpath=os.path.join(datadir, 'extractager.xml')
@@ -126,6 +127,14 @@ class Extractager(object):
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_PROPERTIES, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.copy_setting)
+		button.show()
+		btn_img.show()
+		toolbar.pack_start(button, False, False, 0)
+
+		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_PASTE, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.paste)
@@ -163,8 +172,34 @@ class Extractager(object):
 		self.builder.get_object('btn_export_close').connect('clicked', lambda x: self.builder.get_object('export_window').hide())
 		self.builder.get_object('btn_export').connect('clicked', self.do_export)
 
+		#copy setting
+		self.builder.get_object('btn_copy_setting_close').connect('clicked', lambda x: self.builder.get_object('copy_setting_window').hide())
+
 		#launch
 		self.window.show()
+
+	def copy_setting(self, obj, *arg):
+		tagsbox=self.builder.get_object("copy_setting_tags")
+		c=tagsbox.get_child()
+		if c:
+			tagsbox.remove(c)
+		tags_table=Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		tagsbox.add(tags_table)
+		tags_table.show()
+		for i,tag in enumerate(self.tags):
+			if tag=='filename':
+				continue
+			toggle=Gtk.CheckButton.new_with_label(tag)
+			toggle.connect('toggled', self.copy_setting_toggle, tag)
+			tags_table.pack_start(toggle,False,False,0)
+			toggle.show()
+		self.builder.get_object("copy_setting_window").show()
+
+	def copy_setting_toggle(self, obj, tag):
+		if tag in self.copy_tag:
+			self.copy_tag.remove(tag)
+		else:
+			self.copy_tag.append(tag)
 
 	def copy(self, *arg):
 		if not self.focus:
@@ -178,7 +213,19 @@ class Extractager(object):
 			return
 		for p in self.clipboard:
 			path=self.focus['path']
-			self.focus['children'].append({'path':path,'x1':p['x1'],'y1':p['y1'],'x2':p['x2'],'y2':p['y2'],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':self.focus})
+			tags={'filename':os.path.basename(path)}
+			t=p
+			ptags={}
+			while t:
+				for tag in t['tags']:
+					if tag not in ptags:
+						ptags[tag]=t['tags'][tag]
+				t=t['parent']
+			for tag in self.copy_tag:
+				if tag in ptags:
+					tags[tag]=ptags[tag]
+			self.focus['children'].append({'path':path,'x1':p['x1'],'y1':p['y1'],'x2':p['x2'],'y2':p['y2'],'children':[], 'tags':tags, 'parent':self.focus})
+		self.canvas.queue_draw()
 
 	def do_export(self, *arg):
 		s=self.clips
