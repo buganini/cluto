@@ -25,9 +25,9 @@ import Image
 import re
 import pickle
 
-tempdir=tempfile.mkdtemp(prefix='extractager_')
+tempdir=tempfile.mkdtemp(prefix='ctie_')
 
-class Extractager(object):
+class CTIE(object):
 	def __init__(self):
 		self.clipboard=[]
 		self.selections=[]
@@ -43,12 +43,12 @@ class Extractager(object):
 		self.tags=['filename']
 		self.copy_tag=[]
 		self.builder = Gtk.Builder()
-		for datadir in ['.','/usr/local/share/extractager']:
-			fullpath=os.path.join(datadir, 'extractager.xml')
+		for datadir in ['.','/usr/local/share/ctie']:
+			fullpath=os.path.join(datadir, 'ctie.xml')
 			if os.path.exists(fullpath):
 				break
 		else:
-			sys.stderr.write('Unable to find extractager.xml\n')
+			sys.stderr.write('Unable to find ctie.xml\n')
 			sys.exit(1)
 
 		self.builder.add_from_file(fullpath)
@@ -627,6 +627,6 @@ class Extractager(object):
 			return (int(float(nh)*ow/oh), nh)
 
 if __name__ == "__main__":
-	app = Extractager()
+	app = CTIE()
 	Gtk.main()
 	os.execvp("rm",["rm","-rf",tempdir])
