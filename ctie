@@ -249,8 +249,6 @@ class CTIE(object):
 
 			p['x1']=nx1
 			p['y1']=ny1
-			p['x2']=nx2
-			p['y2']=ny2
 		self.redraw_items_list()
 		self.item_select(self.focus)
 
@@ -308,8 +306,6 @@ class CTIE(object):
 					break
 			ny2=y2-a
 
-			p['x1']=nx1
-			p['y1']=ny1
 			p['x2']=nx2
 			p['y2']=ny2
 		self.redraw_items_list()
