@@ -456,7 +456,7 @@ class CTIE(object):
 			cr.stroke()
 
 	def zoom_fit(self, *arg):
-		if not self.focus:
+		if not self.focus or not self.canvas:
 			return
 		p=self.focus
 		workarea_window=self.builder.get_object('workarea_window')
@@ -472,14 +472,20 @@ class CTIE(object):
 		self.canvas.queue_draw()
 
 	def zoom_100(self, *arg):
+		if not self.focus or not self.canvas:
+			return
 		self.zoom=100
 		self.canvas.queue_draw()
 
 	def zoom_in(self, *arg):
+		if not self.focus or not self.canvas:
+			return
 		self.zoom+=5
 		self.canvas.queue_draw()
 
 	def zoom_out(self, *arg):
+		if not self.focus or not self.canvas:
+			return
 		if self.zoom>5:
 			self.zoom-=5
 		self.canvas.queue_draw()
@@ -706,31 +712,60 @@ class CTIE(object):
 					if y>p['y2']-p['y1']:
 						y=p['y2']-p['y1']
 					p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}})
-					self.level_sanitize()					
+					self.level_sanitize()
 				elif self.mode=='move':
-					xoff=self.selend[0]-self.selstart[0]
-					yoff=self.selend[1]-self.selstart[1]
+					xoff=int(self.selend[0]-self.selstart[0])
+					yoff=int(self.selend[1]-self.selstart[1])
 					todo=[]
 					for i in self.selections:
 						todo.append(p['children'][i])
+					delete=[]
 					while todo:
 						newtodo=[]
-						for i in todo:
-							i['x1']+=int(xoff)
-							i['y1']+=int(yoff)
-							i['x2']+=int(xoff)
-							i['y2']+=int(yoff)
-						newtodo.extend(i['children'])
+						for c in todo:
+							x1=c['x1']+int(xoff)
+							y1=c['y1']+int(yoff)
+							x=c['x2']+int(xoff)
+							y=c['y2']+int(yoff)
+							if x1<0:
+								x1=0
+							if y1<0:
+								y1=0
+							if x>p['x2']-p['x1']:
+								x=p['x2']-p['x1']
+							if y>p['y2']-p['y1']:
+								y=p['y2']-p['y1']
+							if x1>p['x2']-p['x1']:
+								x1=p['x2']-p['x1']
+							if y1>p['y2']-p['y1']:
+								y1=p['y2']-p['y1']
+							if x<0:
+								x=0
+							if y<0:
+								y=0
+
+							c['x1']=x1
+							c['y1']=y1
+							c['x2']=x
+							c['y2']=y
+						if abs(x-x1)<=1 or abs(y-y1)<=1:
+							delete.append(c)
+						else:
+							newtodo.extend(c['children'])
 						todo=newtodo
+					for c in delete:
+						if c['parent']:
+							c['parent']['children'].remove(c)
+					self.level_sanitize()
 				elif self.mode=='resize':
-					xoff=self.selend[0]-self.selstart[0]
-					yoff=self.selend[1]-self.selstart[1]
+					xoff=int(self.selend[0]-self.selstart[0])
+					yoff=int(self.selend[1]-self.selstart[1])
 					for i in self.selections:
 						c=self.focus['children'][i]
 						x1=c['x1']
 						y1=c['y1']
-						x=c['x2']+int(xoff)
-						y=c['y2']+int(yoff)
+						x=c['x2']+xoff
+						y=c['y2']+yoff
 						if x1>x:
 							x1,x=x,x1
 						if y1>y:
