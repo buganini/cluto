@@ -371,7 +371,7 @@ class CTIE(object):
 			for tag in self.copy_tag:
 				if tag in ptags:
 					tags[tag]=ptags[tag]
-			self.focus['children'].append({'path':path,'x1':p['x1'],'y1':p['y1'],'x2':p['x2'],'y2':p['y2'],'children':[], 'tags':tags, 'parent':self.focus})
+			self.focus['children'].append({'path':path,'x1':p['x1']-p['parent']['x1']+self.focus['x1'],'y1':p['y1']-p['parent']['y1']+self.focus['y1'],'x2':p['x2']-p['parent']['x1']+self.focus['x1'],'y2':p['y2']-p['parent']['y1']+self.focus['y1'],'children':[], 'tags':tags, 'parent':self.focus})
 		self.canvas.queue_draw()
 
 	def do_export(self, *arg):
