@@ -343,18 +343,22 @@ class CTIE(object):
 			if tag=='filename':
 				continue
 			toggle=Gtk.CheckButton.new_with_label(tag)
-			toggle.connect('toggled', self.copy_setting_toggle, tag)
 			if tag in self.copy_tag:
 				toggle.set_active(True)
-			tags_table.pack_start(toggle,False,False,0)
+			else:
+				toggle.set_active(False)
 			toggle.show()
+			toggle.connect('toggled', self.copy_setting_toggle, tag)
+			tags_table.pack_start(toggle,False,False,0)
 		self.builder.get_object("copy_setting_window").show()
 
 	def copy_setting_toggle(self, obj, tag):
-		if tag in self.copy_tag:
-			self.copy_tag.remove(tag)
+		if obj.get_active():
+			if tag not in self.copy_tag:
+				self.copy_tag.append(tag)
 		else:
-			self.copy_tag.append(tag)
+			if tag in self.copy_tag:
+				self.copy_tag.remove(tag)
 
 	def copy(self, *arg):
 		if not self.focus:
