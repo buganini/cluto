@@ -42,6 +42,7 @@ class CTIE(object):
 		self.selend=(-1,-1)
 		self.tags=['filename']
 		self.copy_tag=[]
+		self.mode=None
 		self.builder = Gtk.Builder()
 		for datadir in ['.','/usr/local/share/ctie']:
 			fullpath=os.path.join(datadir, 'ctie.xml')
@@ -439,7 +440,12 @@ class CTIE(object):
 				cr.set_source_rgba(0,0,255,255)
 				xoff=self.selend[0]-self.selstart[0]
 				yoff=self.selend[1]-self.selstart[1]
-				cr.rectangle(x1+xoff, y1+yoff, x2-x1, y2-y1)
+				if self.mode=='move':
+					cr.rectangle(x1+xoff, y1+yoff, x2-x1, y2-y1)
+				elif self.mode=='resize':
+					cr.rectangle(x1, y1, x2-x1+xoff, y2-y1+yoff)
+				else:
+					cr.rectangle(x1, y1, x2-x1, y2-y1)
 			else:
 				cr.set_source_rgba(255,0,0,255)
 				cr.rectangle(x1, y1, x2-x1, y2-y1)
@@ -659,24 +665,49 @@ class CTIE(object):
 			return
 		factor=1
 		factor=self.zoom*0.01
+		x=evt.x/factor
+		y=evt.y/factor
+		p=self.focus
 		if str(type(evt))==repr(Gdk.EventButton):
 			if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
-				self.selstart=(evt.x/factor, evt.y/factor)
+				self.selstart=(x,y)
+				if not len(self.selections):
+					self.mode='rectangle'
+				else:
+					for i in self.selections:
+						c=self.focus['children'][i]
+						if x+p['x1']>c['x1'] and x+p['x1']<c['x2'] and y+p['y1']>c['y1'] and y+p['y1']<c['y2']:
+							self.mode='move'
+							break
+					else:
+						self.mode='resize'
 			elif evt.button==1 and evt.type==Gdk.EventType.BUTTON_RELEASE:
 				x1,y1=self.selstart
 				if x1<0 or y1<0:
 					return
-				x2=evt.x/factor
-				y2=evt.y/factor
-				p=self.focus
-				if x1==x2 and y1==y2:
+				if x1==x and y1==y:
 					for i,c in enumerate(p['children']):
-						if x1+p['x1']>c['x1'] and x1+p['x1']<c['x2'] and y1+p['y1']>c['y1'] and y1+p['y1']<c['y2']:
+						if x+p['x1']>c['x1'] and x+p['x1']<c['x2'] and y+p['y1']>c['y1'] and y+p['y1']<c['y2']:
 							if i in self.selections:
 								self.selections.remove(i)
 							else:
 								self.selections.append(i)
-				elif len(self.selections):
+				elif self.mode=='rectangle':
+					if x1>x:
+						x1,x=x,x1
+					if y1>y:
+						y1,y=y,y1
+					if x1<0:
+						x1=0
+					if y1<0:
+						y1=0
+					if x>p['x2']-p['x1']:
+						x=p['x2']-p['x1']
+					if y>p['y2']-p['y1']:
+						y=p['y2']-p['y1']
+					p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}})
+					self.level_sanitize()					
+				elif self.mode=='move':
 					xoff=self.selend[0]-self.selstart[0]
 					yoff=self.selend[1]-self.selstart[1]
 					todo=[]
@@ -691,28 +722,21 @@ class CTIE(object):
 							i['y2']+=int(yoff)
 						newtodo.extend(i['children'])
 						todo=newtodo
-				else:
-					if x1>x2:
-						x1,x2=x2,x1
-					if y1>y2:
-						y1,y2=y2,y1
-					if x1<0:
-						x1=0
-					if y1<0:
-						y1=0
-					if x2>p['x2']-p['x1']:
-						x2=p['x2']-p['x1']
-					if y2>p['y2']-p['y1']:
-						y2=p['y2']-p['y1']
-					p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x2+p['x1']), 'y2':int(y2+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}})
-					self.level_sanitize()					
+				elif self.mode=='resize':
+					xoff=self.selend[0]-self.selstart[0]
+					yoff=self.selend[1]-self.selstart[1]
+					for i in self.selections:
+						c=self.focus['children'][i]
+						c['x2']+=xoff
+						c['y2']+=yoff
 				self.selstart=(-1,-1)
 				self.selend=(-1,-1)
+				self.mode=None
 				self.canvas.queue_draw()
 			elif evt.button==3:
 				self.selstart=(-1,-1)
 		elif str(type(evt))==repr(Gdk.EventMotion):
-			self.selend=(evt.x/factor,evt.y/factor)
+			self.selend=(x,y)
 			self.canvas.queue_draw()
 
 	def thumbsize(self, o,n):
