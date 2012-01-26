@@ -67,133 +67,102 @@ class CTIE(object):
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_OPEN, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.open_project)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SAVE, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.save_project)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-		sep.show()
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ADD, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.add_item)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_REMOVE, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.remove_item)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-		sep.show()
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ZOOM_IN, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.zoom_in)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ZOOM_OUT, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.zoom_out)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ZOOM_100, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.zoom_100)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ZOOM_FIT, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.zoom_fit)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-		sep.show()
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CUT, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.trim)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-		sep.show()
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_COPY, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.copy)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_PROPERTIES, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.copy_setting)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_PASTE, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.paste)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_DELETE, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.delete)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
 		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-		sep.show()
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_JUMP_TO, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.export_show)
-		button.show()
-		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
+
+		toolbar.show_all()
 
 		#workarea
 		workarea=self.builder.get_object("workarea")
@@ -338,7 +307,6 @@ class CTIE(object):
 			tagsbox.remove(c)
 		tags_table=Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		tagsbox.add(tags_table)
-		tags_table.show()
 		for i,tag in enumerate(self.tags):
 			if tag=='filename':
 				continue
@@ -347,10 +315,9 @@ class CTIE(object):
 				toggle.set_active(True)
 			else:
 				toggle.set_active(False)
-			toggle.show()
 			toggle.connect('toggled', self.copy_setting_toggle, tag)
 			tags_table.pack_start(toggle,False,False,0)
-		self.builder.get_object("copy_setting_window").show()
+		self.builder.get_object("copy_setting_window").show_all()
 
 	def copy_setting_toggle(self, obj, tag):
 		if obj.get_active():
@@ -592,10 +559,7 @@ class CTIE(object):
 			evtbox.add(box)
 			evtbox.connect("button-press-event", self.item_button_press, p)
 			items_list.pack_start(evtbox, False, False, 5)
-			evtbox.show()
-			box.show()
-			img.show()
-			label.show()
+			evtbox.show_all()
 
 	def level_sanitize(self):
 		level=self.builder.get_object("level")
@@ -645,7 +609,6 @@ class CTIE(object):
 			tagsbox.remove(c)
 		tags_table=Gtk.Grid()
 		tagsbox.add(tags_table)
-		tags_table.show()
 		for i,tag in enumerate(self.tags):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
@@ -658,10 +621,7 @@ class CTIE(object):
 			tags_table.attach(label,0,i,1,1)
 			tags_table.attach(text,1,i,1,1)
 			tags_table.attach(button,2,i,1,1)
-			label.show()
-			text.show()
-			button.show()
-			btn_img.show()
+		tagsbox.show_all()
 
 	def set_tag(self, obj, tag):
 		self.focus['tags'][tag]=obj.get_buffer().get_text()
