@@ -736,6 +736,14 @@ class CTIE(object):
 						x1,x2=x2,x1
 					if y1>y2:
 						y1,y2=y2,y1
+					if x1<0:
+						x1=0
+					if y1<0:
+						y1=0
+					if x2>p['x2']-p['x1']:
+						x2=p['x2']-p['x1']
+					if y2>p['y2']-p['y1']:
+						y2=p['y2']-p['y1']
 					p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x2+p['x1']), 'y2':int(y2+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}})
 					self.level_sanitize()					
 				self.selstart=(-1,-1)
