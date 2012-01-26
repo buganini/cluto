@@ -710,14 +710,10 @@ class CTIE(object):
 						x1,x=x,x1
 					if y1>y:
 						y1,y=y,y1
-					if x1<0:
-						x1=0
-					if y1<0:
-						y1=0
-					if x>p['x2']-p['x1']:
-						x=p['x2']-p['x1']
-					if y>p['y2']-p['y1']:
-						y=p['y2']-p['y1']
+					x1=max(x1,0)
+					y1=max(y1,0)
+					x=min(x,p['x2']-p['x1'])
+					y=min(y,p['y2']-p['y1'])
 					p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}})
 					self.level_sanitize()
 				elif self.mode=='move':
@@ -734,23 +730,14 @@ class CTIE(object):
 							y1=c['y1']-p['y1']+int(yoff)
 							x=c['x2']-p['x1']+int(xoff)
 							y=c['y2']-p['y1']+int(yoff)
-							if x1<0:
-								x1=0
-							if y1<0:
-								y1=0
-							if x>p['x2']-p['x1']:
-								x=p['x2']-p['x1']
-							if y>p['y2']-p['y1']:
-								y=p['y2']-p['y1']
-							if x1>p['x2']-p['x1']:
-								x1=p['x2']-p['x1']
-							if y1>p['y2']-p['y1']:
-								y1=p['y2']-p['y1']
-							if x<0:
-								x=0
-							if y<0:
-								y=0
-
+							x1=max(x1,0)
+							y1=max(y1,0)
+							x=min(x,p['x2']-p['x1'])
+							y=min(y,p['y2']-p['y1'])
+							x1=min(x1,p['x2']-p['x1'])
+							y1=min(y1,p['y2']-p['y1'])
+							x=max(x,0)
+							y=max(y,0)
 							c['x1']=x1+p['x1']
 							c['y1']=y1+p['y1']
 							c['x2']=x+p['x1']
