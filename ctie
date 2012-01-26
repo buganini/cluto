@@ -336,6 +336,8 @@ class CTIE(object):
 				continue
 			toggle=Gtk.CheckButton.new_with_label(tag)
 			toggle.connect('toggled', self.copy_setting_toggle, tag)
+			if tag in self.copy_tag:
+				toggle.set_active(True)
 			tags_table.pack_start(toggle,False,False,0)
 			toggle.show()
 		self.builder.get_object("copy_setting_window").show()
