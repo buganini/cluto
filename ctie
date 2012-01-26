@@ -140,6 +140,18 @@ class CTIE(object):
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CUT, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.trim)
+		button.show()
+		btn_img.show()
+		toolbar.pack_start(button, False, False, 0)
+
+		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+		sep.show()
+		toolbar.pack_start(sep, False, False, 1)
+
+		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_COPY, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.copy)
@@ -198,6 +210,97 @@ class CTIE(object):
 
 		#launch
 		self.window.show()
+
+	def trim(self, *arg):
+		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
+			return
+		items_list=self.builder.get_object("items_list")
+		for c in items_list.get_children():
+			items_list.remove(c)
+			c.destroy()
+		flag=0
+		s=self.clips
+		for i in xrange(0,int(self.builder.get_object("level").get_active_text())):
+			ns=[]
+			for x in s:
+				ns.extend(x['children'])
+			s=ns
+		for p in s:
+			im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
+			x1=p['x1']
+			y1=p['y1']
+			x2=p['x2']
+			y2=p['y2']
+			im=Image.open(p['path']).crop((x1, y1, x2, y2)).convert('L')
+
+			#x1
+			stop=False
+			for a in xrange(x2-x1):
+				for i in xrange(y2-y1):
+					c=im.getpixel((a,i))
+					if i:
+						if abs(c-last)>10:
+							stop=True
+							break
+					else:
+						last=c
+				if stop:
+					break
+			nx1=x1+a
+
+			#y1
+			stop=False
+			for a in xrange(y2-y1):
+				for i in xrange(x2-x1):
+					c=im.getpixel((i,a))
+					if i:
+						if abs(c-last)>10:
+							stop=True
+							break
+					else:
+						last=c
+				if stop:
+					break
+			ny1=y1+a
+
+			#x2
+			stop=False
+			w=x2-x1
+			for a in xrange(x2-x1):
+				for i in xrange(y2-y1):
+					c=im.getpixel((w-a-1,i))
+					if i:
+						if abs(c-last)>10:
+							stop=True
+							break
+					else:
+						last=c
+				if stop:
+					break
+			nx2=x2-a
+
+			#y2
+			stop=False
+			h=y2-y1
+			for a in xrange(y2-y1):
+				for i in xrange(x2-x1):
+					c=im.getpixel((i,h-a-1))
+					if i:
+						if abs(c-last)>10:
+							stop=True
+							break
+					else:
+						last=c
+				if stop:
+					break
+			ny2=y2-a
+
+			p['x1']=nx1
+			p['y1']=ny1
+			p['x2']=nx2
+			p['y2']=ny2
+		self.redraw_items_list()
+		self.item_select(self.focus)
 
 	def open_project(self, *arg):
 		filec=Gtk.FileChooserDialog("Open", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
