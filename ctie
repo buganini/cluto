@@ -723,10 +723,10 @@ class CTIE(object):
 					while todo:
 						newtodo=[]
 						for c in todo:
-							x1=c['x1']+int(xoff)
-							y1=c['y1']+int(yoff)
-							x=c['x2']+int(xoff)
-							y=c['y2']+int(yoff)
+							x1=c['x1']-p['x1']+int(xoff)
+							y1=c['y1']-p['y1']+int(yoff)
+							x=c['x2']-p['x1']+int(xoff)
+							y=c['y2']-p['y1']+int(yoff)
 							if x1<0:
 								x1=0
 							if y1<0:
@@ -744,11 +744,12 @@ class CTIE(object):
 							if y<0:
 								y=0
 
-							c['x1']=x1
-							c['y1']=y1
-							c['x2']=x
-							c['y2']=y
+							c['x1']=x1+p['x1']
+							c['y1']=y1+p['y1']
+							c['x2']=x+p['x1']
+							c['y2']=y+p['y1']
 						if abs(x-x1)<=1 or abs(y-y1)<=1:
+							print 'delete'
 							delete.append(c)
 						else:
 							newtodo.extend(c['children'])
@@ -762,10 +763,10 @@ class CTIE(object):
 					yoff=int(self.selend[1]-self.selstart[1])
 					for i in self.selections:
 						c=self.focus['children'][i]
-						x1=c['x1']
-						y1=c['y1']
-						x=c['x2']+xoff
-						y=c['y2']+yoff
+						x1=c['x1']-p['x1']
+						y1=c['y1']-p['y1']
+						x=c['x2']-p['x1']+xoff
+						y=c['y2']-p['y1']+yoff
 						if x1>x:
 							x1,x=x,x1
 						if y1>y:
@@ -778,10 +779,10 @@ class CTIE(object):
 							x=p['x2']-p['x1']
 						if y>p['y2']-p['y1']:
 							y=p['y2']-p['y1']
-						c['x1']=x1
-						c['y1']=y1
-						c['x2']=x
-						c['y2']=y
+						c['x1']=x1+p['x1']
+						c['y1']=y1+p['y1']
+						c['x2']=x+p['x1']
+						c['y2']=y+p['y1']
 				self.selstart=(-1,-1)
 				self.selend=(-1,-1)
 				self.mode=None
