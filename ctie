@@ -449,12 +449,12 @@ class CTIE(object):
 				flag=1
 				if not self.focus:
 					self.item_select(p)
-			id=self.id_map[p['path']]
-			tfile=os.path.join(tempdir, "%s.png" % id)
-			im=Image.open(p['path']).convert("RGBA").crop((p['x1'],p['y1'],p['x2'],p['y2']))
-			im=im.resize(self.thumbsize(im.size, (160,240)))
-			im.save(tfile)
-			del(im)
+			tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d-thumbnail.png" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
+			if not os.path.exists(tfile):
+				im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
+				im=im.resize(self.thumbsize(im.size, (160,240)))
+				im.save(tfile)
+				del(im)
 			evtbox=Gtk.EventBox()
 			box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 			img=Gtk.Image.new_from_file(tfile)
