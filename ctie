@@ -727,8 +727,26 @@ class CTIE(object):
 					yoff=self.selend[1]-self.selstart[1]
 					for i in self.selections:
 						c=self.focus['children'][i]
-						c['x2']+=xoff
-						c['y2']+=yoff
+						x1=c['x1']
+						y1=c['y1']
+						x=c['x2']+int(xoff)
+						y=c['y2']+int(yoff)
+						if x1>x:
+							x1,x=x,x1
+						if y1>y:
+							y1,y=y,y1
+						if x1<0:
+							x1=0
+						if y1<0:
+							y1=0
+						if x>p['x2']-p['x1']:
+							x=p['x2']-p['x1']
+						if y>p['y2']-p['y1']:
+							y=p['y2']-p['y1']
+						c['x1']=x1
+						c['y1']=y1
+						c['x2']=x
+						c['y2']=y
 				self.selstart=(-1,-1)
 				self.selend=(-1,-1)
 				self.mode=None
