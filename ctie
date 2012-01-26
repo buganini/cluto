@@ -175,6 +175,14 @@ class CTIE(object):
 		btn_img.show()
 		toolbar.pack_start(button, False, False, 0)
 
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_DELETE, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.delete)
+		button.show()
+		btn_img.show()
+		toolbar.pack_start(button, False, False, 0)
+
 		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
 		sep.show()
 		toolbar.pack_start(sep, False, False, 1)
@@ -372,6 +380,17 @@ class CTIE(object):
 				if tag in ptags:
 					tags[tag]=ptags[tag]
 			self.focus['children'].append({'path':path,'x1':p['x1']-p['parent']['x1']+self.focus['x1'],'y1':p['y1']-p['parent']['y1']+self.focus['y1'],'x2':p['x2']-p['parent']['x1']+self.focus['x1'],'y2':p['y2']-p['parent']['y1']+self.focus['y1'],'children':[], 'tags':tags, 'parent':self.focus})
+		self.canvas.queue_draw()
+
+	def delete(self, *arg):
+		if not self.focus:
+			return
+		self.clipboard=[]
+		self.selections.sort()
+		self.selections.reverse()
+		for i in self.selections:
+			del(self.focus['children'][i])
+		self.selections=[]
 		self.canvas.queue_draw()
 
 	def do_export(self, *arg):
