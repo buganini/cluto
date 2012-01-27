@@ -19,7 +19,7 @@
 import os
 import sys
 import tempfile
-from gi.repository import Gtk, Gdk, cairo
+from gi.repository import Gtk, Gdk, cairo, GObject
 import md5
 import Image
 import re
@@ -31,9 +31,11 @@ class CTIE(object):
 	def __init__(self):
 		self.clipboard=[]
 		self.selections=[]
+		self.curr_level=None
 		self.last_level=None
 		self.current_image=None
 		self.focus=None
+		self.last_focus=None
 		self.canvas=None
 		self.id_map={}
 		self.clips=[]
@@ -570,8 +572,10 @@ class CTIE(object):
 
 	def change_level(self, *arg):
 		level=self.builder.get_object("level").get_active_text()
-		if level!=self.last_level and level:
-			self.last_level=level
+		if level!=self.curr_level and level:
+			self.last_focus=self.focus
+			self.last_level=self.curr_level
+			self.curr_level=level
 			self.focus=None
 			self.redraw_items_list()
 
@@ -590,10 +594,6 @@ class CTIE(object):
 				ns.extend(x['children'])
 			s=ns
 		for p in s:
-			if not flag:
-				flag=1
-				if not self.focus:
-					self.item_select(p)
 			tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d-thumbnail.png" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
 			if not os.path.exists(tfile):
 				im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
@@ -610,6 +610,47 @@ class CTIE(object):
 			evtbox.connect("button-press-event", self.item_button_press, p)
 			items_list.pack_start(evtbox, False, False, 5)
 			evtbox.show_all()
+			if not flag:
+				if self.last_level and self.curr_level>self.last_level:
+					t=p
+					while t and not flag:
+						if self.last_focus==t['parent']:
+							flag=1
+							self.item_select(p)
+							self.focus_widget=evtbox
+							break
+						t=t['parent']
+				elif self.last_level and self.curr_level<self.last_level:
+					s=[]
+					s.extend(p['children'])
+					while s and not flag:
+						ns=[]
+						for c in s:
+							if self.last_focus==c:
+								flag=1
+								self.item_select(p)
+								self.focus_widget=evtbox
+								break
+							ns.extend(c['children'])
+						s=ns
+				else:
+					flag=1
+					self.focus_widget=evtbox
+					if not self.focus:
+						self.item_select(p)
+		GObject.idle_add(self.autoscroll)
+
+	def autoscroll(self):
+		items_list=self.builder.get_object("items_list")
+		focus_widget=self.focus_widget
+		alloc=items_list.get_allocation()
+		x,y=focus_widget.translate_coordinates(items_list, 0, 0)
+		scr=self.builder.get_object("scroll_items_list")
+		vadj=scr.get_vadjustment()
+		vadj.set_lower(0)
+		vadj.set_upper(alloc.height)
+		alloc=scr.get_allocation()
+		vadj.set_value(y-alloc.height*0.3)
 
 	def level_sanitize(self):
 		level=self.builder.get_object("level")
