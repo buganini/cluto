@@ -188,7 +188,7 @@ class CTIE(object):
 		self.builder.get_object('btn_add_tag').connect('clicked', self.add_tag)
 
 		#filechooser
-		self.builder.get_object('btn_item_add').connect('clicked', self.add_item_r)
+		self.builder.get_object('btn_item_add').connect('clicked', self.add_item_cb)
 		self.builder.get_object('btn_item_cancel').connect('clicked', self.hide_filechooser)
 
 		#export
@@ -562,18 +562,25 @@ class CTIE(object):
 	def add_item(self, *arg):
 		self.builder.get_object('filechooserdialog').show()
 
-	def add_item_r(self, *arg):
+	def add_item_cb(self, *arg):
 		for path in self.builder.get_object("filechooserdialog").get_filenames():
-			try:
-				im=Image.open(path)
-			except:
-				continue
-			self.id_map[path]=md5.new(path).hexdigest()
-			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':None})
-			del(im)
+			self.add_item_r(path)
 		self.hide_filechooser()
 		self.redraw_items_list()
 		self.level_sanitize()
+
+	def add_item_r(self, path):
+		if os.path.isdir(path):
+			for c in os.listdir(path):
+				self.add_item_r(os.path.join(path,c))
+		else:
+			try:
+				im=Image.open(path)
+			except:
+				return
+			self.id_map[path]=md5.new(path).hexdigest()
+			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':None})
+			del(im)
 
 	def change_level(self, *arg):
 		level=self.builder.get_object("level").get_active_text()
