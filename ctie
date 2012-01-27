@@ -700,7 +700,11 @@ class CTIE(object):
 			tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d-thumbnail.png" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
 			if not os.path.exists(tfile):
 				im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
-				im=im.resize(self.thumbsize(im.size, (160,240)))
+				newsize=self.thumbsize(im.size, (160,240))
+				if newsize[0]<im.size[0] and newsize[1]<im.size[1]:
+					im.thumbnail(newsize)
+				else:
+					im=im.resize(newsize)
 				im.save(tfile)
 				del(im)
 			evtbox=Gtk.EventBox()
