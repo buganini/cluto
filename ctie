@@ -695,6 +695,7 @@ class CTIE(object):
 		if self.focus_widget:
 			self.focus_widget.get_style_context().remove_provider(self.css)
 		self.focus_widget=obj
+		GObject.idle_add(self.autoscroll)
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 			self.item_select(cpath)
 
