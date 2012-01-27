@@ -692,8 +692,13 @@ class CTIE(object):
 	def tags_refresh(self, *arg):
 		if not self.focus:
 			return
-		self.builder.get_object('new_tag').show()
-		self.builder.get_object('btn_add_tag').show()
+		self.builder.get_object('tags_pane').show_all()
+
+		tagsbox=self.builder.get_object('tags')
+		c=tagsbox.get_child()
+		if c:
+			tagsbox.remove(c)
+
 		t=self.focus
 		tags={}
 		while t:
@@ -705,31 +710,69 @@ class CTIE(object):
 			if tag not in tags:
 				tags[tag]=""
 
-		tagsbox=self.builder.get_object('tags')
-		c=tagsbox.get_child()
-		if c:
-			tagsbox.remove(c)
 		tags_table=Gtk.Grid()
 		tagsbox.add(tags_table)
 		for i,tag in enumerate(self.tags):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
-			text.connect('changed', self.set_tag, tag)
+			text.connect('changed', self.set_tag, (self.focus,tag))
 			label=Gtk.Label(tag)
 			button=Gtk.Button()
 			btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
 			button.set_image(btn_img)
-			button.connect("clicked", self.clear_tag, tag)
+			button.connect("clicked", self.clear_tag, (self.focus,tag))
+			tags_table.attach(label,0,i,1,1)
+			tags_table.attach(text,1,i,1,1)
+			tags_table.attach(button,2,i,1,1)
+		tagsbox.show_all()
+		self.child_tags_refresh()
+
+	def child_tags_refresh(self, *arg):
+		if not self.focus:
+			return
+
+		tagsbox=self.builder.get_object('child_tags')
+		c=tagsbox.get_child()
+		if c:
+			tagsbox.remove(c)
+
+		if len(self.selections)!=1:
+			return
+
+		p=self.focus['children'][self.selections[0]]
+		t=p
+		tags={}
+		while t:
+			for tag in t['tags']:
+				if tag not in tags:
+					tags[tag]=t['tags'][tag]
+			t=t['parent']
+		for tag in self.tags:
+			if tag not in tags:
+				tags[tag]=""
+		tags_table=Gtk.Grid()
+		tagsbox.add(tags_table)
+		for i,tag in enumerate(self.tags):
+			text=Gtk.Entry()
+			text.set_text(tags[tag])
+			text.connect('changed', self.set_tag, (p,tag))
+			label=Gtk.Label(tag)
+			button=Gtk.Button()
+			btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
+			button.set_image(btn_img)
+			button.connect("clicked", self.clear_tag, (p,tag))
 			tags_table.attach(label,0,i,1,1)
 			tags_table.attach(text,1,i,1,1)
 			tags_table.attach(button,2,i,1,1)
 		tagsbox.show_all()
 
-	def set_tag(self, obj, tag):
-		self.focus['tags'][tag]=obj.get_buffer().get_text()
+	def set_tag(self, obj, data):
+		item,tag=data
+		item['tags'][tag]=obj.get_buffer().get_text()
 
-	def clear_tag(self, obj, tag):
-		del(self.focus['tags'][tag])
+	def clear_tag(self, obj, data):
+		del(item['tags'][tag])
+		item,tag=data
 		self.tags_refresh()
 
 	def item_select(self, p):
@@ -791,6 +834,7 @@ class CTIE(object):
 								self.selections.remove(i)
 							else:
 								self.selections.append(i)
+						self.child_tags_refresh()
 				elif self.mode=='rectangle':
 					if x1>x:
 						x1,x=x,x1
