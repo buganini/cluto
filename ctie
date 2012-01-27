@@ -721,9 +721,6 @@ class CTIE(object):
 	def item_button_press(self, obj, evt, cpath):
 		if self.focus_widget:
 			self.focus_widget.get_style_context().remove_provider(self.css)
-		print type(evt), evt
-		print type(evt.button), evt.button
-		print type(evt.type), evt.type
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 			self.focus_widget=obj
 			GObject.idle_add(self.autoscroll)
