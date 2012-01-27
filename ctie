@@ -604,34 +604,47 @@ class CTIE(object):
 		if not self.focus:
 			return
 		items_list=self.builder.get_object("items_list")
-		parent=self.focus['parent']
 
 		cl=items_list.get_children()
+		i,c=-1,None
 		for i,c in enumerate(cl):
 			if c==self.focus_widget:
 				break
-		items_list.remove(c)
+		if c:
+			items_list.remove(c)
 		cl=items_list.get_children()
 		evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
 		evt.button.type=Gdk.EventType.BUTTON_PRESS
 		evt.button.button=1
-		if i<len(cl):
+		level_change=False
+		if i>=0 and i<len(cl):
 			new_focus_widget=cl[i]
 		elif len(cl)>0:
 			new_focus_widget=cl[-1]
 		else:
+			level_change=True
 			new_focus_widget=None
+			self.focus=None
+			workarea=self.builder.get_object("workarea")
+			c=workarea.get_child()
+			if c:
+				workarea.remove(c)
+				c.destroy()
 
-		if not parent:
-			idx=self.clips.index(self.focus)
-			del(self.clips[idx])
-		else:
-			idx=parent['children'].index(self.focus)
-			del(parent['children'][idx])
+
+		if self.focus:
+			parent=self.focus['parent']
+			if not parent:
+				idx=self.clips.index(self.focus)
+				del(self.clips[idx])
+			else:
+				idx=parent['children'].index(self.focus)
+				del(parent['children'][idx])
 
 		if new_focus_widget:
 			new_focus_widget.emit("button-press-event", evt)
-		self.level_sanitize()
+		if level_change:
+			self.level_sanitize()
 
 	def add_item(self, *arg):
 		self.builder.get_object('filechooserdialog').show()
