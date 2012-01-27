@@ -570,23 +570,35 @@ class CTIE(object):
 	def remove_item(self, *arg):
 		if not self.focus:
 			return
+		items_list=self.builder.get_object("items_list")
 		parent=self.focus['parent']
+
+		cl=items_list.get_children()
+		for i,c in enumerate(cl):
+			if c==self.focus_widget:
+				break
+		items_list.remove(c)
+		cl=items_list.get_children()
+		evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
+		evt.button.type=Gdk.EventType.BUTTON_PRESS
+		evt.button.button=1
+		if i<len(cl):
+			new_focus_widget=cl[i]
+		elif len(cl)>0:
+			new_focus_widget=cl[-1]
+		else:
+			new_focus_widget=None
+
 		if not parent:
 			idx=self.clips.index(self.focus)
 			del(self.clips[idx])
-			if idx<len(self.clips):
-				self.item_select(self.clips[idx])
-			else:
-				self.focus=None
 		else:
 			idx=parent['children'].index(self.focus)
 			del(parent['children'][idx])
-			if idx<len(parent['children']):
-				self.item_select(parent['children'][idx])
-			else:
-				self.focus=None
+
+		if new_focus_widget:
+			new_focus_widget.emit("button-press-event", evt)
 		self.level_sanitize()
-		self.redraw_items_list()
 
 	def add_item(self, *arg):
 		self.builder.get_object('filechooserdialog').show()
@@ -595,7 +607,6 @@ class CTIE(object):
 		for path in self.builder.get_object("filechooserdialog").get_filenames():
 			self.add_item_r(path)
 		self.hide_filechooser()
-		self.redraw_items_list()
 		self.level_sanitize()
 
 	def add_item_r(self, path):
@@ -661,7 +672,6 @@ class CTIE(object):
 						if self.last_focus==t['parent']:
 							flag=1
 							self.focus_widget=evtbox
-							self.item_select(p)
 							break
 						t=t['parent']
 				elif self.last_level and self.curr_level<self.last_level:
@@ -673,16 +683,22 @@ class CTIE(object):
 							if self.last_focus==c:
 								flag=1
 								self.focus_widget=evtbox
-								self.item_select(p)
 								break
 							ns.extend(c['children'])
 						s=ns
 				else:
 					flag=1
 					self.focus_widget=evtbox
-					if not self.focus:
-						self.item_select(p)
-		GObject.idle_add(self.autoscroll)
+		if not self.focus_widget:
+			cl=items_list.get_children()
+			if cl:
+				self.focus_widget=cl[-1]
+
+		if self.focus_widget:
+			evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
+			evt.button.type=Gdk.EventType.BUTTON_PRESS
+			evt.button.button=1
+			self.focus_widget.emit("button-press-event", evt)
 
 	def autoscroll(self):
 		items_list=self.builder.get_object("items_list")
@@ -716,7 +732,7 @@ class CTIE(object):
 		if active<l:
 			level.set_active(active)
 		else:
-			level.set_active(l-1)			
+			level.set_active(l-1)
 
 	def item_button_press(self, obj, evt, cpath):
 		if self.focus_widget:
