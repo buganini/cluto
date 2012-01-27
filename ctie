@@ -45,6 +45,7 @@ class CTIE(object):
 		self.tags=['filename']
 		self.copy_tag=[]
 		self.mode=None
+		self.focus_widget=None
 		self.builder = Gtk.Builder()
 		for datadir in ['.','/usr/local/share/ctie']:
 			fullpath=os.path.join(datadir, 'ctie.xml')
@@ -62,6 +63,10 @@ class CTIE(object):
 		level.set_entry_text_column(0)
 		level.connect("changed", self.change_level)
 		self.level_sanitize()
+
+		#css
+		self.css=Gtk.CssProvider()
+		self.css.load_from_data("* {background-color: rgba(100,100,255,30);}", -1)
 
 		#toolbar
 		toolbar=self.builder.get_object('toolbar')
@@ -582,6 +587,9 @@ class CTIE(object):
 	def redraw_items_list(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
 			return
+		if self.focus_widget:
+			self.focus_widget.get_style_context().remove_provider(self.css)
+			self.focus_widget=None
 		items_list=self.builder.get_object("items_list")
 		for c in items_list.get_children():
 			items_list.remove(c)
@@ -616,8 +624,8 @@ class CTIE(object):
 					while t and not flag:
 						if self.last_focus==t['parent']:
 							flag=1
-							self.item_select(p)
 							self.focus_widget=evtbox
+							self.item_select(p)
 							break
 						t=t['parent']
 				elif self.last_level and self.curr_level<self.last_level:
@@ -628,8 +636,8 @@ class CTIE(object):
 						for c in s:
 							if self.last_focus==c:
 								flag=1
-								self.item_select(p)
 								self.focus_widget=evtbox
+								self.item_select(p)
 								break
 							ns.extend(c['children'])
 						s=ns
@@ -675,6 +683,9 @@ class CTIE(object):
 			level.set_active(l-1)			
 
 	def item_button_press(self, obj, evt, cpath):
+		if self.focus_widget:
+			self.focus_widget.get_style_context().remove_provider(self.css)
+		self.focus_widget=obj
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 			self.item_select(cpath)
 
@@ -744,6 +755,9 @@ class CTIE(object):
 		canvas.connect("draw", self.canvas_draw)
 		canvas.show()
 		self.zoom_fit()
+		if self.focus_widget:
+			self.focus_widget.get_style_context().add_provider(self.css, 10)
+
 
 	def workarea_mouse(self, obj, evt):
 		if not self.canvas:
