@@ -698,9 +698,14 @@ class CTIE(object):
 				ns.extend(x['children'])
 			s=ns
 		for p in s:
-			tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d-thumbnail.png" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
-			if not os.path.exists(tfile):
+			bfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
+			if not os.path.exists(bfile):
 				im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
+				im.save(bfile)	
+				del(im)			
+			tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
+			if not os.path.exists(tfile):
+				im=Image.open(bfile)
 				newsize=self.thumbsize(im.size, (160,240))
 				if newsize[0]<im.size[0] and newsize[1]<im.size[1]:
 					im.thumbnail(newsize)
@@ -903,7 +908,7 @@ class CTIE(object):
 
 		self.tags_refresh()
 
-		tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.png" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
+		tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
 		if not os.path.exists(tfile):
 			im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
 			im.save(tfile)
