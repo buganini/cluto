@@ -29,6 +29,8 @@ tempdir=tempfile.mkdtemp(prefix='ctie_')
 
 class CTIE(object):
 	def __init__(self):
+		self.focus_field=(None, None)
+		self.focus_entry=None
 		self.clipboard=[]
 		self.selections=[]
 		self.curr_level=None
@@ -814,7 +816,9 @@ class CTIE(object):
 		for i,tag in enumerate(self.tags):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
-			text.connect('changed', self.set_tag, (self.focus,tag))
+			text.connect('changed', self.set_tag, ('p', self.focus, tag))
+			if self.focus_field[0]=='p' and self.focus_field[1]==tag:
+				self.focus_entry=text
 			label=Gtk.Label(tag)
 			button=Gtk.Button()
 			btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
@@ -824,6 +828,7 @@ class CTIE(object):
 			tags_table.attach(text,1,i,1,1)
 			tags_table.attach(button,2,i,1,1)
 		tagsbox.show_all()
+		GObject.idle_add(self.autofocus)
 		self.child_tags_refresh()
 
 	def child_tags_refresh(self, *arg):
@@ -854,7 +859,9 @@ class CTIE(object):
 		for i,tag in enumerate(self.tags):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
-			text.connect('changed', self.set_tag, (p,tag))
+			text.connect('changed', self.set_tag, ('c', p, tag))
+			if self.focus_field[0]=='c' and self.focus_field[1]==tag:
+				self.focus_entry=text
 			label=Gtk.Label(tag)
 			button=Gtk.Button()
 			btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
@@ -864,9 +871,15 @@ class CTIE(object):
 			tags_table.attach(text,1,i,1,1)
 			tags_table.attach(button,2,i,1,1)
 		tagsbox.show_all()
+		GObject.idle_add(self.autofocus)
+
+	def autofocus(self, *arg):
+		if self.focus_entry:
+			self.focus_entry.grab_focus()
 
 	def set_tag(self, obj, data):
-		item,tag=data
+		t,item,tag=data
+		self.focus_field=(t,tag)
 		item['tags'][tag]=obj.get_buffer().get_text()
 
 	def clear_tag(self, obj, data):
