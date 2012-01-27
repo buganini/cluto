@@ -376,6 +376,7 @@ class CTIE(object):
 	def paste(self, *arg):
 		if not self.focus:
 			return
+		self.selections=[]
 		for p in self.clipboard:
 			path=self.focus['path']
 			tags={'filename':os.path.basename(path)}
@@ -396,6 +397,7 @@ class CTIE(object):
 			x2=min(x2,self.focus['x2']-self.focus['x1'])
 			y2=min(y2,self.focus['y2']-self.focus['y1'])
 			if x2-x1>1 and y2-y1>1:
+				self.selections.append(len(self.focus['children']))
 				self.focus['children'].append({'path':path,'x1':x1+self.focus['x1'],'y1':y1+self.focus['y1'],'x2':x2+self.focus['x1'],'y2':y2+self.focus['y1'],'children':[], 'tags':tags, 'parent':self.focus})
 		self.canvas.queue_draw()
 
