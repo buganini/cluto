@@ -673,6 +673,7 @@ class CTIE(object):
 	def change_level(self, *arg):
 		level=self.builder.get_object("level").get_active_text()
 		if level!=self.curr_level and level:
+			self.focus_field=(None, None)
 			self.last_focus=self.focus
 			self.last_level=self.curr_level
 			self.curr_level=level
@@ -879,7 +880,11 @@ class CTIE(object):
 
 	def autofocus(self, *arg):
 		if self.focus_entry:
+			if not self.focus_entry.get_text():
+				self.focus_entry.paste_clipboard()
+				GObject.idle_add(lambda x: x.set_position(-1), self.focus_entry)
 			self.focus_entry.grab_focus()
+			self.focus_entry=None
 
 	def set_tag(self, obj, data):
 		t,item,tag=data
