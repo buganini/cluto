@@ -68,6 +68,9 @@ class CTIE(object):
 		self.css=Gtk.CssProvider()
 		self.css.load_from_data("* {background-color: rgba(100,100,255,30);}", -1)
 
+		#keyboard shortcut
+		self.window.connect("key-press-event", self.key_press)
+
 		#toolbar
 		toolbar=self.builder.get_object('toolbar')
 
@@ -201,6 +204,30 @@ class CTIE(object):
 
 		#launch
 		self.window.show()
+
+	def key_press(self, obj, evt):
+		if evt.keyval==Gdk.KEY_Page_Down:
+			cl=self.builder.get_object("items_list").get_children()
+			for i,c in enumerate(cl):
+				if c==self.focus_widget:
+					break
+			i+=1
+			if i<len(cl):
+				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
+				evt.button.type=Gdk.EventType.BUTTON_PRESS
+				evt.button.button=1
+				cl[i].emit("button-press-event", evt)
+		elif evt.keyval==Gdk.KEY_Page_Up:
+			cl=self.builder.get_object("items_list").get_children()
+			for i,c in enumerate(cl):
+				if c==self.focus_widget:
+					break
+			i-=1
+			if i>=0:
+				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
+				evt.button.type=Gdk.EventType.BUTTON_PRESS
+				evt.button.button=1
+				cl[i].emit("button-press-event", evt)
 
 	def ltrim(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
@@ -694,9 +721,12 @@ class CTIE(object):
 	def item_button_press(self, obj, evt, cpath):
 		if self.focus_widget:
 			self.focus_widget.get_style_context().remove_provider(self.css)
-		self.focus_widget=obj
-		GObject.idle_add(self.autoscroll)
+		print type(evt), evt
+		print type(evt.button), evt.button
+		print type(evt.type), evt.type
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
+			self.focus_widget=obj
+			GObject.idle_add(self.autoscroll)
 			self.item_select(cpath)
 
 	def tags_refresh(self, *arg):
@@ -884,7 +914,6 @@ class CTIE(object):
 							c['x2']=x+p['x1']
 							c['y2']=y+p['y1']
 						if abs(x-x1)<=1 or abs(y-y1)<=1:
-							print 'delete'
 							delete.append(c)
 						else:
 							newtodo.extend(c['children'])
