@@ -279,7 +279,6 @@ class CTIE(object):
 				ns.extend(x['children'])
 			s=ns
 		for p in s:
-			im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
 			x1=p['x1']
 			y1=p['y1']
 			x2=p['x2']
@@ -336,7 +335,6 @@ class CTIE(object):
 				ns.extend(x['children'])
 			s=ns
 		for p in s:
-			im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
 			x1=p['x1']
 			y1=p['y1']
 			x2=p['x2']
@@ -700,7 +698,7 @@ class CTIE(object):
 		for p in s:
 			bfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
 			if not os.path.exists(bfile):
-				im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
+				im=Image.open(p['path']).convert('RGB').crop((p['x1'], p['y1'], p['x2'], p['y2']))
 				im.save(bfile)	
 				del(im)			
 			tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
@@ -910,7 +908,7 @@ class CTIE(object):
 
 		tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
 		if not os.path.exists(tfile):
-			im=Image.open(p['path']).convert('RGBA').crop((p['x1'], p['y1'], p['x2'], p['y2']))
+			im=Image.open(p['path']).convert('RGB').crop((p['x1'], p['y1'], p['x2'], p['y2']))
 			im.save(tfile)
 		self.current_image=Gtk.Image.new_from_file(tfile)
 		workarea=self.builder.get_object('workarea')
