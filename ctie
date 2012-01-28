@@ -46,8 +46,14 @@ class Item(object):
 
 	def get_pil(self):
 		global cache
+		if (cache[0], cache[1]) != (self.p['path'], 'A'):
+			cache=(self.p['path'], 'A', Image.open(self.p['path']).convert('RGBA'))
+		return cache[2]
+
+	def get_pil_rgb(self):
+		global cache
 		if (cache[0], cache[1]) != (self.p['path'], 'R'):
-			cache=(self.p['path'], 'R', Image.open(self.p['path']).convert('RGBA'))
+			cache=(self.p['path'], 'R', Image.open(self.p['path']).convert('RGB'))
 		return cache[2]
 
 	def get_pil_l(self):
@@ -65,7 +71,7 @@ class Item(object):
 	def get_cropped(self):
 		bfile=os.path.join(self.get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
 		if not os.path.exists(bfile):
-			im=Image.open(self.p['path']).convert('RGB').crop((self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+			im=self.get_pil_rgb().crop((self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
 			im.save(bfile)	
 			del(im)	
 		return bfile
