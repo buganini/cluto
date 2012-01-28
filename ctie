@@ -525,7 +525,7 @@ class CTIE(object):
 				y=p['y1']+cp['y1']
 				for x in xrange(p['x1']+cp['x1']+1,p['x1']+cp['x2']-1):
 					pixel=im.getpixel((x,y))
-					if abs(pixel-lastpixel)>5:
+					if abs(pixel-lastpixel)>10:
 						paste=False
 						break
 					lastpixel=pixel
@@ -534,7 +534,7 @@ class CTIE(object):
 				x=p['x1']+cp['x2']-1
 				for y in xrange(p['y1']+cp['y1']+1,p['y1']+cp['y2']-1):
 					pixel=im.getpixel((x,y))
-					if abs(pixel-lastpixel)>5:
+					if abs(pixel-lastpixel)>10:
 						paste=False
 						break
 					lastpixel=pixel
@@ -543,7 +543,7 @@ class CTIE(object):
 				y=p['y1']+cp['y2']-1
 				for x in xrange(p['x1']+cp['x1']+1,p['x1']+cp['x2']):
 					pixel=im.getpixel((x,y))
-					if abs(pixel-lastpixel)>5:
+					if abs(pixel-lastpixel)>10:
 						paste=False
 						break
 					lastpixel=pixel
@@ -552,7 +552,7 @@ class CTIE(object):
 				x=p['x1']+cp['x1']
 				for y in xrange(p['y1']+cp['y1']+1,p['y1']+cp['y2']):
 					pixel=im.getpixel((x,y))
-					if abs(pixel-lastpixel)>5:
+					if abs(pixel-lastpixel)>10:
 						paste=False
 						break
 					lastpixel=pixel
