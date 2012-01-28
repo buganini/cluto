@@ -144,6 +144,15 @@ class CTIE(object):
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_DIALOG_WARNING, Gtk.IconSize.DND)
+		button.set_image(btn_img)
+		button.connect("clicked", self.findempty)
+		toolbar.pack_start(button, False, False, 0)
+
+		sep=Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+		toolbar.pack_start(sep, False, False, 1)
+
+		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_GOTO_FIRST, Gtk.IconSize.DND)
 		button.set_image(btn_img)
 		button.connect("clicked", self.ltrim)
@@ -228,6 +237,21 @@ class CTIE(object):
 
 		#launch
 		self.window.show()
+
+	def findempty(self, *arg):
+		items_list=self.builder.get_object("items_list")
+		cs=items_list.get_children()
+		flag=False
+		for c in cs:
+			p=c.get_data("p")
+			if p==self.focus:
+				flag=True
+			if flag and not len(p['children']):
+				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
+				evt.button.type=Gdk.EventType.BUTTON_PRESS
+				evt.button.button=1
+				c.emit("button-press-event", evt)
+				break
 
 	def previous(self, *arg):
 		if not len(self.focus['children']):
@@ -737,7 +761,8 @@ class CTIE(object):
 			box.pack_start(img, False, False, 0)
 			box.pack_start(label, False, False, 0)
 			evtbox.add(box)
-			evtbox.connect("button-press-event", self.item_button_press, p)
+			evtbox.set_data("p", p)
+			evtbox.connect("button-press-event", self.item_button_press)
 			items_list.pack_start(evtbox, False, False, 5)
 			evtbox.show_all()
 			if not flag:
@@ -809,10 +834,11 @@ class CTIE(object):
 		else:
 			level.set_active(l-1)
 
-	def item_button_press(self, obj, evt, cpath):
+	def item_button_press(self, obj, evt):
 		if self.focus_widget:
 			self.focus_widget.get_style_context().remove_provider(self.css)
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
+			cpath=obj.get_data("p")
 			self.focus_widget=obj
 			GObject.idle_add(self.autoscroll)
 			self.item_select(cpath)
