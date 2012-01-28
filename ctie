@@ -35,7 +35,58 @@ def natsort_key(s):
 def natcmp(a, b):
 	return cmp(natsort_key(a), natsort_key(b))
 
-tempdir=tempfile.mkdtemp(prefix='ctie_')
+tempdir=None
+id_map={}
+cache=(None, None, None)
+
+class Item(object):
+	def __init__(self, p):
+		self.p=p
+		self.hash=id_map[p['path']]
+
+	def get_pil(self):
+		global cache
+		if (cache[0], cache[1]) != (self.p['path'], 'R'):
+			cache=(self.p['path'], 'R', Image.open(self.p['path']).convert('RGBA'))
+		return cache[2]
+
+	def get_pil_l(self):
+		global cache
+		if (cache[0], cache[1]) != (self.p['path'], 'L'):
+			cache=(self.p['path'], 'L', Image.open(self.p['path']).convert('L'))
+		return cache[2]
+
+	def get_tempdir(self):
+		global tempdir
+		if not tempdir or not os.path.exists(tempdir):
+			tempdir=tempfile.mkdtemp(prefix='ctie_')
+		return tempdir
+
+	def get_cropped(self):
+		bfile=os.path.join(self.get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+		if not os.path.exists(bfile):
+			im=Image.open(self.p['path']).convert('RGB').crop((self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+			im.save(bfile)	
+			del(im)	
+		return bfile
+
+	def get_thumbnail(self):
+		tfile=os.path.join(self.get_tempdir(), "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+		if not os.path.exists(tfile):
+			im=Image.open(self.get_cropped())
+			ow,oh=im.size
+			nw,nh=(160,240)
+			if float(ow)/oh>float(nw)/nh:
+				newsize=(nw, int(float(nw)*oh/ow))
+			else:
+				newsize=(int(float(nh)*ow/oh), nh)
+			if newsize[0]<im.size[0] and newsize[1]<im.size[1]:
+				im.thumbnail(newsize)
+			else:
+				im=im.resize(newsize)
+			im.save(tfile)
+			del(im)
+		return tfile
 
 class CTIE(object):
 	def __init__(self):
@@ -49,7 +100,6 @@ class CTIE(object):
 		self.focus=None
 		self.last_focus=None
 		self.canvas=None
-		self.id_map={}
 		self.clips=[]
 		self.zoom=100
 		self.selstart=(-1,-1)
@@ -325,37 +375,38 @@ class CTIE(object):
 			y1=p['y1']
 			x2=p['x2']
 			y2=p['y2']
-			im=Image.open(p['path']).crop((x1, y1, x2, y2)).convert('L')
+			it=Item(p)
+			im=it.get_pil_l()
 
 			#x1
 			stop=False
-			for a in xrange(x2-x1):
-				for i in xrange(y2-y1):
+			for a in xrange(x1,x2):
+				last=im.getpixel((a,y1))
+				for i in xrange(y1+1,y2):
 					c=im.getpixel((a,i))
-					if i:
-						if abs(c-last)>10:
-							stop=True
-							break
-					else:
-						last=c
+					if abs(c-last)>10:
+						stop=True
+						break
+					print last
+					last=c
 				if stop:
 					break
-			nx1=x1+a
+			nx1=a
 
 			#y1
 			stop=False
-			for a in xrange(y2-y1):
-				for i in xrange(x2-x1):
+			for a in xrange(y1,y2):
+				last=im.getpixel((x1,a))
+				for i in xrange(x1+1,x2):
 					c=im.getpixel((i,a))
-					if i:
-						if abs(c-last)>10:
-							stop=True
-							break
-					else:
-						last=c
+					if abs(c-last)>10:
+						stop=True
+						break
+					print last
+					last=c
 				if stop:
 					break
-			ny1=y1+a
+			ny1=a
 
 			p['x1']=nx1
 			p['y1']=ny1
@@ -381,39 +432,36 @@ class CTIE(object):
 			y1=p['y1']
 			x2=p['x2']
 			y2=p['y2']
-			im=Image.open(p['path']).crop((x1, y1, x2, y2)).convert('L')
+			it=Item(p)
+			im=it.get_pil_l()
 
 			#x2
 			stop=False
-			w=x2-x1
-			for a in xrange(x2-x1):
-				for i in xrange(y2-y1):
-					c=im.getpixel((w-a-1,i))
-					if i:
-						if abs(c-last)>10:
-							stop=True
-							break
-					else:
-						last=c
+			for a in xrange(x2-1,x1-1,-1):
+				last=im.getpixel((a,y1))
+				for i in xrange(y1+1,y2):
+					c=im.getpixel((a,i))
+					if abs(c-last)>10:
+						stop=True
+						break
+					last=c
 				if stop:
 					break
-			nx2=x2-a
+			nx2=a
 
 			#y2
 			stop=False
-			h=y2-y1
-			for a in xrange(y2-y1):
-				for i in xrange(x2-x1):
-					c=im.getpixel((i,h-a-1))
-					if i:
-						if abs(c-last)>10:
-							stop=True
-							break
-					else:
-						last=c
+			for a in xrange(y2-1,y1-1,-1):
+				last=im.getpixel((x1,a))
+				for i in xrange(x1+1,x2):
+					c=im.getpixel((i,a))
+					if abs(c-last)>10:
+						stop=True
+						break
+					last=c
 				if stop:
 					break
-			ny2=y2-a
+			ny2=a
 
 			p['x2']=nx2
 			p['y2']=ny2
@@ -421,12 +469,13 @@ class CTIE(object):
 		self.item_select(self.focus)
 
 	def open_project(self, *arg):
+		global id_map, tempdir
 		filec=Gtk.FileChooserDialog("Open", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
 			fp=open(filec.get_filename(),'r')
 			data=pickle.load(fp)
 			fp.close()
-			self.id_map, self.clips, self.tags, self.copy_tag=data
+			id_map, self.clips, self.tags, self.copy_tag, tempdir=data
 		filec.destroy()
 		self.level_sanitize()
 		self.redraw_items_list()
@@ -435,7 +484,7 @@ class CTIE(object):
 	def save_project(self, *arg):
 		filec=Gtk.FileChooserDialog("Save", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
-			data=[self.id_map, self.clips, self.tags, self.copy_tag]
+			data=[id_map, self.clips, self.tags, self.copy_tag, tempdir]
 			fp=open(filec.get_filename(),'w')
 			pickle.dump(data, fp)
 			fp.close()
@@ -782,7 +831,7 @@ class CTIE(object):
 				im=Image.open(path)
 			except:
 				return
-			self.id_map[path]=md5.new(path).hexdigest()
+			id_map[path]=md5.new(path).hexdigest()
 			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':None})
 			del(im)
 
@@ -814,21 +863,8 @@ class CTIE(object):
 				ns.extend(x['children'])
 			s=ns
 		for p in s:
-			bfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
-			if not os.path.exists(bfile):
-				im=Image.open(p['path']).convert('RGB').crop((p['x1'], p['y1'], p['x2'], p['y2']))
-				im.save(bfile)	
-				del(im)			
-			tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
-			if not os.path.exists(tfile):
-				im=Image.open(bfile)
-				newsize=self.thumbsize(im.size, (160,240))
-				if newsize[0]<im.size[0] and newsize[1]<im.size[1]:
-					im.thumbnail(newsize)
-				else:
-					im=im.resize(newsize)
-				im.save(tfile)
-				del(im)
+			it=Item(p)
+			tfile=it.get_thumbnail()
 			evtbox=Gtk.EventBox()
 			box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 			img=Gtk.Image.new_from_file(tfile)
@@ -1027,15 +1063,13 @@ class CTIE(object):
 
 	def item_select(self, p):
 		self.focus=p
-		id=self.id_map[p['path']]
+		id=id_map[p['path']]
 		self.selections=[]
 
 		self.tags_refresh()
 
-		tfile=os.path.join(tempdir, "%s-%dx%dx%dx%d.jpg" % (self.id_map[p['path']], p['x1'], p['y1'], p['x2'], p['y2']))
-		if not os.path.exists(tfile):
-			im=Image.open(p['path']).convert('RGB').crop((p['x1'], p['y1'], p['x2'], p['y2']))
-			im.save(tfile)
+		it=Item(p)
+		tfile=it.get_cropped()
 		self.current_image=Gtk.Image.new_from_file(tfile)
 		workarea=self.builder.get_object('workarea')
 		c=workarea.get_child()
@@ -1167,15 +1201,6 @@ class CTIE(object):
 			self.selend=(x,y)
 			self.canvas.queue_draw()
 
-	def thumbsize(self, o,n):
-		ow,oh=o
-		nw,nh=n
-		if float(ow)/oh>float(nw)/nh:
-			return (nw, int(float(nw)*oh/ow))
-		else:
-			return (int(float(nh)*ow/oh), nh)
-
 if __name__ == "__main__":
 	app = CTIE()
 	Gtk.main()
-	os.execvp("rm",["rm","-rf",tempdir])
