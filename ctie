@@ -25,6 +25,16 @@ import Image
 import re
 import pickle
 
+def try_int(s):
+	try: return int(s)
+	except: return s
+
+def natsort_key(s):
+	return map(try_int, re.findall(r'(\d+|\D+)', s))
+
+def natcmp(a, b):
+	return cmp(natsort_key(a), natsort_key(b))
+
 tempdir=tempfile.mkdtemp(prefix='ctie_')
 
 class CTIE(object):
@@ -655,14 +665,18 @@ class CTIE(object):
 		self.builder.get_object('filechooserdialog').show()
 
 	def add_item_cb(self, *arg):
-		for path in self.builder.get_object("filechooserdialog").get_filenames():
+		cs=self.builder.get_object("filechooserdialog").get_filenames()
+		cs.sort(natcmp)
+		for path in cs:
 			self.add_item_r(path)
 		self.hide_filechooser()
 		self.level_sanitize()
 
 	def add_item_r(self, path):
 		if os.path.isdir(path):
-			for c in os.listdir(path):
+			cs=os.listdir(path)
+			cs.sort(natcmp)
+			for c in cs:
 				self.add_item_r(os.path.join(path,c))
 		else:
 			try:
