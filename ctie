@@ -1005,9 +1005,15 @@ class CTIE(object):
 		if self.focus_entry:
 			if not self.focus_entry.get_text():
 				self.focus_entry.paste_clipboard()
-				GObject.idle_add(lambda x: x.set_position(-1), self.focus_entry)
-			self.focus_entry.grab_focus()
-			self.focus_entry=None
+				GObject.idle_add(self.autofocus2)		
+				self.focus_entry.grab_focus()
+			else:
+				self.focus_entry.grab_focus()
+				self.focus_entry=None
+
+	def autofocus2(self, *arg):
+		self.focus_entry.set_position(-1)
+		self.focus_entry=None
 
 	def set_tag(self, obj, data):
 		t,item,tag=data
