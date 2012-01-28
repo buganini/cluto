@@ -144,7 +144,7 @@ class CTIE(object):
 		toolbar.pack_start(sep, False, False, 1)
 
 		button=Gtk.Button()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_DIALOG_WARNING, Gtk.IconSize.SMALL_TOOLBAR)
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_FIND, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_image(btn_img)
 		button.connect("clicked", self.findempty)
 		toolbar.pack_start(button, False, False, 0)
@@ -183,6 +183,12 @@ class CTIE(object):
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_PASTE, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_image(btn_img)
 		button.connect("clicked", self.paste)
+		toolbar.pack_start(button, False, False, 0)
+
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_FIND_AND_REPLACE, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_image(btn_img)
+		button.connect("clicked", self.autopaste)
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
@@ -244,6 +250,8 @@ class CTIE(object):
 		flag=False
 		for c in cs:
 			p=c.get_data("p")
+			if not p:
+				continue
 			if p==self.focus:
 				flag=True
 			if flag and not len(p['children']):
@@ -465,7 +473,12 @@ class CTIE(object):
 			return
 		self.clipboard=[]
 		for i in self.selections:
-			self.clipboard.append(self.focus['children'][i])
+			p=self.focus['children'][i]
+			tags={}
+			for tag in self.copy_tag:
+				if tag in p['tags']:
+					tags[tag]=p['tags'][tag]
+			self.clipboard.append({'x1':p['x1']-self.focus['x1'], 'y1':p['y1']-self.focus['y1'], 'x2':p['x2']-self.focus['x1'] ,'y2':p['y2']-self.focus['y1'] ,'tags':tags})
 
 	def paste(self, *arg):
 		if not self.focus:
@@ -477,20 +490,14 @@ class CTIE(object):
 		for p in self.clipboard:
 			path=self.focus['path']
 			tags={'filename':os.path.basename(path)}
-			t=p
-			ptags={}
-			while t:
-				for tag in t['tags']:
-					if tag not in ptags:
-						ptags[tag]=t['tags'][tag]
-				t=t['parent']
-			for tag in self.copy_tag:
-				if tag in ptags:
-					tags[tag]=ptags[tag]
-			x1=p['x1']-p['parent']['x1']
-			y1=p['y1']-p['parent']['y1']
-			x2=p['x2']-p['parent']['x1']
-			y2=p['y2']-p['parent']['y1']
+			for tag in p['tags']:
+				tags[tag]=p['tags'][tag]
+			x1=p['x1']
+			y1=p['y1']
+			x2=p['x2']
+			y2=p['y2']
+			x1=max(x1,0)
+			y1=max(y1,0)
 			x2=min(x2,self.focus['x2']-self.focus['x1'])
 			y2=min(y2,self.focus['y2']-self.focus['y1'])
 			if x2-x1>1 and y2-y1>1:
@@ -498,6 +505,74 @@ class CTIE(object):
 				if (x1,y1,x2,y2) in cs:
 					continue
 				self.focus['children'].append({'path':path,'x1':x1+self.focus['x1'],'y1':y1+self.focus['y1'],'x2':x2+self.focus['x1'],'y2':y2+self.focus['y1'],'children':[], 'tags':tags, 'parent':self.focus})
+		self.canvas.queue_draw()
+
+	def autopaste(self, *arg):
+		if not self.clipboard:
+			return
+		items_list=self.builder.get_object("items_list")
+		cs=items_list.get_children()
+		for c in cs:
+			p=c.get_data("p")
+			if not p:
+				continue
+			if len(p['children']):
+				continue
+			im=Image.open(p['path']).convert('L')
+			paste=True
+			for cp in self.clipboard:
+				lastpixel=im.getpixel((p['x1']+cp['x1'],p['y1']+cp['y1']))
+				y=p['y1']+cp['y1']
+				for x in xrange(p['x1']+cp['x1']+1,p['x1']+cp['x2']-1):
+					pixel=im.getpixel((x,y))
+					if abs(pixel-lastpixel)>5:
+						paste=False
+						break
+					lastpixel=pixel
+				if not paste:
+					break
+				x=p['x1']+cp['x2']-1
+				for y in xrange(p['y1']+cp['y1']+1,p['y1']+cp['y2']-1):
+					pixel=im.getpixel((x,y))
+					if abs(pixel-lastpixel)>5:
+						paste=False
+						break
+					lastpixel=pixel
+				if not paste:
+					break
+				y=p['y1']+cp['y2']-1
+				for x in xrange(p['x1']+cp['x1']+1,p['x1']+cp['x2']):
+					pixel=im.getpixel((x,y))
+					if abs(pixel-lastpixel)>5:
+						paste=False
+						break
+					lastpixel=pixel
+				if not paste:
+					break
+				x=p['x1']+cp['x1']
+				for y in xrange(p['y1']+cp['y1']+1,p['y1']+cp['y2']):
+					pixel=im.getpixel((x,y))
+					if abs(pixel-lastpixel)>5:
+						paste=False
+						break
+					lastpixel=pixel
+			if not paste:
+				continue
+			del(im)
+			for cp in self.clipboard:
+				tags={'filename':os.path.basename(p['path'])}
+				for tag in cp['tags']:
+					tags[tag]=cp['tags'][tag]
+				x1=cp['x1']
+				y1=cp['y1']
+				x2=cp['x2']
+				y2=cp['y2']
+				x1=max(x1,0)
+				y1=max(y1,0)
+				x2=min(x2,p['x2']-p['x1'])
+				y2=min(y2,p['y2']-p['y1'])
+				if x2-x1>1 and y2-y1>1:
+					p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':tags, 'parent':p})
 		self.canvas.queue_draw()
 
 	def delete(self, *arg):
