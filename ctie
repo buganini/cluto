@@ -387,7 +387,6 @@ class CTIE(object):
 					if abs(c-last)>10:
 						stop=True
 						break
-					print last
 					last=c
 				if stop:
 					break
@@ -402,7 +401,6 @@ class CTIE(object):
 					if abs(c-last)>10:
 						stop=True
 						break
-					print last
 					last=c
 				if stop:
 					break
