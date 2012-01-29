@@ -1231,5 +1231,5 @@ class CTIE(object):
 if __name__ == "__main__":
 	app = CTIE()
 	Gtk.main()
-	if clear_tempdir:
+	if clear_tempdir and tempdir:
 		os.execvp("rm",["rm","-rf",tempdir])
