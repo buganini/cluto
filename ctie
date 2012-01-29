@@ -41,6 +41,7 @@ id_map={}
 cache_gtk={}
 cache_pil_rgb={}
 cache_pil_l={}
+clear_tempdir=True
 
 class Item(object):
 	def __init__(self, p):
@@ -498,25 +499,28 @@ class CTIE(object):
 		self.item_select(self.focus)
 
 	def open_project(self, *arg):
-		global id_map, tempdir
+		global id_map, tempdir, clear_tempdir
 		filec=Gtk.FileChooserDialog("Open", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
 			fp=open(filec.get_filename(),'r')
 			data=pickle.load(fp)
 			fp.close()
 			id_map, self.clips, self.tags, self.copy_tag, tempdir=data
+			clear_tempdir=False
 		filec.destroy()
 		self.level_sanitize()
 		self.redraw_items_list()
 		self.tags_refresh()
 
 	def save_project(self, *arg):
+		global clear_tempdir
 		filec=Gtk.FileChooserDialog("Save", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
 			data=[id_map, self.clips, self.tags, self.copy_tag, tempdir]
 			fp=open(filec.get_filename(),'w')
 			pickle.dump(data, fp)
 			fp.close()
+			clear_tempdir=False
 		filec.destroy()
 
 	def copy_setting(self, obj, *arg):
@@ -1231,3 +1235,5 @@ class CTIE(object):
 if __name__ == "__main__":
 	app = CTIE()
 	Gtk.main()
+	if clear_tempdir:
+		os.execvp("rm",["rm","-rf",tempdir])
