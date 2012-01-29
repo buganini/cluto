@@ -23,6 +23,7 @@ from gi.repository import Gtk, Gdk, cairo, GObject
 import md5
 import Image
 import re
+import weakref
 import pickle
 
 def try_int(s):
@@ -37,30 +38,52 @@ def natcmp(a, b):
 
 tempdir=None
 id_map={}
-cache=(None, None, None)
+cache_gtk={}
+cache_pil_rgb={}
+cache_pil_l={}
 
 class Item(object):
 	def __init__(self, p):
 		self.p=p
 		self.hash=id_map[p['path']]
 
-	def get_pil(self):
-		global cache
-		if (cache[0], cache[1]) != (self.p['path'], 'A'):
-			cache=(self.p['path'], 'A', Image.open(self.p['path']).convert('RGBA'))
-		return cache[2]
+	def get_gtk(self):
+		global cache_gtk
+		oid=id(self.p)
+		try:
+			o=cache_gtk[oid]()
+#			o=cache_gtk[oid]
+		except:
+			o=None
+		if not o:
+			o=Gtk.Image.new_from_file(self.get_cropped())
+			cache_gtk[oid]=weakref.ref(o)
+#			cache_gtk[oid]=o
+		return o
 
 	def get_pil_rgb(self):
-		global cache
-		if (cache[0], cache[1]) != (self.p['path'], 'R'):
-			cache=(self.p['path'], 'R', Image.open(self.p['path']).convert('RGB'))
-		return cache[2]
+		global cache_pil_rgb
+		oid=id(self.p)
+		try:
+			o=cache_pil_rgb[oid]()
+		except:
+			o=None
+		if not o:
+			o=Image.open(self.p['path']).convert('RGB')
+			cache_pil_rgb[oid]=weakref.ref(o)
+		return o
 
 	def get_pil_l(self):
-		global cache
-		if (cache[0], cache[1]) != (self.p['path'], 'L'):
-			cache=(self.p['path'], 'L', Image.open(self.p['path']).convert('L'))
-		return cache[2]
+		global cache_pil_l
+		oid=id(self.p)
+		try:
+			o=cache_pil_l[oid]()
+		except:
+			o=None
+		if not o:
+			o=Image.open(self.p['path']).convert('L')
+			cache_pil_l[oid]=weakref.ref(o)
+		return o
 
 	def get_tempdir(self):
 		global tempdir
@@ -350,6 +373,7 @@ class CTIE(object):
 				evt.button.type=Gdk.EventType.BUTTON_PRESS
 				evt.button.button=1
 				cl[i].emit("button-press-event", evt)
+			return False
 		elif evt.keyval==Gdk.KEY_Page_Up:
 			cl=self.builder.get_object("items_list").get_children()
 			for i,c in enumerate(cl):
@@ -361,6 +385,7 @@ class CTIE(object):
 				evt.button.type=Gdk.EventType.BUTTON_PRESS
 				evt.button.button=1
 				cl[i].emit("button-press-event", evt)
+			return False
 
 	def ltrim(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
@@ -1073,8 +1098,7 @@ class CTIE(object):
 		self.tags_refresh()
 
 		it=Item(p)
-		tfile=it.get_cropped()
-		self.current_image=Gtk.Image.new_from_file(tfile)
+		self.current_image=it.get_gtk()
 		workarea=self.builder.get_object('workarea')
 		c=workarea.get_child()
 		if c:
@@ -1088,7 +1112,6 @@ class CTIE(object):
 		self.zoom_fit()
 		if self.focus_widget:
 			self.focus_widget.get_style_context().add_provider(self.css, 10)
-
 
 	def workarea_mouse(self, obj, evt):
 		if not self.canvas:
