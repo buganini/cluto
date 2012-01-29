@@ -43,6 +43,13 @@ cache_pil_rgb={}
 cache_pil_l={}
 clear_tempdir=True
 
+def click(o):
+	evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
+	evt.button.type=Gdk.EventType.BUTTON_PRESS
+	evt.button.button=1
+	o.emit("button-press-event", evt)
+
+
 class Item(object):
 	def __init__(self, p):
 		self.p=p
@@ -331,10 +338,7 @@ class CTIE(object):
 			if not p:
 				continue
 			if flag and not len(p['children']):
-				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
-				evt.button.type=Gdk.EventType.BUTTON_PRESS
-				evt.button.button=1
-				c.emit("button-press-event", evt)
+				click(c)
 				break
 			c=c.get_data("next")
 
@@ -363,27 +367,17 @@ class CTIE(object):
 		if evt.keyval==Gdk.KEY_Page_Down:
 			next=self.focus_widget.get_data("next")
 			if next:
-				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
-				evt.button.type=Gdk.EventType.BUTTON_PRESS
-				evt.button.button=1
-				next.emit("button-press-event", evt)
+				click(next)
 			return False
 		elif evt.keyval==Gdk.KEY_Page_Up:
-			prev=self.focus_widget.get_data("next")
+			prev=self.focus_widget.get_data("prev")
 			if prev:
-				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
-				evt.button.type=Gdk.EventType.BUTTON_PRESS
-				evt.button.button=1
-				prev.emit("button-press-event", evt)
+				click(prev)
 			return False
 
 	def ltrim(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
 			return
-		items_list=self.builder.get_object("items_list")
-		for c in items_list.get_children():
-			items_list.remove(c)
-			c.destroy()
 		flag=0
 		s=self.clips
 		for i in xrange(0,int(self.builder.get_object("level").get_active_text())):
@@ -430,15 +424,10 @@ class CTIE(object):
 			p['x1']=nx1
 			p['y1']=ny1
 		self.redraw_items_list()
-		self.item_select(self.focus)
 
 	def rtrim(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
 			return
-		items_list=self.builder.get_object("items_list")
-		for c in items_list.get_children():
-			items_list.remove(c)
-			c.destroy()
 		flag=0
 		s=self.clips
 		for i in xrange(0,int(self.builder.get_object("level").get_active_text())):
@@ -485,7 +474,6 @@ class CTIE(object):
 			p['x2']=nx2
 			p['y2']=ny2
 		self.redraw_items_list()
-		self.item_select(self.focus)
 
 	def open_project(self, *arg):
 		global id_map, tempdir, clear_tempdir
@@ -828,10 +816,7 @@ class CTIE(object):
 				del(parent['children'][idx])
 
 		if new_focus_widget:
-			evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
-			evt.button.type=Gdk.EventType.BUTTON_PRESS
-			evt.button.button=1
-			new_focus_widget.emit("button-press-event", evt)
+			click(new_focus_widget)
 		if level_change:
 			self.level_sanitize()
 
@@ -874,7 +859,9 @@ class CTIE(object):
 	def redraw_items_list(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
 			return
+		focus_p=None
 		if self.focus_widget:
+			focus_p=self.focus_widget.get_data("p")
 			self.focus_widget.get_style_context().remove_provider(self.css)
 			self.focus_widget=None
 		items_list=self.builder.get_object("items_list")
@@ -929,19 +916,16 @@ class CTIE(object):
 								break
 							ns.extend(c['children'])
 						s=ns
-				else:
-					flag=1
+				elif focus_p==p:
 					self.focus_widget=evtbox
+					flag=1
 		if not self.focus_widget:
 			cl=items_list.get_children()
 			if cl:
 				self.focus_widget=cl[-1]
 
 		if self.focus_widget:
-			evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
-			evt.button.type=Gdk.EventType.BUTTON_PRESS
-			evt.button.button=1
-			self.focus_widget.emit("button-press-event", evt)
+			click(self.focus_widget)
 
 	def autoscroll(self):
 		items_list=self.builder.get_object("items_list")
