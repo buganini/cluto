@@ -39,6 +39,7 @@ def natcmp(a, b):
 tempdir=None
 id_map={}
 cache_gtk={}
+cache_pixbuf={}
 cache_pil_rgb={}
 cache_pil_l={}
 clear_tempdir=True
@@ -69,9 +70,21 @@ class Item(object):
 #			cache_gtk[oid]=o
 		return o
 
+	def get_pixbuf(self):
+		global cache_pixbuf
+		oid=id(self.p)
+		try:
+			o=cache_pixbuf[oid]()
+		except:
+			o=None
+		if not o:
+			o=self.get_gtk().get_pixbuf()
+			cache_pixbuf[oid]=weakref.ref(o)
+		return o
+
 	def get_pil_rgb(self):
 		global cache_pil_rgb
-		oid=id(self.p)
+		oid=id(self.p['path'])
 		try:
 			o=cache_pil_rgb[oid]()
 		except:
@@ -83,7 +96,7 @@ class Item(object):
 
 	def get_pil_l(self):
 		global cache_pil_l
-		oid=id(self.p)
+		oid=id(self.p['path'])
 		try:
 			o=cache_pil_l[oid]()
 		except:
@@ -133,7 +146,6 @@ class CTIE(object):
 		self.selections=[]
 		self.curr_level=None
 		self.last_level=None
-		self.current_image=None
 		self.focus_item=None
 		self.last_focus=None
 		self.canvas=None
@@ -715,7 +727,8 @@ class CTIE(object):
 		cr.scale(factor, factor)
 		self.canvas.set_size_request(int(width*factor), int(height*factor))
 
-		Gdk.cairo_set_source_pixbuf(cr, self.current_image.get_pixbuf(), 0, 0)
+		it=Item(p)
+		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), 0, 0)
 		cr.paint()
 		for i,c in enumerate(p['children']):
 			x1=(c['x1']-p['x1'])
@@ -979,8 +992,6 @@ class CTIE(object):
 
 			self.selections=[]
 			self.tags_refresh()
-			it=Item(p)
-			self.current_image=it.get_gtk()
 			workarea=self.builder.get_object('workarea')
 			c=workarea.get_child()
 			if c:
