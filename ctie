@@ -325,21 +325,18 @@ class CTIE(object):
 		self.window.show()
 
 	def findempty(self, *arg):
-		items_list=self.builder.get_object("items_list")
-		cs=items_list.get_children()
-		flag=False
-		for c in cs:
+		c=self.focus_widget
+		while c:
 			p=c.get_data("p")
 			if not p:
 				continue
-			if p==self.focus:
-				flag=True
 			if flag and not len(p['children']):
 				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
 				evt.button.type=Gdk.EventType.BUTTON_PRESS
 				evt.button.button=1
 				c.emit("button-press-event", evt)
 				break
+			c=c.get_data("next")
 
 	def previous(self, *arg):
 		if not len(self.focus['children']):
@@ -364,28 +361,20 @@ class CTIE(object):
 
 	def key_press(self, obj, evt):
 		if evt.keyval==Gdk.KEY_Page_Down:
-			cl=self.builder.get_object("items_list").get_children()
-			for i,c in enumerate(cl):
-				if c==self.focus_widget:
-					break
-			i+=1
-			if i<len(cl):
+			next=self.focus_widget.get_data("next")
+			if next:
 				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
 				evt.button.type=Gdk.EventType.BUTTON_PRESS
 				evt.button.button=1
-				cl[i].emit("button-press-event", evt)
+				next.emit("button-press-event", evt)
 			return False
 		elif evt.keyval==Gdk.KEY_Page_Up:
-			cl=self.builder.get_object("items_list").get_children()
-			for i,c in enumerate(cl):
-				if c==self.focus_widget:
-					break
-			i-=1
-			if i>=0:
+			prev=self.focus_widget.get_data("next")
+			if prev:
 				evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
 				evt.button.type=Gdk.EventType.BUTTON_PRESS
 				evt.button.button=1
-				cl[i].emit("button-press-event", evt)
+				prev.emit("button-press-event", evt)
 			return False
 
 	def ltrim(self, *arg):
@@ -797,26 +786,28 @@ class CTIE(object):
 		self.builder.get_object('filechooserdialog').hide()
 
 	def remove_item(self, *arg):
-		if not self.focus:
+		if not self.focus_widget:
 			return
 		items_list=self.builder.get_object("items_list")
 
-		cl=items_list.get_children()
-		i,c=-1,None
-		for i,c in enumerate(cl):
-			if c==self.focus_widget:
-				break
-		if c:
-			items_list.remove(c)
-		cl=items_list.get_children()
-		evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
-		evt.button.type=Gdk.EventType.BUTTON_PRESS
-		evt.button.button=1
 		level_change=False
-		if i>=0 and i<len(cl):
-			new_focus_widget=cl[i]
-		elif len(cl)>0:
-			new_focus_widget=cl[-1]
+		prev=self.focus_widget.get_data("prev")
+		next=self.focus_widget.get_data("next")
+
+		self.focus_widget.set_data("prev", None)
+		self.focus_widget.set_data("next", None)
+		items_list.remove(self.focus_widget)
+
+		if next:
+			new_focus_widget=next
+			next.set_data("prev", prev)
+			if prev:
+				prev.set_data("next", next)
+		elif prev:
+			new_focus_widget=prev
+			prev.set_data("next", next)
+			if next:
+				next.set_data("prev", prev)
 		else:
 			level_change=True
 			new_focus_widget=None
@@ -826,7 +817,6 @@ class CTIE(object):
 			if c:
 				workarea.remove(c)
 				c.destroy()
-
 
 		if self.focus:
 			parent=self.focus['parent']
@@ -838,6 +828,9 @@ class CTIE(object):
 				del(parent['children'][idx])
 
 		if new_focus_widget:
+			evt=Gdk.Event(Gdk.EventType.BUTTON_PRESS)
+			evt.button.type=Gdk.EventType.BUTTON_PRESS
+			evt.button.button=1
 			new_focus_widget.emit("button-press-event", evt)
 		if level_change:
 			self.level_sanitize()
@@ -895,6 +888,7 @@ class CTIE(object):
 			for x in s:
 				ns.extend(x['children'])
 			s=ns
+		last=None
 		for p in s:
 			it=Item(p)
 			tfile=it.get_thumbnail()
@@ -905,7 +899,12 @@ class CTIE(object):
 			box.pack_start(img, False, False, 0)
 			box.pack_start(label, False, False, 0)
 			evtbox.add(box)
+			if last:
+				last.set_data("next", evtbox)
 			evtbox.set_data("p", p)
+			evtbox.set_data("prev", last)
+			evtbox.set_data("next", None)
+			last=evtbox
 			evtbox.connect("button-press-event", self.item_button_press)
 			items_list.pack_start(evtbox, False, False, 5)
 			evtbox.show_all()
