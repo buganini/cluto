@@ -357,13 +357,6 @@ class CTIE(object):
 
 		toolbar.insert(Gtk.SeparatorToolItem(),-1)
 
-		button=Gtk.ToolButton.new_from_stock(Gtk.STOCK_FIND)
-		button.set_tooltip_text("Find next empty item")
-		button.connect("clicked", self.findempty)
-		toolbar.insert(button, -1)
-
-		toolbar.insert(Gtk.SeparatorToolItem(),-1)
-
 		button=Gtk.ToolButton.new_from_stock(Gtk.STOCK_GOTO_FIRST)
 		button.set_tooltip_text("Trim Left-Top")
 		button.connect("clicked", self.ltrim)
@@ -446,17 +439,6 @@ class CTIE(object):
 
 		#launch
 		self.window.show()
-
-	def findempty(self, *arg):
-		c=self.focus_item
-		while c:
-			p=c.get_data("p")
-			if not p:
-				continue
-			if not len(p['children']):
-				click(c)
-				break
-			c=c.get_data("next")
 
 	def previous(self, *arg):
 		if not self.focus_item:
