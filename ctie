@@ -400,6 +400,7 @@ class CTIE(object):
 			for x in s:
 				ns.extend(x['children'])
 			s=ns
+		todo=[]
 		for p in s:
 			x1=p['x1']
 			y1=p['y1']
@@ -438,6 +439,8 @@ class CTIE(object):
 
 			p['x1']=max(nx1,x1)
 			p['y1']=max(ny1,y1)
+			todo.extend(p['children'])
+		self.edge_limiter(todo)
 		self.redraw_items_list()
 
 	def rtrim(self, *arg):
@@ -450,6 +453,7 @@ class CTIE(object):
 			for x in s:
 				ns.extend(x['children'])
 			s=ns
+		todo=[]
 		for p in s:
 			x1=p['x1']
 			y1=p['y1']
@@ -488,6 +492,8 @@ class CTIE(object):
 
 			p['x2']=min(nx2, x2)
 			p['y2']=min(ny2, y2)
+			todo.extend(p['children'])
+		self.edge_limiter(todo)
 		self.redraw_items_list()
 
 	def open_project(self, *arg):
@@ -1225,32 +1231,7 @@ class CTIE(object):
 							c['parent']['children'].remove(c)
 						else:
 							self.clips.remove(c)
-					while todo:
-						delete=[]
-						newtodo=[]
-						for c in todo:
-							x1=c['x1']
-							y1=c['y1']
-							x=c['x2']
-							y=c['y2']
-							if x1>x:
-								x1,x=x,x1
-							if y1>y:
-								y1,y=y,y1
-							c['x1']=max(x1,c['parent']['x1'])
-							c['y1']=max(y1,c['parent']['y1'])
-							c['x2']=min(x,c['parent']['x2'])
-							c['y2']=min(y,c['parent']['y2'])
-							if abs(x-x1)<=1 or abs(y-y1)<=1:
-								delete.append(c)
-							else:
-								newtodo.extend(c['children'])
-						todo=newtodo
-						for c in delete:
-							if c['parent']:
-								c['parent']['children'].remove(c)
-							else:
-								self.clips.remove(c)
+					self.edge_limiter(todo)
 				self.selstart=(-1,-1)
 				self.selend=(-1,-1)
 				self.mode=None
@@ -1260,6 +1241,34 @@ class CTIE(object):
 		elif str(type(evt))==repr(Gdk.EventMotion):
 			self.selend=(x,y)
 			self.canvas.queue_draw()
+
+	def edge_limiter(self, todo):
+		while todo:
+			delete=[]
+			newtodo=[]
+			for c in todo:
+				x1=c['x1']
+				y1=c['y1']
+				x=c['x2']
+				y=c['y2']
+				if x1>x:
+					x1,x=x,x1
+				if y1>y:
+					y1,y=y,y1
+				c['x1']=max(x1,c['parent']['x1'])
+				c['y1']=max(y1,c['parent']['y1'])
+				c['x2']=min(x,c['parent']['x2'])
+				c['y2']=min(y,c['parent']['y2'])
+				if abs(x-x1)<=1 or abs(y-y1)<=1:
+					delete.append(c)
+				else:
+					newtodo.extend(c['children'])
+			todo=newtodo
+			for c in delete:
+				if c['parent']:
+					c['parent']['children'].remove(c)
+				else:
+					self.clips.remove(c)
 
 if __name__ == "__main__":
 	app = CTIE()
