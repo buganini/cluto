@@ -747,7 +747,9 @@ class CTIE(object):
 				if self.mode=='move':
 					cr.rectangle(x1+xoff, y1+yoff, x2-x1, y2-y1)
 				elif self.mode=='resize':
-					cr.rectangle(x1, y1, x2-x1+xoff, y2-y1+yoff)
+					xoff2=max(xoff,x1-x2)
+					yoff2=max(yoff,y1-y2)
+					cr.rectangle(x1, y1, x2-x1+xoff2, y2-y1+yoff2)
 				else:
 					cr.rectangle(x1, y1, x2-x1, y2-y1)
 			else:
@@ -1204,14 +1206,12 @@ class CTIE(object):
 					delete=[]
 					for i in self.selections:
 						c=p['children'][i]
+						xoff2=max(xoff,c['x1']-c['x2'])
+						yoff2=max(yoff,c['y1']-c['y2'])
 						x1=c['x1']
 						y1=c['y1']
-						x=c['x2']+xoff
-						y=c['y2']+yoff
-						if x1>x:
-							x1,x=x,x1
-						if y1>y:
-							y1,y=y,y1
+						x=c['x2']+xoff2
+						y=c['y2']+yoff2
 						c['x1']=max(x1,p['x1'])
 						c['y1']=max(y1,p['y1'])
 						c['x2']=min(x,p['x2'])
