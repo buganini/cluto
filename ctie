@@ -482,17 +482,13 @@ class CTIE(object):
 				click(prev)
 
 	def ltrim(self, *arg):
-		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
-			return
-		flag=0
-		s=self.clips
-		for i in xrange(0,int(self.builder.get_object("level").get_active_text())):
-			ns=[]
-			for x in s:
-				ns.extend(x['children'])
-			s=ns
+		items_list=self.builder.get_object("items_list")
+		cs=items_list.get_children()
 		todo=[]
-		for p in s:
+		for c in cs:
+			p=c.get_data("p")
+			if not p:
+				continue
 			x1=p['x1']
 			y1=p['y1']
 			x2=p['x2']
@@ -535,17 +531,13 @@ class CTIE(object):
 		self.redraw_items_list()
 
 	def rtrim(self, *arg):
-		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
-			return
-		flag=0
-		s=self.clips
-		for i in xrange(0,int(self.builder.get_object("level").get_active_text())):
-			ns=[]
-			for x in s:
-				ns.extend(x['children'])
-			s=ns
+		items_list=self.builder.get_object("items_list")
+		cs=items_list.get_children()
 		todo=[]
-		for p in s:
+		for c in cs:
+			p=c.get_data("p")
+			if not p:
+				continue
 			x1=p['x1']
 			y1=p['y1']
 			x2=p['x2']
