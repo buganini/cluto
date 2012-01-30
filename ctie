@@ -232,7 +232,7 @@ class CTIE(object):
 		button.connect("clicked", self.zoom_100)
 		toolbar.pack_start(button, False, False, 0)
 
-		button=Gtk.Button()
+		self.btn_zoom_fit=button=Gtk.Button(name="btn_zoom_fit")
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ZOOM_FIT, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_image(btn_img)
 		button.connect("clicked", self.zoom_fit)
@@ -385,12 +385,10 @@ class CTIE(object):
 			next=self.focus_item.get_data("next")
 			if next:
 				click(next)
-			return False
 		elif evt.keyval==Gdk.KEY_Page_Up:
 			prev=self.focus_item.get_data("prev")
 			if prev:
 				click(prev)
-			return False
 
 	def ltrim(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
@@ -953,6 +951,7 @@ class CTIE(object):
 
 		if self.focus_item:
 			click(self.focus_item)
+		self.btn_zoom_fit.grab_focus()
 
 	def autoscroll(self):
 		items_list=self.builder.get_object("items_list")
