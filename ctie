@@ -414,32 +414,32 @@ class CTIE(object):
 			stop=False
 			for a in xrange(x1,x2):
 				last=im.getpixel((a,y1))
-				for i in xrange(y1+1,y2):
+				for i in xrange(y1,y2):
 					c=im.getpixel((a,i))
-					if abs(c-last)>10:
+					if abs(c-last)>15:
 						stop=True
 						break
 					last=c
 				if stop:
 					break
-			nx1=a
+			nx1=a-5
 
 			#y1
 			stop=False
 			for a in xrange(y1,y2):
 				last=im.getpixel((x1,a))
-				for i in xrange(x1+1,x2):
+				for i in xrange(x1,x2):
 					c=im.getpixel((i,a))
-					if abs(c-last)>10:
+					if abs(c-last)>15:
 						stop=True
 						break
 					last=c
 				if stop:
 					break
-			ny1=a
+			ny1=a-5
 
-			p['x1']=nx1
-			p['y1']=ny1
+			p['x1']=max(nx1,x1)
+			p['y1']=max(ny1,y1)
 		self.redraw_items_list()
 
 	def rtrim(self, *arg):
@@ -462,34 +462,34 @@ class CTIE(object):
 
 			#x2
 			stop=False
-			for a in xrange(x2-1,x1-1,-1):
-				last=im.getpixel((a,y1))
-				for i in xrange(y1+1,y2):
-					c=im.getpixel((a,i))
-					if abs(c-last)>10:
+			for a in xrange(x2,x1,-1):
+				last=im.getpixel((a-1,y1))
+				for i in xrange(y1,y2):
+					c=im.getpixel((a-1,i))
+					if abs(c-last)>15:
 						stop=True
 						break
 					last=c
 				if stop:
 					break
-			nx2=a
+			nx2=a+5
 
 			#y2
 			stop=False
-			for a in xrange(y2-1,y1-1,-1):
-				last=im.getpixel((x1,a))
-				for i in xrange(x1+1,x2):
-					c=im.getpixel((i,a))
-					if abs(c-last)>10:
+			for a in xrange(y2,y1,-1):
+				last=im.getpixel((x1,a-1))
+				for i in xrange(x1,x2):
+					c=im.getpixel((i,a-1))
+					if abs(c-last)>15:
 						stop=True
 						break
 					last=c
 				if stop:
 					break
-			ny2=a
+			ny2=a+5
 
-			p['x2']=nx2
-			p['y2']=ny2
+			p['x2']=min(nx2, x2)
+			p['y2']=min(ny2, y2)
 		self.redraw_items_list()
 
 	def open_project(self, *arg):
