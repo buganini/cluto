@@ -198,18 +198,20 @@ class SQL(object):
 				tokens=tokens[1:]
 				continue
 
-			if stack and stack[-1]=='(' and tokens[1]==')':
-				del(stack[-1])
-				tokens=[o]
-				tokens.extend(tokens[2:])
-				continue
-			if stack and stack[-1]=='!' and tokens[0]!='(':
-				del(stack[-1])
-				tokens=[["","t"][not o1]]
-				tokens.extend(tokens[2:])
-
 			o1=tokens[1]
 			if self.isvar(o):
+				if stack and stack[-1]=='!':
+					del(stack[-1])
+					tokens=[["","t"][not o1]]
+					tokens.extend(tokens[2:])
+					continue
+				if o1==')':
+					if stack and stack[-1]=='(':
+						del(stack[-1])
+						tokens=[o]
+						tokens.extend(tokens[2:])
+						continue
+					return None
 				if o1 not in ("==", "!=", "&&", "||"):
 					return None
 				o2=tokens[2]
@@ -222,6 +224,18 @@ class SQL(object):
 				else:
 					return None
 			elif self.isstr(o):
+				if stack and stack[-1]=='!':
+					del(stack[-1])
+					tokens=[["","t"][not o1]]
+					tokens.extend(tokens[2:])
+					continue
+				if o1==')':
+					if stack and stack[-1]=='(':
+						del(stack[-1])
+						tokens=[o]
+						tokens.extend(tokens[2:])
+						continue
+					return None
 				if o1 not in ("==", "!=", "&&", "||"):
 					return None
 				o2=tokens[2]
