@@ -1170,60 +1170,87 @@ class CTIE(object):
 					todo=[]
 					for i in self.selections:
 						todo.append(p['children'][i])
-					delete=[]
 					while todo:
+						delete=[]
 						newtodo=[]
 						for c in todo:
-							x1=c['x1']-p['x1']+int(xoff)
-							y1=c['y1']-p['y1']+int(yoff)
-							x=c['x2']-p['x1']+int(xoff)
-							y=c['y2']-p['y1']+int(yoff)
-							x1=max(x1,0)
-							y1=max(y1,0)
-							x=min(x,p['x2']-p['x1'])
-							y=min(y,p['y2']-p['y1'])
-							x1=min(x1,p['x2']-p['x1'])
-							y1=min(y1,p['y2']-p['y1'])
-							x=max(x,0)
-							y=max(y,0)
-							c['x1']=x1+p['x1']
-							c['y1']=y1+p['y1']
-							c['x2']=x+p['x1']
-							c['y2']=y+p['y1']
-						if abs(x-x1)<=1 or abs(y-y1)<=1:
-							delete.append(c)
-						else:
-							newtodo.extend(c['children'])
+							x1=c['x1']+xoff
+							y1=c['y1']+yoff
+							x=c['x2']+xoff
+							y=c['y2']+yoff
+							x1=max(x1,c['parent']['x1'])
+							y1=max(y1,c['parent']['y1'])
+							x=min(x,c['parent']['x2'])
+							y=min(y,c['parent']['y2'])
+							c['x1']=min(x1,c['parent']['x2'])
+							c['y1']=min(y1,c['parent']['y2'])
+							c['x2']=max(x,c['parent']['x1'])
+							c['y2']=max(y,c['parent']['y1'])
+							if abs(x-x1)<=1 or abs(y-y1)<=1:
+								delete.append(c)
+							else:
+								newtodo.extend(c['children'])
 						todo=newtodo
-					for c in delete:
-						if c['parent']:
-							c['parent']['children'].remove(c)
+						for c in delete:
+							if c['parent']:
+								c['parent']['children'].remove(c)
+							else:
+								self.clips.remove(c)
 					self.level_sanitize()
 				elif self.mode=='resize':
 					xoff=int(self.selend[0]-self.selstart[0])
 					yoff=int(self.selend[1]-self.selstart[1])
+					todo=[]
+					delete=[]
 					for i in self.selections:
 						c=p['children'][i]
-						x1=c['x1']-p['x1']
-						y1=c['y1']-p['y1']
-						x=c['x2']-p['x1']+xoff
-						y=c['y2']-p['y1']+yoff
+						x1=c['x1']
+						y1=c['y1']
+						x=c['x2']+xoff
+						y=c['y2']+yoff
 						if x1>x:
 							x1,x=x,x1
 						if y1>y:
 							y1,y=y,y1
-						if x1<0:
-							x1=0
-						if y1<0:
-							y1=0
-						if x>p['x2']-p['x1']:
-							x=p['x2']-p['x1']
-						if y>p['y2']-p['y1']:
-							y=p['y2']-p['y1']
-						c['x1']=x1+p['x1']
-						c['y1']=y1+p['y1']
-						c['x2']=x+p['x1']
-						c['y2']=y+p['y1']
+						c['x1']=max(x1,p['x1'])
+						c['y1']=max(y1,p['y1'])
+						c['x2']=min(x,p['x2'])
+						c['y2']=min(y,p['y2'])
+						if abs(x-x1)<=1 or abs(y-y1)<=1:
+							delete.append(c)
+						else:
+							todo.extend(c['children'])
+					for c in delete:
+						if c['parent']:
+							c['parent']['children'].remove(c)
+						else:
+							self.clips.remove(c)
+					while todo:
+						delete=[]
+						newtodo=[]
+						for c in todo:
+							x1=c['x1']
+							y1=c['y1']
+							x=c['x2']
+							y=c['y2']
+							if x1>x:
+								x1,x=x,x1
+							if y1>y:
+								y1,y=y,y1
+							c['x1']=max(x1,c['parent']['x1'])
+							c['y1']=max(y1,c['parent']['y1'])
+							c['x2']=min(x,c['parent']['x2'])
+							c['y2']=min(y,c['parent']['y2'])
+							if abs(x-x1)<=1 or abs(y-y1)<=1:
+								delete.append(c)
+							else:
+								newtodo.extend(c['children'])
+						todo=newtodo
+						for c in delete:
+							if c['parent']:
+								c['parent']['children'].remove(c)
+							else:
+								self.clips.remove(c)
 				self.selstart=(-1,-1)
 				self.selend=(-1,-1)
 				self.mode=None
