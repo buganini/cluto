@@ -138,8 +138,108 @@ class Item(object):
 			del(im)
 		return tfile
 
+class SQL(object):
+	def __init__(self, expression):
+		tokens=re.findall(r"""(&&|\|\||!=|==|\$\{.+?\}|".*?"|'.*?'|!|\(|\))""",expression)
+		self.loaded=False
+		if not expression:
+			return
+		self.tokens=[]
+		for t in tokens:
+			if t.strip():
+				self.tokens.append(t)
+		self.loaded=True
+
+	def __nonzero__(self):
+		return self.loaded
+
+	def __bool__(self):
+		return self.loaded
+
+	def isstr(self, s):
+		return s[0]==s[-1] and s[0] in ("'", '"')
+
+	def isvar(self, s):
+		return s.startswith('${') and s.endswith('}')
+
+	def strval(self, s):
+		return s[1:-1]
+
+	def varval(self, s):
+		try:
+			return self.p['tags'][s[2:-1]]
+		except:
+			return None
+
+	def op_eq(self, a, b):
+		print 'eq', a, b
+		return ["","t"][a==b]
+
+	def op_ne(self, a, b):
+		return ["","t"][a!=b]
+
+	def op_and(self, a, b):
+		return ["","t"][a and b]
+
+	def op_or(self, a, b):
+		return ["","t"][a or b]
+
+	def exe(self, p):
+		self.p=p
+		stack=[]
+		tokens=list(self.tokens)
+		oprtmap={"==":self.op_eq,"!=":self.op_ne,"&&":self.op_and,"||":self.op_or}
+		while stack or tokens:
+			o=tokens[0]
+			if len(tokens)==1:
+				return o
+
+			if o in ('(','!'):
+				stack.append(o)
+				tokens=tokens[1:]
+				continue
+
+			if stack and stack[-1]=='(' and tokens[1]==')':
+				del(stack[-1])
+				tokens=[o]
+				tokens.extend(tokens[2:])
+				continue
+			if stack and stack[-1]=='!' and tokens[0]!='(':
+				del(stack[-1])
+				tokens=[["","t"][not o1]]
+				tokens.extend(tokens[2:])
+
+			o1=tokens[1]
+			if self.isvar(o):
+				if o1 not in ("==", "!=", "&&", "||"):
+					return None
+				o2=tokens[2]
+				if self.isvar(o2):
+					tokens=[oprtmap[o1](self.varval(o),self.varval(o2))]
+					tokens.extend(tokens[3:])
+				elif self.isstr(o2):
+					tokens=[oprtmap[o1](self.varval(o),self.strval(o2))]
+					tokens.extend(tokens[3:])
+				else:
+					return None
+			elif self.isstr(o):
+				if o1 not in ("==", "!=", "&&", "||"):
+					return None
+				o2=tokens[2]
+				if self.isvar(o2):
+					tokens=[oprtmap[o1](self.strval(o),self.varval(o2))]
+					tokens.extend(tokens[3:])
+				elif self.isstr(o2):
+					tokens=[oprtmap[o1](self.strval(o),self.strval(o2))]
+					tokens.extend(tokens[3:])
+				else:
+					return None
+			else:
+				return None
+
 class CTIE(object):
 	def __init__(self):
+		self.items_filter=None
 		self.focus_field=(None, None)
 		self.focus_entry=None
 		self.clipboard=[]
@@ -292,6 +392,9 @@ class CTIE(object):
 		toolbar.insert(button, -1)
 
 		toolbar.show_all()
+
+		#items list
+		self.builder.get_object("btn_items_filter_apply").connect("clicked", self.items_filter_apply)
 
 		#workarea
 		workarea=self.builder.get_object("workarea")
@@ -866,6 +969,10 @@ class CTIE(object):
 			self.curr_level=level
 			self.redraw_items_list()
 
+	def items_filter_apply(self, *arg):
+		self.items_filter=SQL(self.builder.get_object("items_filter").get_text())
+		self.redraw_items_list()
+
 	def redraw_items_list(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
 			return
@@ -887,6 +994,8 @@ class CTIE(object):
 			s=ns
 		last=None
 		for p in s:
+			if self.items_filter and not self.items_filter.exe(p):
+				continue
 			it=Item(p)
 			tfile=it.get_thumbnail()
 			evtbox=Gtk.EventBox()
