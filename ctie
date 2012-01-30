@@ -140,7 +140,7 @@ class Item(object):
 
 class SQL(object):
 	def __init__(self, expression):
-		tokens=re.findall(r"""(&&|\|\||!=|==|\$\{.+?\}|".*?"|'.*?'|!|\(|\))""",expression)
+		tokens=re.findall(r"""(&&|\|\||!=|==|[\$@%]\{.+?\}|".*?"|'.*?'|!|\(|\))""",expression)
 		self.loaded=False
 		if not expression:
 			return
@@ -160,16 +160,30 @@ class SQL(object):
 		return s[0]==s[-1] and s[0] in ("'", '"')
 
 	def isvar(self, s):
-		return s.startswith('${') and s.endswith('}')
+		return len(s)>3 and s[0] in ('$','@','%') and s[1]=='{' and s[-1]=='}'
 
 	def strval(self, s):
 		return s[1:-1]
 
 	def varval(self, s):
-		try:
-			return self.p['tags'][s[2:-1]]
-		except:
-			return None
+		if s[0]=='$':
+			try:
+				return self.p['tags'][s[2:-1]]
+			except:
+				return None
+		elif s[0]=='@':
+			t=self.p
+			r=None
+			while not r and t:
+				try:
+					r=t['tags'][s[2:-1]]
+				except:
+					r=None
+				t=t['parent']
+		elif s[0]=='%':
+			k=s[2:-1]
+			if k.upper()=='COUNT':
+				return str(len(self.p['children']))
 
 	def op_eq(self, a, b):
 		return ["","t"][a==b]
