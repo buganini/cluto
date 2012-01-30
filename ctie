@@ -597,49 +597,8 @@ class CTIE(object):
 				continue
 			im=Image.open(p['path']).convert('L')
 			paste=True
+			clipboard=[]
 			for cp in self.clipboard:
-				lastpixel=im.getpixel((p['x1']+cp['x1'],p['y1']+cp['y1']))
-				y=p['y1']+cp['y1']
-				for x in xrange(p['x1']+cp['x1']+1,p['x1']+cp['x2']-1):
-					pixel=im.getpixel((x,y))
-					if abs(pixel-lastpixel)>10:
-						paste=False
-						break
-					lastpixel=pixel
-				if not paste:
-					break
-				x=p['x1']+cp['x2']-1
-				for y in xrange(p['y1']+cp['y1']+1,p['y1']+cp['y2']-1):
-					pixel=im.getpixel((x,y))
-					if abs(pixel-lastpixel)>10:
-						paste=False
-						break
-					lastpixel=pixel
-				if not paste:
-					break
-				y=p['y1']+cp['y2']-1
-				for x in xrange(p['x1']+cp['x1']+1,p['x1']+cp['x2']):
-					pixel=im.getpixel((x,y))
-					if abs(pixel-lastpixel)>10:
-						paste=False
-						break
-					lastpixel=pixel
-				if not paste:
-					break
-				x=p['x1']+cp['x1']
-				for y in xrange(p['y1']+cp['y1']+1,p['y1']+cp['y2']):
-					pixel=im.getpixel((x,y))
-					if abs(pixel-lastpixel)>10:
-						paste=False
-						break
-					lastpixel=pixel
-			if not paste:
-				continue
-			del(im)
-			for cp in self.clipboard:
-				tags={'filename':os.path.basename(p['path'])}
-				for tag in cp['tags']:
-					tags[tag]=cp['tags'][tag]
 				x1=cp['x1']
 				y1=cp['y1']
 				x2=cp['x2']
@@ -648,8 +607,56 @@ class CTIE(object):
 				y1=max(y1,0)
 				x2=min(x2,p['x2']-p['x1'])
 				y2=min(y2,p['y2']-p['y1'])
+
+				lastpixel=im.getpixel((x1+p['x1'],y1+p['y1']))
+				if y1!=0:
+					y=y1+p['y1']
+					for x in xrange(x1+p['x1']+1,x2+p['x1']-1):
+						pixel=im.getpixel((x,y))
+						if abs(pixel-lastpixel)>10:
+							paste=False
+							break
+						lastpixel=pixel
+					if not paste:
+						break
+				if x2!=p['x2']-p['x1']:
+					x=x2+p['x1']-1
+					for y in xrange(y1+p['y1']+1,y2+p['y1']-1):
+						pixel=im.getpixel((x,y))
+						if abs(pixel-lastpixel)>10:
+							paste=False
+							break
+						lastpixel=pixel
+					if not paste:
+						break
+				if y2!=p['y2']-p['y1']:
+					y=y2+p['y1']-1
+					for x in xrange(x1+p['x1']+1,x2+p['x1']):
+						pixel=im.getpixel((x,y))
+						if abs(pixel-lastpixel)>10:
+							paste=False
+							break
+						lastpixel=pixel
+					if not paste:
+						break
+				if x1!=0:
+					x=x1+p['x1']
+					for y in xrange(y1+p['y1']+1,y2+p['y1']):
+						pixel=im.getpixel((x,y))
+						if abs(pixel-lastpixel)>10:
+							paste=False
+							break
+						lastpixel=pixel
+				clipboard.append({'x1':x1,'y1':y1,'x2':x2,'y2':y2,'tags':cp['tags']})
+			if not paste:
+				continue
+			del(im)
+			for cp in clipboard:
+				tags={'filename':os.path.basename(p['path'])}
+				for tag in cp['tags']:
+					tags[tag]=cp['tags'][tag]
 				if x2-x1>1 and y2-y1>1:
-					p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':tags, 'parent':p})
+					p['children'].append({'path':p['path'],'x1':cp['x1']+p['x1'],'y1':cp['y1']+p['y1'],'x2':cp['x2']+p['x1'],'y2':cp['y2']+p['y1'],'children':[], 'tags':tags, 'parent':p})
 		self.canvas.queue_draw()
 
 	def delete(self, *arg):
