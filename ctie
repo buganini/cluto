@@ -172,7 +172,6 @@ class SQL(object):
 			return None
 
 	def op_eq(self, a, b):
-		print 'eq', a, b
 		return ["","t"][a==b]
 
 	def op_ne(self, a, b):
