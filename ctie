@@ -266,6 +266,7 @@ class SQL(object):
 
 class CTIE(object):
 	def __init__(self):
+		self.signal_mask=False
 		self.items_filter=None
 		self.focus_field=(None, None)
 		self.focus_entry=None
@@ -464,6 +465,8 @@ class CTIE(object):
 		workarea.connect("button-press-event", self.workarea_mouse)
 		workarea.connect("button-release-event", self.workarea_mouse)
 		workarea.connect("motion-notify-event", self.workarea_mouse)
+
+		self.builder.get_object('editor').get_buffer().connect("changed", self.multiline_changed)
 
 		#tag
 		self.builder.get_object('auto_fill').set_active(0)
@@ -1244,8 +1247,7 @@ class CTIE(object):
 				if auto_fill=="Clipboard":
 					self.focus_entry.paste_clipboard()
 				elif auto_fill=="OCR":
-					self.multiline=True
-					
+					self.focus_entry.set_text('ocr lala')
 				GObject.idle_add(self.autofocus2)		
 				self.focus_entry.grab_focus()
 			else:
@@ -1253,16 +1255,39 @@ class CTIE(object):
 				self.focus_entry=None
 
 	def autofocus2(self, *arg):
+		if not self.focus_entry:
+			return
 		self.focus_entry.set_position(-1)
 		self.focus_entry=None
 
 	def entry_focus(self, obj, evt, data, *arg):
 		t,item,tag=data
 		self.focus_field=(t,tag)
+		self.auto_multiline(obj)
 
 	def set_tag(self, obj, data):
 		item,tag=data
 		item['tags'][tag]=obj.get_buffer().get_text()
+		self.auto_multiline(obj)
+
+	def auto_multiline(self, obj, *arg):
+		auto_fill=self.builder.get_object("auto_fill").get_active_text()
+		if auto_fill=="OCR" or obj.get_text().find("\n")!=-1:
+			self.builder.get_object("editor_window").show()
+			self.builder.get_object("editor").get_buffer().set_data("master", obj)
+			if not self.signal_mask:
+				self.signal_mask=True
+				self.builder.get_object("editor").get_buffer().set_text(obj.get_text())
+				self.signal_mask=False
+		else:
+			self.builder.get_object("editor_window").hide()
+
+	def multiline_changed(self, obj, *arg):
+		master=obj.get_data("master")
+		if not self.signal_mask:
+			self.signal_mask=True
+			master.set_text(obj.get_text(obj.get_start_iter(), obj.get_end_iter(), 0))
+			self.signal_mask=False
 
 	def clear_tag(self, obj, data):
 		del(item['tags'][tag])
