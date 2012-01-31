@@ -25,6 +25,7 @@ import Image
 import re
 import weakref
 import pickle
+import subprocess
 
 def try_int(s):
 	try: return int(s)
@@ -1247,7 +1248,9 @@ class CTIE(object):
 				if auto_fill=="Clipboard":
 					self.focus_entry.paste_clipboard()
 				elif auto_fill=="OCR":
-					self.focus_entry.set_text('ocr lala')
+					it=Item(self.focus_item.get_data("p"))
+					text=subprocess.check_output(["ocropus", "page", it.get_cropped()])
+					self.focus_entry.set_text(text)
 				GObject.idle_add(self.autofocus2)
 				self.focus_entry.grab_focus()
 			else:
