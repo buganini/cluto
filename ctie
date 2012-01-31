@@ -805,6 +805,7 @@ class CTIE(object):
 
 	def do_export(self, *arg):
 		s=self.clips
+		outputdir=self.builder.get_object('output_dir').get_filename()
 		while s:
 			ns=[]
 			for p in s:
@@ -829,7 +830,7 @@ class CTIE(object):
 						path[i]=''.join(t2)
 
 					path=''.join(path)
-					path=os.path.join(self.builder.get_object('output_dir').get_filename(), path)
+					path=os.path.join(outputdir, path)
 					pdir=os.path.dirname(path)
 					if not os.path.exists(pdir):
 						os.makedirs(pdir)		
