@@ -1029,7 +1029,8 @@ class CTIE(object):
 		focus_p=None
 		if self.focus_item:
 			focus_p=self.focus_item.get_data("p")
-			self.focus_item.get_style_context().remove_provider(self.css)
+			self.focus_item.get_style_context().remove_class("darkback")
+			self.focus_item.queue_draw()
 			self.focus_item=None
 		items_list=self.builder.get_object("items_list")
 		for c in items_list.get_children():
@@ -1060,6 +1061,7 @@ class CTIE(object):
 			evtbox.set_data("p", p)
 			evtbox.set_data("prev", last)
 			evtbox.set_data("next", None)
+			evtbox.get_style_context().add_provider(self.css, 10)
 			last=evtbox
 			evtbox.connect("button-press-event", self.item_button_press)
 			items_list.pack_start(evtbox, False, False, 5)
@@ -1133,11 +1135,13 @@ class CTIE(object):
 
 	def item_button_press(self, obj, evt):
 		if self.focus_item:
-			self.focus_item.get_style_context().remove_provider(self.css)
+			self.focus_item.get_style_context().remove_class("darkback")
+			self.focus_item.queue_draw()
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 			p=obj.get_data("p")
 			self.focus_item=obj
-			obj.get_style_context().add_provider(self.css, 10)
+			obj.get_style_context().add_class("darkback")
+			obj.queue_draw()
 			GObject.idle_add(self.autoscroll)
 
 			self.selections=[]
