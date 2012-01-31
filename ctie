@@ -1236,8 +1236,8 @@ class CTIE(object):
 		for i,tag in enumerate(self.tags):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
-			text.connect('changed', self.set_tag, (focus_p, tag))
-			text.connect("focus-in-event", self.entry_focus, ('c', focus_p, tag))
+			text.connect('changed', self.set_tag, (p, tag))
+			text.connect("focus-in-event", self.entry_focus, ('c', p, tag))
 
 			if self.focus_field[0]=='c' and self.focus_field[1]==tag:
 				self.focus_entry=text
@@ -1260,8 +1260,24 @@ class CTIE(object):
 					self.focus_entry.paste_clipboard()
 				elif auto_fill=="OCR":
 					it=Item(self.focus_item.get_data("p"))
-					text=subprocess.check_output(["ocropus", "page", it.get_cropped()])
-					self.focus_entry.set_text(text)
+					tempdir=it.get_ocr_tempdir()
+					if not os.path.exists(tempdir):
+						subprocess.call(["ocropus", "book2pages", tempdir, it.get_cropped()])
+						subprocess.call(["ocropus", "pages2lines", tempdir])
+						subprocess.call(["ocropus", "lines2fsts", tempdir])
+					html=subprocess.check_output(["ocropus", "buildhtml", tempdir])
+					self.canvas.set_data("q", [0,30,601,0])
+					content=re.findall('<span class="ocr_line" title="bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)">\n(.*?)\n</span>', html, re.S)
+					for i,line in enumerate(content):
+						t=str(i)
+						multiline=self.builder.get_object("editor").get_buffer()
+						multiline.create_tag(t)
+#						multiline.insert_with_tags_by_name(multiline.get_end_iter(), line[4], t)
+#						multiline.insert(multiline.get_start_iter(), line[4])
+#						multiline.insert_at_cursor(line[4])
+						multiline.set_text(line[4])
+						print line[4]
+						self.builder.get_object("editor").queue_draw()
 				GObject.idle_add(self.autofocus2)
 				self.focus_entry.grab_focus()
 			else:
@@ -1308,8 +1324,8 @@ class CTIE(object):
 			self.signal_mask=False
 
 	def clear_tag(self, obj, data):
-		del(item['tags'][tag])
 		item,tag=data
+		del(item['tags'][tag])
 		self.tags_refresh()
 
 	def workarea_mouse(self, obj, evt):
