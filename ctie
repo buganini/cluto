@@ -305,7 +305,7 @@ class CTIE(object):
 
 		#css
 		self.css=Gtk.CssProvider()
-		self.css.load_from_data("* {background-color: rgba(100,100,255,30);}", -1)
+		self.css.load_from_path(os.path.join(datadir, 'ctie.css'))
 
 		#keyboard shortcut
 		self.window.connect("key-press-event", self.key_press)
