@@ -466,6 +466,7 @@ class CTIE(object):
 		workarea.connect("motion-notify-event", self.workarea_mouse)
 
 		#tag
+		self.builder.get_object('auto_fill').set_active(0)
 		self.builder.get_object('btn_add_tag').connect('clicked', self.add_tag)
 
 		#filechooser
@@ -1239,7 +1240,12 @@ class CTIE(object):
 	def autofocus(self, *arg):
 		if self.focus_entry:
 			if not self.focus_entry.get_text():
-				self.focus_entry.paste_clipboard()
+				auto_fill=self.builder.get_object("auto_fill").get_active_text()
+				if auto_fill=="Clipboard":
+					self.focus_entry.paste_clipboard()
+				elif auto_fill=="OCR":
+					self.multiline=True
+					
 				GObject.idle_add(self.autofocus2)		
 				self.focus_entry.grab_focus()
 			else:
