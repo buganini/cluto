@@ -51,6 +51,11 @@ def click(o):
 	evt.button.button=1
 	o.emit("button-press-event", evt)
 
+def get_tempdir():
+	global tempdir
+	if not tempdir or not os.path.exists(tempdir):
+		tempdir=tempfile.mkdtemp(prefix='ctie_')
+	return tempdir
 
 class Item(object):
 	def __init__(self, p):
@@ -107,14 +112,8 @@ class Item(object):
 			cache_pil_l[oid]=weakref.ref(o)
 		return o
 
-	def get_tempdir(self):
-		global tempdir
-		if not tempdir or not os.path.exists(tempdir):
-			tempdir=tempfile.mkdtemp(prefix='ctie_')
-		return tempdir
-
 	def get_cropped(self):
-		bfile=os.path.join(self.get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+		bfile=os.path.join(get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
 		if not os.path.exists(bfile):
 			im=self.get_pil_rgb().crop((self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
 			im.save(bfile)	
@@ -122,7 +121,7 @@ class Item(object):
 		return bfile
 
 	def get_thumbnail(self):
-		tfile=os.path.join(self.get_tempdir(), "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+		tfile=os.path.join(get_tempdir(), "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
 		if not os.path.exists(tfile):
 			im=Image.open(self.get_cropped())
 			ow,oh=im.size
@@ -138,6 +137,11 @@ class Item(object):
 			im.save(tfile)
 			del(im)
 		return tfile
+
+	def get_ocr_tempdir(self):
+		rpath="%s-%dx%dx%dx%d" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2'])
+		os.chdir(get_tempdir())
+		return rpath
 
 class SQL(object):
 	def __init__(self, expression):
@@ -393,6 +397,13 @@ class CTIE(object):
 		button.connect("clicked", self.rtrim)
 		toolbar.pack_start(button, False, False, 0)
 
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ITALIC, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("OCR")
+		button.set_image(btn_img)
+		button.connect("clicked", self.ocr)
+		toolbar.pack_start(button, False, False, 0)
+
 		toolbar.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 1)
 
 		button=Gtk.Button()
@@ -625,6 +636,26 @@ class CTIE(object):
 			todo.extend(p['children'])
 		self.edge_limiter(todo)
 		self.redraw_items_list()
+
+	def ocr(self, *arg):
+		items_list=self.builder.get_object("items_list")
+		cs=items_list.get_children()
+		for c in cs:
+			p=c.get_data("p")
+			if not p:
+				continue
+			it=Item(p)
+			tempdir=it.get_ocr_tempdir()
+			if not os.path.exists(tempdir):
+				subprocess.call(["ocropus", "book2pages", tempdir, it.get_cropped()])
+				subprocess.call(["ocropus", "pages2lines", tempdir])
+				subprocess.call(["ocropus", "lines2fsts", tempdir])
+			html=subprocess.check_output(["ocropus", "buildhtml", tempdir])
+			content=re.findall('<span class="ocr_line" title="bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)">\n(.*?)\n</span>', html, re.S)
+			for line in content:
+				p['children'].append({'path':p['path'],'x1':int(line[0]),'y1':int(line[3]),'x2':int(line[2]),'y2':int(line[1]),'children':[], 'tags':{'text':line[4]}, 'parent':p})
+		self.level_sanitize()
+		self.canvas.queue_draw()
 
 	def open_project(self, *arg):
 		global id_map, tempdir, clear_tempdir
@@ -1258,26 +1289,6 @@ class CTIE(object):
 				auto_fill=self.builder.get_object("auto_fill").get_active_text()
 				if auto_fill=="Clipboard":
 					self.focus_entry.paste_clipboard()
-				elif auto_fill=="OCR":
-					it=Item(self.focus_item.get_data("p"))
-					tempdir=it.get_ocr_tempdir()
-					if not os.path.exists(tempdir):
-						subprocess.call(["ocropus", "book2pages", tempdir, it.get_cropped()])
-						subprocess.call(["ocropus", "pages2lines", tempdir])
-						subprocess.call(["ocropus", "lines2fsts", tempdir])
-					html=subprocess.check_output(["ocropus", "buildhtml", tempdir])
-					self.canvas.set_data("q", [0,30,601,0])
-					content=re.findall('<span class="ocr_line" title="bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)">\n(.*?)\n</span>', html, re.S)
-					for i,line in enumerate(content):
-						t=str(i)
-						multiline=self.builder.get_object("editor").get_buffer()
-						multiline.create_tag(t)
-#						multiline.insert_with_tags_by_name(multiline.get_end_iter(), line[4], t)
-#						multiline.insert(multiline.get_start_iter(), line[4])
-#						multiline.insert_at_cursor(line[4])
-						multiline.set_text(line[4])
-						print line[4]
-						self.builder.get_object("editor").queue_draw()
 				GObject.idle_add(self.autofocus2)
 				self.focus_entry.grab_focus()
 			else:
