@@ -19,7 +19,7 @@
 import os
 import sys
 import tempfile
-from gi.repository import Gtk, Gdk, cairo, GObject
+from gi.repository import Gtk, Gdk, cairo, GObject, Pango
 import md5
 import Image
 import re
@@ -467,7 +467,10 @@ class CTIE(object):
 		workarea.connect("button-release-event", self.workarea_mouse)
 		workarea.connect("motion-notify-event", self.workarea_mouse)
 
-		self.builder.get_object('editor').get_buffer().connect("changed", self.multiline_changed)
+		#multiline editor
+		multiline=self.builder.get_object('editor')
+		multiline.get_buffer().connect("changed", self.multiline_changed)
+		multiline.modify_font(Pango.FontDescription("Monospace 12"))
 
 		#tag
 		self.builder.get_object('auto_fill').set_active(0)
