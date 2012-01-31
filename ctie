@@ -1248,7 +1248,7 @@ class CTIE(object):
 					self.focus_entry.paste_clipboard()
 				elif auto_fill=="OCR":
 					self.focus_entry.set_text('ocr lala')
-				GObject.idle_add(self.autofocus2)		
+				GObject.idle_add(self.autofocus2)
 				self.focus_entry.grab_focus()
 			else:
 				self.focus_entry.grab_focus()
@@ -1275,12 +1275,16 @@ class CTIE(object):
 		if auto_fill=="OCR" or obj.get_text().find("\n")!=-1:
 			self.builder.get_object("editor_window").show()
 			self.builder.get_object("editor").get_buffer().set_data("master", obj)
+			GObject.idle_add(self.focus_multiline)
 			if not self.signal_mask:
 				self.signal_mask=True
 				self.builder.get_object("editor").get_buffer().set_text(obj.get_text())
 				self.signal_mask=False
 		else:
 			self.builder.get_object("editor_window").hide()
+
+	def focus_multiline(self):
+		self.builder.get_object("editor").grab_focus()
 
 	def multiline_changed(self, obj, *arg):
 		master=obj.get_data("master")
