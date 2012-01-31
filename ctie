@@ -1162,6 +1162,9 @@ class CTIE(object):
 		c=tagsbox.get_child()
 		if c:
 			tagsbox.remove(c)
+		multiline=self.builder.get_object("editor").get_buffer()
+		multiline.set_data("master", None)
+		multiline.set_text("")
 
 		focus_p=self.focus_item.get_data("p")
 		t=focus_p
@@ -1291,7 +1294,7 @@ class CTIE(object):
 
 	def multiline_changed(self, obj, *arg):
 		master=obj.get_data("master")
-		if not self.signal_mask:
+		if master and not self.signal_mask:
 			self.signal_mask=True
 			master.set_text(obj.get_text(obj.get_start_iter(), obj.get_end_iter(), 0))
 			self.signal_mask=False
