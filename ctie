@@ -18,6 +18,7 @@
 
 import os
 import sys
+import glob
 import tempfile
 from gi.repository import Gtk, Gdk, cairo, GObject, Pango
 import md5
@@ -662,6 +663,8 @@ class CTIE(object):
 				clear_tempdir=False
 			except:
 				return
+		else:
+			filec.destroy()
 		self.level_sanitize()
 		self.redraw_items_list()
 		self.tags_refresh()
@@ -717,7 +720,7 @@ class CTIE(object):
 			for tag in self.copy_tag:
 				if tag in p['tags']:
 					tags[tag]=p['tags'][tag]
-			self.clipboard.append({'x1':p['x1']-focus_p['x1'], 'y1':p['y1']-focus_p['y1'], 'x2':p['x2']-focus_p['x1'] ,'y2':p['y2']-focus_p['y1'] ,'tags':tags, 'flags':[]})
+			self.clipboard.append({'x1':p['x1']-focus_p['x1'], 'y1':p['y1']-focus_p['y1'], 'x2':p['x2']-focus_p['x1'] ,'y2':p['y2']-focus_p['y1'] ,'tags':tags, 'flags':[], 'reference':{}})
 
 	def paste(self, *arg):
 		if not self.focus_item:
@@ -743,7 +746,7 @@ class CTIE(object):
 				self.selections.append(len(focus_p['children']))
 				if (x1,y1,x2,y2) in cs:
 					continue
-				focus_p['children'].append({'path':focus_p['path'],'x1':x1+focus_p['x1'],'y1':y1+focus_p['y1'],'x2':x2+focus_p['x1'],'y2':y2+focus_p['y1'],'children':[], 'tags':tags, 'parent':focus_p, 'flags':[]})
+				focus_p['children'].append({'path':focus_p['path'],'x1':x1+focus_p['x1'],'y1':y1+focus_p['y1'],'x2':x2+focus_p['x1'],'y2':y2+focus_p['y1'],'children':[], 'tags':tags, 'parent':focus_p, 'flags':[], 'reference':{}})
 		self.canvas.queue_draw()
 
 	def autopaste(self, *arg):
@@ -818,7 +821,7 @@ class CTIE(object):
 				for tag in cp['tags']:
 					tags[tag]=cp['tags'][tag]
 				if x2-x1>1 and y2-y1>1:
-					p['children'].append({'path':p['path'],'x1':cp['x1']+p['x1'],'y1':cp['y1']+p['y1'],'x2':cp['x2']+p['x1'],'y2':cp['y2']+p['y1'],'children':[], 'tags':tags, 'parent':p, 'flags':[]})
+					p['children'].append({'path':p['path'],'x1':cp['x1']+p['x1'],'y1':cp['y1']+p['y1'],'x2':cp['x2']+p['x1'],'y2':cp['y2']+p['y1'],'children':[], 'tags':tags, 'parent':p, 'flags':[], 'reference':{}})
 		self.canvas.queue_draw()
 
 	def delete(self, *arg):
@@ -1052,7 +1055,7 @@ class CTIE(object):
 			except:
 				return
 			id_map[path]=md5.new(path).hexdigest()
-			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':None, 'flags':[]})
+			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':None, 'flags':[], 'reference':{}})
 			del(im)
 
 	def change_level(self, *arg):
@@ -1184,6 +1187,21 @@ class CTIE(object):
 			self.focus_item.get_style_context().remove_class("darkback")
 			self.focus_item.queue_draw()
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
+			if obj!=self.focus_item:
+				p=self.focus_item.get_data("p")
+				if 'CHANGED' in p['flags']:
+					it=Item(p)
+					tempdir=it.get_ocr_tempdir()
+					for c in p['children']:
+						if 'OCRed' in c['flags'] and 'CHANGED' in c['flags'] and 'text' in c['tags'] and 'text' in c['reference']:
+							f=open(c['reference']['text'].replace('.txt','.gt.txt'),'w')
+							f.write(c['tags']['text'])
+							f.close()
+					subprocess.call(["ocropus", "align", tempdir])
+				try:
+					p['flags'].remove('CHANGED')
+				except:
+					pass
 			p=obj.get_data("p")
 			self.focus_item=obj
 			obj.get_style_context().add_class("darkback")
@@ -1226,16 +1244,20 @@ class CTIE(object):
 					subprocess.call(["ocropus", "lines2fsts", tempdir])
 				html=subprocess.check_output(["ocropus", "buildhtml", tempdir])
 				content=re.findall('<span class="ocr_line" title="bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)">\n(.*?)\n</span>', html, re.S)
-				for line in content:
+				files=glob.glob("%s/0001/*.txt" % tempdir)
+				for i,line in enumerate(content):
 					x1=int(line[0])
 					y1=int(line[3])
 					x2=int(line[2])
 					y2=int(line[1])
 					if (x1,y1,x2,y2) in ss:
 						continue
-					p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':{'text':line[4]}, 'parent':p, 'flags':[]})
+					p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':{'text':line[4]}, 'parent':p, 'flags':['OCRed','CHANGED'], 'reference':{'text':files[i]}})
+					if 'text' not in self.tags:
+						self.tags.append('text')
 				self.level_sanitize()
 				p['flags'].remove('OCR')
+				p['flags'].append('CHANGED')
 
 
 	def tags_refresh(self, *arg):
@@ -1355,6 +1377,11 @@ class CTIE(object):
 	def set_tag(self, obj, data):
 		item,tag=data
 		item['tags'][tag]=obj.get_buffer().get_text()
+		if 'CHANGED' not in item['flags']:
+			item['flags'].append('CHANGED')
+		if item['parent']:
+			if 'CHANGED' not in item['parent']['flags']:
+				item['parent']['flags'].append('CHANGED')
 		self.collation_cb(obj)
 
 	def collation_cb(self, obj, *arg):
@@ -1431,7 +1458,7 @@ class CTIE(object):
 					x=min(x,p['x2']-p['x1'])
 					y=min(y,p['y2']-p['y1'])
 					if x-x1>5 and y-y1>5:
-						p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}, 'flags':[]})
+						p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}, 'flags':[], 'reference':{}})
 					self.level_sanitize()
 				elif self.mode=='move':
 					xoff=int(self.selend[0]-self.selstart[0])
