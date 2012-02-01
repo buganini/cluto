@@ -646,30 +646,8 @@ class CTIE(object):
 		cs=items_list.get_children()
 		for c in cs:
 			p=c.get_data("p")
-			ss=[]
-			for sc in p['children']:
-				ss.append((sc['x1']-p['x1'], sc['y1']-p['y1'], sc['x2']-p['x1'], sc['y2']-p['y1']))
-			if not p:
-				continue
-			it=Item(p)
-			tempdir=it.get_ocr_tempdir()
-			if not os.path.exists(tempdir):
-				subprocess.call(["ocropus", "book2pages", tempdir, it.get_cropped()])
-				subprocess.call(["ocropus", "pages2lines", tempdir])
-				subprocess.call(["ocropus", "lines2fsts", tempdir])
-			html=subprocess.check_output(["ocropus", "buildhtml", tempdir])
-			content=re.findall('<span class="ocr_line" title="bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)">\n(.*?)\n</span>', html, re.S)
-			for line in content:
-				x1=int(line[0])
-				y1=int(line[3])
-				x2=int(line[2])
-				y2=int(line[1])
-				if (x1,y1,x2,y2) in ss:
-					continue
-				p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':{'text':line[4]}, 'parent':p})
-		self.level_sanitize()
-		if self.canvas:
-			self.canvas.queue_draw()
+			p['flags'].append('OCR')
+		click(self.focus_item)
 
 	def open_project(self, *arg):
 		global id_map, tempdir, clear_tempdir
@@ -736,7 +714,7 @@ class CTIE(object):
 			for tag in self.copy_tag:
 				if tag in p['tags']:
 					tags[tag]=p['tags'][tag]
-			self.clipboard.append({'x1':p['x1']-focus_p['x1'], 'y1':p['y1']-focus_p['y1'], 'x2':p['x2']-focus_p['x1'] ,'y2':p['y2']-focus_p['y1'] ,'tags':tags})
+			self.clipboard.append({'x1':p['x1']-focus_p['x1'], 'y1':p['y1']-focus_p['y1'], 'x2':p['x2']-focus_p['x1'] ,'y2':p['y2']-focus_p['y1'] ,'tags':tags, 'flags':[]})
 
 	def paste(self, *arg):
 		if not self.focus_item:
@@ -762,7 +740,7 @@ class CTIE(object):
 				self.selections.append(len(focus_p['children']))
 				if (x1,y1,x2,y2) in cs:
 					continue
-				focus_p['children'].append({'path':focus_p['path'],'x1':x1+focus_p['x1'],'y1':y1+focus_p['y1'],'x2':x2+focus_p['x1'],'y2':y2+focus_p['y1'],'children':[], 'tags':tags, 'parent':focus_p})
+				focus_p['children'].append({'path':focus_p['path'],'x1':x1+focus_p['x1'],'y1':y1+focus_p['y1'],'x2':x2+focus_p['x1'],'y2':y2+focus_p['y1'],'children':[], 'tags':tags, 'parent':focus_p, 'flags':[]})
 		self.canvas.queue_draw()
 
 	def autopaste(self, *arg):
@@ -837,7 +815,7 @@ class CTIE(object):
 				for tag in cp['tags']:
 					tags[tag]=cp['tags'][tag]
 				if x2-x1>1 and y2-y1>1:
-					p['children'].append({'path':p['path'],'x1':cp['x1']+p['x1'],'y1':cp['y1']+p['y1'],'x2':cp['x2']+p['x1'],'y2':cp['y2']+p['y1'],'children':[], 'tags':tags, 'parent':p})
+					p['children'].append({'path':p['path'],'x1':cp['x1']+p['x1'],'y1':cp['y1']+p['y1'],'x2':cp['x2']+p['x1'],'y2':cp['y2']+p['y1'],'children':[], 'tags':tags, 'parent':p, 'flags':[]})
 		self.canvas.queue_draw()
 
 	def delete(self, *arg):
@@ -1071,7 +1049,7 @@ class CTIE(object):
 			except:
 				return
 			id_map[path]=md5.new(path).hexdigest()
-			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':None})
+			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':None, 'flags':[]})
 			del(im)
 
 	def change_level(self, *arg):
@@ -1233,6 +1211,29 @@ class CTIE(object):
 			canvas.connect("draw", self.preview_draw)
 			canvas.show()
 			self.zoom_fit()
+			if 'OCR' in p['flags']:
+				ss=[]
+				for sc in p['children']:
+					ss.append((sc['x1']-p['x1'], sc['y1']-p['y1'], sc['x2']-p['x1'], sc['y2']-p['y1']))
+				it=Item(p)
+				tempdir=it.get_ocr_tempdir()
+				if not os.path.exists(tempdir):
+					subprocess.call(["ocropus", "book2pages", tempdir, it.get_cropped()])
+					subprocess.call(["ocropus", "pages2lines", tempdir])
+					subprocess.call(["ocropus", "lines2fsts", tempdir])
+				html=subprocess.check_output(["ocropus", "buildhtml", tempdir])
+				content=re.findall('<span class="ocr_line" title="bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)">\n(.*?)\n</span>', html, re.S)
+				for line in content:
+					x1=int(line[0])
+					y1=int(line[3])
+					x2=int(line[2])
+					y2=int(line[1])
+					if (x1,y1,x2,y2) in ss:
+						continue
+					p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':{'text':line[4]}, 'parent':p, 'flags':[]})
+				self.level_sanitize()
+				p['flags'].remove('OCR')
+
 
 	def tags_refresh(self, *arg):
 		if not self.focus_item:
@@ -1427,7 +1428,7 @@ class CTIE(object):
 					x=min(x,p['x2']-p['x1'])
 					y=min(y,p['y2']-p['y1'])
 					if x-x1>5 and y-y1>5:
-						p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}})
+						p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}, 'flags':[]})
 					self.level_sanitize()
 				elif self.mode=='move':
 					xoff=int(self.selend[0]-self.selstart[0])
