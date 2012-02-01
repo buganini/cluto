@@ -453,7 +453,7 @@ class CTIE(object):
 
 		self.collation=button=Gtk.ToggleButton()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_FIND_AND_REPLACE, Gtk.IconSize.SMALL_TOOLBAR)
-		button.set_tooltip_text("Collation Window")
+		button.set_tooltip_text("Collation Mode")
 		button.set_image(btn_img)
 		button.connect("toggled", self.child_tags_refresh)
 		toolbar.pack_end(button, False, False, 0)
@@ -525,15 +525,16 @@ class CTIE(object):
 		self.preview_canvas.queue_draw()
 
 	def key_press(self, obj, evt):
+		collation_mode=self.collation.get_active()
 		if evt.keyval==Gdk.KEY_Page_Down:
-			if evt.state & Gdk.ModifierType.CONTROL_MASK:
+			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
 				next=self.focus_item.get_data("next")
 				if next:
 					click(next)
 			else:
 				self.next()
 		elif evt.keyval==Gdk.KEY_Page_Up:
-			if evt.state & Gdk.ModifierType.CONTROL_MASK:
+			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
 				prev=self.focus_item.get_data("prev")
 				if prev:
 					click(prev)
