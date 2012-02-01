@@ -540,8 +540,8 @@ class CTIE(object):
 					click(prev)
 			else:
 				self.previous()
-		elif evt.keyval==Gdk.KEY_Delete:
-			self.delete()
+#		elif evt.keyval==Gdk.KEY_Delete:
+#			self.delete()
 
 	def ltrim(self, *arg):
 		items_list=self.builder.get_object("items_list")
