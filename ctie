@@ -645,6 +645,9 @@ class CTIE(object):
 		cs=items_list.get_children()
 		for c in cs:
 			p=c.get_data("p")
+			ss=[]
+			for sc in p['children']:
+				ss.append((sc['x1']-p['x1'], sc['y1']-p['y1'], sc['x2']-p['x1'], sc['y2']-p['y1']))
 			if not p:
 				continue
 			it=Item(p)
@@ -656,7 +659,13 @@ class CTIE(object):
 			html=subprocess.check_output(["ocropus", "buildhtml", tempdir])
 			content=re.findall('<span class="ocr_line" title="bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)">\n(.*?)\n</span>', html, re.S)
 			for line in content:
-				p['children'].append({'path':p['path'],'x1':int(line[0]),'y1':int(line[3]),'x2':int(line[2]),'y2':int(line[1]),'children':[], 'tags':{'text':line[4]}, 'parent':p})
+				x1=int(line[0])
+				y1=int(line[3])
+				x2=int(line[2])
+				y2=int(line[1])
+				if (x1,y1,x2,y2) in ss:
+					continue
+				p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':{'text':line[4]}, 'parent':p})
 		self.level_sanitize()
 		if self.canvas:
 			self.canvas.queue_draw()
