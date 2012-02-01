@@ -654,11 +654,14 @@ class CTIE(object):
 		filec=Gtk.FileChooserDialog("Open", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
 			fp=open(filec.get_filename(),'r')
-			data=pickle.load(fp)
-			fp.close()
-			id_map, self.clips, self.tags, self.copy_tag, tempdir=data
-			clear_tempdir=False
-		filec.destroy()
+			filec.destroy()
+			try:
+				data=pickle.load(fp)
+				fp.close()
+				id_map, self.clips, self.tags, self.copy_tag, tempdir=data
+				clear_tempdir=False
+			except:
+				return
 		self.level_sanitize()
 		self.redraw_items_list()
 		self.tags_refresh()
