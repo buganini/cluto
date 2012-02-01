@@ -436,22 +436,6 @@ class CTIE(object):
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_MEDIA_REWIND, Gtk.IconSize.SMALL_TOOLBAR)
-		button.set_tooltip_text("Previous Selection Area")
-		button.set_image(btn_img)
-		button.connect("clicked", self.previous)
-		button.set_property("focus-on-click", True)
-		toolbar.pack_start(button, False, False, 0)
-
-		button=Gtk.Button()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_MEDIA_FORWARD, Gtk.IconSize.SMALL_TOOLBAR)
-		button.set_tooltip_text("Next Selection Area")
-		button.set_image(btn_img)
-		button.connect("clicked", self.next)
-		button.set_property("focus-on-click", True)
-		toolbar.pack_start(button, False, False, 0)
-
-		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_DELETE, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_tooltip_text("Delete Selection Area(s)")
 		button.set_image(btn_img)
@@ -514,6 +498,7 @@ class CTIE(object):
 			self.selections[0]-=1
 			self.selections[0]+=len(focus_p['children'])
 			self.selections[0]%=len(focus_p['children'])
+		self.child_tags_refresh()
 		self.canvas.queue_draw()
 		self.preview_canvas.queue_draw()
 
@@ -528,18 +513,26 @@ class CTIE(object):
 		else:
 			self.selections[0]+=1
 			self.selections[0]%=len(focus_p['children'])
+		self.child_tags_refresh()
 		self.canvas.queue_draw()
 		self.preview_canvas.queue_draw()
 
 	def key_press(self, obj, evt):
+		print dir(evt)
 		if evt.keyval==Gdk.KEY_Page_Down:
-			next=self.focus_item.get_data("next")
-			if next:
-				click(next)
+			if evt.state & Gdk.ModifierType.CONTROL_MASK:
+				next=self.focus_item.get_data("next")
+				if next:
+					click(next)
+			else:
+				self.next()
 		elif evt.keyval==Gdk.KEY_Page_Up:
-			prev=self.focus_item.get_data("prev")
-			if prev:
-				click(prev)
+			if evt.state & Gdk.ModifierType.CONTROL_MASK:
+				prev=self.focus_item.get_data("prev")
+				if prev:
+					click(prev)
+			else:
+				self.previous()
 
 	def ltrim(self, *arg):
 		items_list=self.builder.get_object("items_list")
@@ -1344,15 +1337,15 @@ class CTIE(object):
 	def auto_lineeditor(self, obj, *arg):
 		auto_fill=self.builder.get_object("auto_fill").get_active_text()
 		if auto_fill=="OCR" or obj.get_text().find("\n")!=-1:
-			self.builder.get_object("editor_window").show()
-			self.builder.get_object("editor").get_buffer().set_data("master", obj)
+#			self.builder.get_object("editor_window").show()
+			self.builder.get_object("editor").set_data("master", obj)
 			GObject.idle_add(self.focus_lineeditor)
 			if not self.signal_mask:
 				self.signal_mask=True
-				self.builder.get_object("editor").get_buffer().set_text(obj.get_text())
+				self.builder.get_object("editor").set_text(obj.get_text())
 				self.signal_mask=False
-		else:
-			self.builder.get_object("editor_window").hide()
+#		else:
+#			self.builder.get_object("editor_window").hide()
 
 	def focus_lineeditor(self):
 		self.builder.get_object("editor").grab_focus()
