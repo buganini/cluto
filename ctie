@@ -399,7 +399,7 @@ class CTIE(object):
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SELECT_FONT, Gtk.IconSize.SMALL_TOOLBAR)
-		button.set_tooltip_text("OCR")
+		button.set_tooltip_text("Set OCR Flag")
 		button.set_image(btn_img)
 		button.connect("clicked", self.ocr)
 		toolbar.pack_start(button, False, False, 0)
