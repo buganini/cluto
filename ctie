@@ -518,7 +518,6 @@ class CTIE(object):
 		self.preview_canvas.queue_draw()
 
 	def key_press(self, obj, evt):
-		print dir(evt)
 		if evt.keyval==Gdk.KEY_Page_Down:
 			if evt.state & Gdk.ModifierType.CONTROL_MASK:
 				next=self.focus_item.get_data("next")
@@ -533,6 +532,8 @@ class CTIE(object):
 					click(prev)
 			else:
 				self.previous()
+		elif evt.keyval==Gdk.KEY_Delete:
+			self.delete()
 
 	def ltrim(self, *arg):
 		items_list=self.builder.get_object("items_list")
@@ -650,7 +651,8 @@ class CTIE(object):
 			for line in content:
 				p['children'].append({'path':p['path'],'x1':int(line[0]),'y1':int(line[3]),'x2':int(line[2]),'y2':int(line[1]),'children':[], 'tags':{'text':line[4]}, 'parent':p})
 		self.level_sanitize()
-		self.canvas.queue_draw()
+		if self.canvas:
+			self.canvas.queue_draw()
 
 	def open_project(self, *arg):
 		global id_map, tempdir, clear_tempdir
