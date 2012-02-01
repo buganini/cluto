@@ -398,7 +398,7 @@ class CTIE(object):
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_ITALIC, Gtk.IconSize.SMALL_TOOLBAR)
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SELECT_FONT, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_tooltip_text("OCR")
 		button.set_image(btn_img)
 		button.connect("clicked", self.ocr)
@@ -429,7 +429,7 @@ class CTIE(object):
 		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_FIND_AND_REPLACE, Gtk.IconSize.SMALL_TOOLBAR)
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_INFO, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_tooltip_text("Auto Paste")
 		button.set_image(btn_img)
 		button.connect("clicked", self.autopaste)
@@ -451,6 +451,13 @@ class CTIE(object):
 		button.connect("clicked", self.export_show)
 		toolbar.pack_start(button, False, False, 0)
 
+		self.collation=button=Gtk.ToggleButton()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_FIND_AND_REPLACE, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("Collation Window")
+		button.set_image(btn_img)
+		button.connect("toggled", self.child_tags_refresh)
+		toolbar.pack_end(button, False, False, 0)
+
 		toolbar.show_all()
 
 		#items list
@@ -462,10 +469,10 @@ class CTIE(object):
 		workarea.connect("button-release-event", self.workarea_mouse)
 		workarea.connect("motion-notify-event", self.workarea_mouse)
 
-		#multiline editor
-		lineeditor=self.builder.get_object('editor')
-		lineeditor.connect("changed", self.lineeditor_changed)
-		lineeditor.modify_font(Pango.FontDescription("Monospace 12"))
+		#collation editor
+		collation_editor=self.builder.get_object('collation_editor')
+		collation_editor.connect("changed", self.collation_editor_changed)
+		collation_editor.modify_font(Pango.FontDescription("Monospace 12"))
 
 		#tag
 		self.builder.get_object('auto_fill').set_active(0)
@@ -1226,9 +1233,9 @@ class CTIE(object):
 		c=tagsbox.get_child()
 		if c:
 			tagsbox.remove(c)
-		lineeditor=self.builder.get_object("editor")
-		lineeditor.set_data("master", None)
-		lineeditor.set_text("")
+		collation_editor=self.builder.get_object("collation_editor")
+		collation_editor.set_data("master", None)
+		collation_editor.set_text("")
 
 		focus_p=self.focus_item.get_data("p")
 		t=focus_p
@@ -1329,34 +1336,37 @@ class CTIE(object):
 	def entry_focus(self, obj, evt, data, *arg):
 		t,item,tag=data
 		self.focus_field=(t,tag)
-		self.auto_lineeditor(obj)
+		self.collation_cb(obj)
 
 	def set_tag(self, obj, data):
 		item,tag=data
 		item['tags'][tag]=obj.get_buffer().get_text()
-		self.auto_lineeditor(obj)
+		self.collation_cb(obj)
 
-	def auto_lineeditor(self, obj, *arg):
-		auto_fill=self.builder.get_object("auto_fill").get_active_text()
-		if auto_fill=="OCR" or obj.get_text().find("\n")!=-1:
-#			self.builder.get_object("editor_window").show()
-			self.builder.get_object("editor").set_data("master", obj)
-			GObject.idle_add(self.focus_lineeditor)
+	def collation_cb(self, obj, *arg):
+		if self.collation.get_active() and self.focus_field and self.focus_field[0]=='c':
+			self.builder.get_object("collation_window").show()
+			self.builder.get_object("collation_editor").set_data("master", obj)
 			if not self.signal_mask:
+				GObject.idle_add(self.focus_collation_editor)
 				self.signal_mask=True
-				self.builder.get_object("editor").set_text(obj.get_text())
+				self.builder.get_object("collation_editor").set_text(obj.get_text())
 				self.signal_mask=False
-#		else:
-#			self.builder.get_object("editor_window").hide()
+		else:
+			self.builder.get_object("collation_window").hide()
 
-	def focus_lineeditor(self):
-		self.builder.get_object("editor").grab_focus()
+	def focus_collation_editor(self):
+		self.builder.get_object("collation_editor").grab_focus()
+		GObject.idle_add(self.focus_collation_editor2)
 
-	def lineeditor_changed(self, obj, *arg):
+	def focus_collation_editor2(self, *arg):
+		self.builder.get_object("collation_editor").set_position(0)
+
+	def collation_editor_changed(self, obj, *arg):
 		master=obj.get_data("master")
 		if master and not self.signal_mask:
 			self.signal_mask=True
-			master.set_text(obj.get_text(obj.get_start_iter(), obj.get_end_iter(), 0))
+			master.set_text(obj.get_text())
 			self.signal_mask=False
 
 	def clear_tag(self, obj, data):

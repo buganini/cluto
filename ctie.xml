@@ -462,10 +462,8 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="box9">
-                        <property name="visible">True</property>
+                      <object class="GtkBox" id="collation_window">
                         <property name="can_focus">False</property>
-                        <property name="vexpand">True</property>
                         <property name="orientation">vertical</property>
                         <child>
                           <object class="GtkViewport" id="viewport3">
@@ -489,7 +487,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="editor">
+                          <object class="GtkEntry" id="collation_editor">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">•</property>
