@@ -479,9 +479,9 @@ class CTIE(object):
 		workarea.connect("motion-notify-event", self.workarea_mouse)
 
 		#multiline editor
-		multiline=self.builder.get_object('editor')
-		multiline.get_buffer().connect("changed", self.multiline_changed)
-		multiline.modify_font(Pango.FontDescription("Monospace 12"))
+		lineeditor=self.builder.get_object('editor')
+		lineeditor.connect("changed", self.lineeditor_changed)
+		lineeditor.modify_font(Pango.FontDescription("Monospace 12"))
 
 		#tag
 		self.builder.get_object('auto_fill').set_active(0)
@@ -931,6 +931,23 @@ class CTIE(object):
 			cr.rectangle(self.selstart[0], self.selstart[1], self.selend[0]-self.selstart[0], self.selend[1]-self.selstart[1])
 			cr.stroke()
 
+	def preview_draw(self, widget, cr):
+		if not self.focus_item:
+			return
+		focus_p=self.focus_item.get_data("p")
+		if len(self.selections)!=1:
+			return
+		p=focus_p['children'][self.selections[0]]
+		width=p['x2']-p['x1']
+		height=p['y2']-p['y1']
+
+		self.canvas.set_size_request(width, height)
+
+		it=Item(focus_p)
+		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), focus_p['x1']-p['x1'], focus_p['y1']-p['y1'])
+		cr.rectangle(0, 0, width, height)
+		cr.fill()
+
 	def zoom_fit(self, *arg):
 		if not self.focus_item or not self.canvas:
 			return
@@ -1190,6 +1207,17 @@ class CTIE(object):
 			workarea.add(canvas)
 			canvas.connect("draw", self.canvas_draw)
 			canvas.show()
+
+			preview=self.builder.get_object('preview')
+			c=preview.get_child()
+			if c:
+				preview.remove(c)
+				c.destroy()
+			canvas=Gtk.DrawingArea()
+			self.preview_canvas=canvas
+			preview.add(canvas)
+			canvas.connect("draw", self.preview_draw)
+			canvas.show()
 			self.zoom_fit()
 
 	def tags_refresh(self, *arg):
@@ -1201,9 +1229,9 @@ class CTIE(object):
 		c=tagsbox.get_child()
 		if c:
 			tagsbox.remove(c)
-		multiline=self.builder.get_object("editor").get_buffer()
-		multiline.set_data("master", None)
-		multiline.set_text("")
+		lineeditor=self.builder.get_object("editor")
+		lineeditor.set_data("master", None)
+		lineeditor.set_text("")
 
 		focus_p=self.focus_item.get_data("p")
 		t=focus_p
@@ -1304,19 +1332,19 @@ class CTIE(object):
 	def entry_focus(self, obj, evt, data, *arg):
 		t,item,tag=data
 		self.focus_field=(t,tag)
-		self.auto_multiline(obj)
+		self.auto_lineeditor(obj)
 
 	def set_tag(self, obj, data):
 		item,tag=data
 		item['tags'][tag]=obj.get_buffer().get_text()
-		self.auto_multiline(obj)
+		self.auto_lineeditor(obj)
 
-	def auto_multiline(self, obj, *arg):
+	def auto_lineeditor(self, obj, *arg):
 		auto_fill=self.builder.get_object("auto_fill").get_active_text()
 		if auto_fill=="OCR" or obj.get_text().find("\n")!=-1:
 			self.builder.get_object("editor_window").show()
 			self.builder.get_object("editor").get_buffer().set_data("master", obj)
-			GObject.idle_add(self.focus_multiline)
+			GObject.idle_add(self.focus_lineeditor)
 			if not self.signal_mask:
 				self.signal_mask=True
 				self.builder.get_object("editor").get_buffer().set_text(obj.get_text())
@@ -1324,10 +1352,10 @@ class CTIE(object):
 		else:
 			self.builder.get_object("editor_window").hide()
 
-	def focus_multiline(self):
+	def focus_lineeditor(self):
 		self.builder.get_object("editor").grab_focus()
 
-	def multiline_changed(self, obj, *arg):
+	def lineeditor_changed(self, obj, *arg):
 		master=obj.get_data("master")
 		if master and not self.signal_mask:
 			self.signal_mask=True
@@ -1448,6 +1476,7 @@ class CTIE(object):
 				self.selend=(-1,-1)
 				self.mode=None
 				self.canvas.queue_draw()
+				self.preview_canvas.queue_draw()
 			elif evt.button==3:
 				self.selstart=(-1,-1)
 		elif str(type(evt))==repr(Gdk.EventMotion):
