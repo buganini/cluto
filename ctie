@@ -272,6 +272,7 @@ class SQL(object):
 
 class CTIE(object):
 	def __init__(self):
+		self.regex=[]
 		self.signal_mask=False
 		self.items_filter=None
 		self.focus_field=(None, None)
@@ -408,6 +409,14 @@ class CTIE(object):
 		toolbar.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 1)
 
 		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CONVERT, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("Regex")
+		button.set_image(btn_img)
+		button.connect("clicked", lambda x: self.builder.get_object("regex_window").show())
+		self.builder.get_object("btn_regex_apply").connect("clicked", self.regex_apply)
+		toolbar.pack_start(button, False, False, 0)
+
+		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_COPY, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_tooltip_text("Copy")
 		button.set_image(btn_img)
@@ -493,6 +502,21 @@ class CTIE(object):
 
 		#launch
 		self.window.show()
+
+	def regex_apply(self, *arg):
+		b=self.builder.get_object("regex").get_buffer()
+		text=b.get_text(b.get_start_iter(), b.get_end_iter(), 0).strip()
+		self.regex=[]
+		for line in text.split("\n"):
+			try:
+				a,b=line.split("\t")
+				try:
+					self.regex.append((re.compile(a), b))
+				except:
+					pass
+			except:
+				pass
+		self.builder.get_object("regex_window").hide()
 
 	def previous(self, *arg):
 		if not self.focus_item:
@@ -1252,7 +1276,12 @@ class CTIE(object):
 					y2=int(line[1])
 					if (x1,y1,x2,y2) in ss:
 						continue
-					p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':{'text':line[4]}, 'parent':p, 'flags':['OCRed','CHANGED'], 'reference':{'text':files[i]}})
+					text=line[4]
+					print text
+					for a,b in self.regex:
+						text=a.sub(b,text)
+						print text
+					p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':{'text':text}, 'parent':p, 'flags':['OCRed','CHANGED'], 'reference':{'text':files[i]}})
 					if 'text' not in self.tags:
 						self.tags.append('text')
 				self.level_sanitize()
