@@ -511,9 +511,11 @@ class CTIE(object):
 		elif len(self.selections)!=1:
 			self.selections=[0]
 		else:
-			self.selections[0]+=1
+			self.selections[0]-=1
+			self.selections[0]+=len(focus_p['children'])
 			self.selections[0]%=len(focus_p['children'])
 		self.canvas.queue_draw()
+		self.preview_canvas.queue_draw()
 
 	def next(self, *arg):
 		if not self.focus_item:
@@ -524,10 +526,10 @@ class CTIE(object):
 		elif len(self.selections)!=1:
 			self.selections=[0]
 		else:
-			self.selections[0]-=1
-			self.selections[0]+=len(focus_p['children'])
+			self.selections[0]+=1
 			self.selections[0]%=len(focus_p['children'])
 		self.canvas.queue_draw()
+		self.preview_canvas.queue_draw()
 
 	def key_press(self, obj, evt):
 		if evt.keyval==Gdk.KEY_Page_Down:
