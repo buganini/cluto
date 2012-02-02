@@ -190,6 +190,35 @@ class SQL(object):
 			k=s[2:-1]
 			if k.upper()=='COUNT':
 				return str(len(self.p['children']))
+			elif k.upper()=='ORDER':
+				if not self.p['children']:
+					return "t"
+				curr=(0,0)
+				trace=[curr]
+				last=self.p['children'][0]
+				for i in xrange(1,len(self.p['children'])):
+					c=self.p['children'][i]
+					x=c['x1']+c['x2']/2.0
+					if x<last['x1']:
+						x=-1
+					elif x>=last['x2']:
+						x=1
+					else:
+						x=0
+					y=c['y1']+c['y2']/2.0
+					if y<last['y1']:
+						y=-1
+					elif y>=last['y2']:
+						y=1
+					else:
+						y=0
+					curr=(curr[0]+x, curr[1]+y)
+					if curr in trace:
+						return ""
+					trace.append(curr)
+					last=c
+					print trace
+				return "t"
 
 	def op_eq(self, a, b):
 		return ["","t"][a==b]
