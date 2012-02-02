@@ -217,20 +217,19 @@ class SQL(object):
 						return ""
 					trace.append(curr)
 					last=c
-					print trace
 				return "t"
 
 	def op_eq(self, a, b):
-		return ["","t"][a==b]
+		return repr(["","t"][a==b])
 
 	def op_ne(self, a, b):
-		return ["","t"][a!=b]
+		return repr(["","t"][a!=b])
 
 	def op_and(self, a, b):
-		return ["","t"][a and b]
+		return repr(["","t"][a and b])
 
 	def op_or(self, a, b):
-		return ["","t"][a or b]
+		return repr(["","t"][a or b])
 
 	def exe(self, p):
 		self.p=p
