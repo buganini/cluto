@@ -509,7 +509,7 @@
                                 <property name="invisible_char_set">True</property>
                               </object>
                               <packing>
-                                <property name="expand">False</property>
+                                <property name="expand">True</property>
                                 <property name="fill">True</property>
                                 <property name="position">1</property>
                               </packing>
@@ -553,7 +553,6 @@
                     <items>
                       <item translatable="yes">None</item>
                       <item translatable="yes">Clipboard</item>
-                      <item translatable="yes">OCR</item>
                     </items>
                   </object>
                   <packing>
