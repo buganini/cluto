@@ -176,7 +176,7 @@ class SQL(object):
 			try:
 				return self.p['tags'][s[2:-1]]
 			except:
-				return None
+				return ""
 		elif s[0]=='@':
 			t=self.p
 			r=None
@@ -184,7 +184,7 @@ class SQL(object):
 				try:
 					r=t['tags'][s[2:-1]]
 				except:
-					r=None
+					r=""
 				t=t['parent']
 		elif s[0]=='%':
 			k=s[2:-1]
