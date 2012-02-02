@@ -1415,6 +1415,7 @@ class CTIE(object):
 
 	def collation_cb(self, obj, *arg):
 		if self.collation.get_active() and self.focus_field and self.focus_field[0]=='c':
+			self.builder.get_object("editor_label").set_text(self.focus_field[1])
 			self.builder.get_object("collation_window").show()
 			self.builder.get_object("collation_editor").set_data("master", obj)
 			if not self.signal_mask:
