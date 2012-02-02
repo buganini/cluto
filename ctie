@@ -211,7 +211,10 @@ class SQL(object):
 		while stack or tokens:
 			o=tokens[0]
 			if len(tokens)==1:
-				return o
+				if self.isvar(o):
+					return self.varval(o)
+				elif self.isstr(o):
+					return self.strval(o)
 
 			if o in ('(','!'):
 				stack.append(o)
@@ -222,7 +225,7 @@ class SQL(object):
 			if self.isvar(o):
 				if stack and stack[-1]=='!':
 					del(stack[-1])
-					tokens=[["","t"][not o1]]
+					tokens=[["","t"][not self.varval(o)]]
 					tokens.extend(tokens[2:])
 					continue
 				if o1==')':
@@ -246,7 +249,7 @@ class SQL(object):
 			elif self.isstr(o):
 				if stack and stack[-1]=='!':
 					del(stack[-1])
-					tokens=[["","t"][not o1]]
+					tokens=[["","t"][not self.strval(o)]]
 					tokens.extend(tokens[2:])
 					continue
 				if o1==')':
