@@ -288,7 +288,10 @@ class SQL(object):
 		if t=='!':
 			return not rval
 		if t=='=':
-			return rval
+			if type(rval)==type([]):
+				return tuple(rval)
+			else:
+				return rval
 		if re.match('^[A-Za-z_]\w*$', t):
 			t=t.upper()
 			if t=='ABS':
