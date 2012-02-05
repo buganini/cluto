@@ -1,3 +1,4 @@
 Dependencies:
 	GTK3
 	PIL
+	ocropus
