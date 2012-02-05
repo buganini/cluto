@@ -443,11 +443,11 @@ class CTIE(object):
 
 		toolbar.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 1)
 
-		button=Gtk.Button()
+		self.toggle_ocr=button=Gtk.ToggleButton()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SELECT_FONT, Gtk.IconSize.SMALL_TOOLBAR)
-		button.set_tooltip_text("Set OCR Flag")
+		button.set_tooltip_text("OCR on selecting empty item")
 		button.set_image(btn_img)
-		button.connect("clicked", self.ocr)
+		button.connect("toggled", lambda x: click(self.focus_item))
 		toolbar.pack_start(button, False, False, 0)
 
 		toolbar.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 1)
@@ -505,7 +505,7 @@ class CTIE(object):
 		button.connect("clicked", self.export_show)
 		toolbar.pack_start(button, False, False, 0)
 
-		self.collation=button=Gtk.ToggleButton()
+		self.toggle_collation=button=Gtk.ToggleButton()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_FIND_AND_REPLACE, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_tooltip_text("Collation Mode")
 		button.set_image(btn_img)
@@ -599,7 +599,7 @@ class CTIE(object):
 		self.preview_canvas.queue_draw()
 
 	def key_press(self, obj, evt):
-		collation_mode=self.collation.get_active()
+		collation_mode=self.toggle_collation.get_active()
 		if evt.keyval==Gdk.KEY_Page_Down:
 			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
 				next=self.focus_item.get_data("next")
@@ -714,14 +714,6 @@ class CTIE(object):
 			todo.extend(p['children'])
 		self.edge_limiter(todo)
 		self.redraw_items_list()
-
-	def ocr(self, *arg):
-		items_list=self.builder.get_object("items_list")
-		cs=items_list.get_children()
-		for c in cs:
-			p=c.get_data("p")
-			p['flags'].append('OCR')
-		click(self.focus_item)
 
 	def open_project(self, *arg):
 		global id_map, tempdir, clear_tempdir
@@ -1276,15 +1268,6 @@ class CTIE(object):
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 			if obj!=self.focus_item:
 				p=self.focus_item.get_data("p")
-				if 'CHANGED' in p['flags']:
-					it=Item(p)
-					tempdir=it.get_ocr_tempdir()
-					for c in p['children']:
-						if 'OCRed' in c['flags'] and 'CHANGED' in c['flags'] and 'text' in c['tags'] and 'text' in c['reference']:
-							f=open(c['reference']['text'].replace('.txt','.gt.txt'),'w')
-							f.write(c['tags']['text'])
-							f.close()
-					subprocess.call(["ocropus", "align", tempdir])
 				try:
 					p['flags'].remove('CHANGED')
 				except:
@@ -1319,7 +1302,9 @@ class CTIE(object):
 			canvas.connect("draw", self.preview_draw)
 			canvas.show()
 			self.zoom_fit()
-			if 'OCR' in p['flags']:
+			if self.toggle_ocr.get_active():
+				if p['children']:
+					return
 				ss=[]
 				for sc in p['children']:
 					ss.append((sc['x1']-p['x1'], sc['y1']-p['y1'], sc['x2']-p['x1'], sc['y2']-p['y1']))
@@ -1346,9 +1331,7 @@ class CTIE(object):
 					if 'text' not in self.tags:
 						self.tags.append('text')
 				self.level_sanitize()
-				p['flags'].remove('OCR')
 				p['flags'].append('CHANGED')
-
 
 	def tags_refresh(self, *arg):
 		if not self.focus_item:
@@ -1475,7 +1458,7 @@ class CTIE(object):
 		self.collation_cb(obj)
 
 	def collation_cb(self, obj, *arg):
-		if self.collation.get_active() and self.focus_field and self.focus_field[0]=='c':
+		if self.toggle_collation.get_active() and self.focus_field and self.focus_field[0]=='c':
 			self.builder.get_object("editor_label").set_text(self.focus_field[1])
 			self.builder.get_object("collation_window").show()
 			self.builder.get_object("collation_editor").set_data("master", obj)
