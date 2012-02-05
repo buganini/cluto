@@ -361,6 +361,19 @@ class CTIE(object):
 		#keyboard shortcut
 		self.window.connect("key-press-event", self.key_press)
 
+		#menubar
+		menu_batch=self.builder.get_object('menu_batch')
+
+		item=Gtk.MenuItem.new_with_label("Trim Left-Top")
+		item.connect("activate", self.ltrim)
+		menu_batch.attach(item, 0, 1, 0, 1)
+
+		item=Gtk.MenuItem.new_with_label("Trim Right-Bottom")
+		item.connect("activate", self.rtrim)
+		menu_batch.attach(item, 0, 1, 1, 2)
+
+		menu_batch.show_all()
+
 		#toolbar
 		toolbar=self.builder.get_object('toolbar')
 
@@ -429,20 +442,6 @@ class CTIE(object):
 		toolbar.pack_start(button, False, False, 0)
 
 		toolbar.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 1)
-
-		button=Gtk.Button()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_GOTO_FIRST, Gtk.IconSize.SMALL_TOOLBAR)
-		button.set_tooltip_text("Trim Left-Top")
-		button.set_image(btn_img)
-		button.connect("clicked", self.ltrim)
-		toolbar.pack_start(button, False, False, 0)
-
-		button=Gtk.Button()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_GOTO_LAST, Gtk.IconSize.SMALL_TOOLBAR)
-		button.set_tooltip_text("Trim Right-Bottom")
-		button.set_image(btn_img)
-		button.connect("clicked", self.rtrim)
-		toolbar.pack_start(button, False, False, 0)
 
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SELECT_FONT, Gtk.IconSize.SMALL_TOOLBAR)
