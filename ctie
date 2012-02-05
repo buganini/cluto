@@ -1538,7 +1538,9 @@ class CTIE(object):
 								self.selections.remove(i)
 							else:
 								self.selections.append(i)
-						self.child_tags_refresh()
+					self.selections.sort()
+					self.child_tags_refresh()
+					self.set_status('Area: %d Select: %s' % (len(p['children']), ', '.join([str(i) for i in self.selections])))
 				elif self.mode=='rectangle':
 					if x1>x:
 						x1,x=x,x1
