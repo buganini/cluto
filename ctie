@@ -294,7 +294,6 @@ class SQL(object):
 			if t=='ABS':
 				return abs(rval)
 			elif t=='JOIN':
-				print rval[0].join(rval[1])
 				return rval[0].join(rval[1])
 			else:
 				return None
