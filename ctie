@@ -443,15 +443,6 @@ class CTIE(object):
 
 		toolbar.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 1)
 
-		self.toggle_ocr=button=Gtk.ToggleButton()
-		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SELECT_FONT, Gtk.IconSize.SMALL_TOOLBAR)
-		button.set_tooltip_text("OCR on selecting empty item")
-		button.set_image(btn_img)
-		button.connect("toggled", lambda x: click(self.focus_item))
-		toolbar.pack_start(button, False, False, 0)
-
-		toolbar.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 1)
-
 		button=Gtk.Button()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CONVERT, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_tooltip_text("Regex")
@@ -510,6 +501,13 @@ class CTIE(object):
 		button.set_tooltip_text("Collation Mode")
 		button.set_image(btn_img)
 		button.connect("toggled", self.child_tags_refresh)
+		toolbar.pack_end(button, False, False, 0)
+
+		self.toggle_ocr=button=Gtk.ToggleButton()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_SELECT_FONT, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("OCR on selecting empty item")
+		button.set_image(btn_img)
+		button.connect("toggled", lambda x: click(self.focus_item))
 		toolbar.pack_end(button, False, False, 0)
 
 		toolbar.show_all()
