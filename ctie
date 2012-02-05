@@ -151,7 +151,10 @@ class SQL(object):
 		if not i:
 			return
 		if type(i)!=type([]):
-			tokens=re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|[\$@%#]\{.+?\}|".*?"|'.*?'|!|\(|\)|[A-Za-z_]\w*|\d+|,)""",i)
+			try:
+				tokens=re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|[\$@%#]\{.+?\}|(?:"[^"]*\\(?:.[^"]*\\)*.[^"]*")|(?:"[^"]*")|(?:'[^']*\\(?:.[^']*\\)*.[^']*')|(?:'[^']*')|!|\(|\)|[A-Za-z_]\w*|\d+|,)""",i)
+			except:
+				return
 			self.tree=self.parse(tokens)
 		else:
 			self.tree=self.parse(i)
@@ -223,7 +226,7 @@ class SQL(object):
 		if re.match('^\d+$',t):
 			return int(t)
 		if (t[0]==t[-1] and t[0] in ("'", '"')):
-			return t[1:-1]
+			return eval(t)
 		if (len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}'):
 			key=t[2:-1]
 			if t[0]=='$':
