@@ -953,10 +953,13 @@ class CTIE(object):
 	def do_export(self, *arg):
 		s=self.clips
 		outputdir=self.builder.get_object('output_dir').get_filename()
+		ef=SQL(self.builder.get_object('export_filter').get_text())
+		if not ef:
+			return
 		while s:
 			ns=[]
 			for p in s:
-				if not p['children']:
+				if ef.eval(p):
 					t=p
 					tags={}
 					while t:
