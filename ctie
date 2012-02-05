@@ -510,6 +510,13 @@ class CTIE(object):
 		button.connect("toggled", lambda x: click(self.focus_item))
 		toolbar.pack_end(button, False, False, 0)
 
+		self.toggle_childpath=button=Gtk.ToggleButton()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_INFO, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("Display areas path")
+		button.set_image(btn_img)
+		button.connect("toggled", lambda x: self.canvas.queue_draw())
+		toolbar.pack_end(button, False, False, 0)
+
 		toolbar.show_all()
 
 		#items list
@@ -1024,6 +1031,25 @@ class CTIE(object):
 			else:
 				cr.set_source_rgba(255,0,0,255)
 				cr.rectangle(x1, y1, x2-x1, y2-y1)
+			cr.stroke()
+		if self.toggle_childpath.get_active():
+			cr.set_source_rgba(0,255,0,255)
+			for i,c in enumerate(p['children']):
+				xa=(c['x1']+c['x2'])/2-p['x1']
+				ya=(c['y1']+c['y2'])/2-p['y1']
+				if i in self.selections:
+					if self.mode=='move':
+						xa+=xoff
+						ya+=yoff
+					elif self.mode=='resize':
+						xoff2=max(xoff,x1-x2)
+						yoff2=max(yoff,y1-y2)
+						xa+=xoff2/2
+						ya+=yoff2/2
+				if i==0:
+					cr.move_to(xa,ya)
+				else:
+					cr.line_to(xa,ya)
 			cr.stroke()
 		if self.selstart!=(None, None) and self.selend!=(None, None) and len(self.selections)==0:
 			cr.set_source_rgba(255,0,255,255)
