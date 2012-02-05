@@ -725,26 +725,37 @@ class CTIE(object):
 		global id_map, tempdir, clear_tempdir
 		filec=Gtk.FileChooserDialog("Open", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
-			fp=open(filec.get_filename(),'r')
+			filename=filec.get_filename()
+			fp=open(filename,'r')
 			filec.destroy()
 			try:
 				data=pickle.load(fp)
 				fp.close()
-				id_map, self.clips, self.tags, self.copy_tag, tempdir=data
 				clear_tempdir=False
 			except:
+				self.set_status('Failed loading %s' % filename)
 				return
 		else:
 			filec.destroy()
-		todo=[]
-		todo.extend(self.clips)
-		while todo:
-			newtodo=[]
-			for p in todo:
-				if 'flags' not in p:
-					p['flags']=[]
-				newtodo.extend(p['children'])
-			todo=newtodo
+			return
+		if type(data)==type([]):
+			id_map, self.clips, self.tags, self.copy_tag, tempdir=data
+			todo=[]
+			todo.extend(self.clips)
+			while todo:
+				newtodo=[]
+				for p in todo:
+					if 'flags' not in p:
+						p['flags']=[]
+					newtodo.extend(p['children'])
+				todo=newtodo
+		else:
+			id_map=data['id_map']
+			self.clips=data['clips']
+			self.tags=data['tags']
+			self.copy_tag=data['tags']
+			tempdir=data['tempdir']
+			self.builder.get_object("regex").get_buffer().set_text(data['regex'])
 		self.level_sanitize()
 		self.redraw_items_list()
 		self.tags_refresh()
@@ -755,7 +766,9 @@ class CTIE(object):
 			return
 		filec=Gtk.FileChooserDialog("Save", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
-			data=[id_map, self.clips, self.tags, self.copy_tag, tempdir]
+			b=self.builder.get_object("regex").get_buffer()
+			regex=b.get_text(b.get_start_iter(), b.get_end_iter(), 0).strip()
+			data={'id_map':id_map, 'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tag, 'tempdir':tempdir, 'regex':regex}
 			fp=open(filec.get_filename(),'w')
 			pickle.dump(data, fp)
 			fp.close()
