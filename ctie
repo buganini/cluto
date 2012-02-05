@@ -734,6 +734,15 @@ class CTIE(object):
 				return
 		else:
 			filec.destroy()
+		todo=[]
+		todo.extend(self.clips)
+		while todo:
+			newtodo=[]
+			for p in todo:
+				if 'flags' not in p:
+					p['flags']=[]
+				newtodo.extend(p['children'])
+			todo=newtodo
 		self.level_sanitize()
 		self.redraw_items_list()
 		self.tags_refresh()
