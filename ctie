@@ -145,16 +145,68 @@ class Item(object):
 		return rpath
 
 class SQL(object):
-	def __init__(self, expression):
-		tokens=re.findall(r"""(&&|\|\||!=|==|[\$@%]\{.+?\}|".*?"|'.*?'|!|\(|\))""",expression)
+	def __init__(self, i):
 		self.loaded=False
-		if not expression:
+		self.tree=False
+		if not i:
 			return
-		self.tokens=[]
-		for t in tokens:
-			if t.strip():
-				self.tokens.append(t)
+		if type(i)!=type([]):
+			tokens=re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|[\$@%#]\{.+?\}|".*?"|'.*?'|!|\(|\)|[A-Za-z_]\w*|\d+|,)""",i)
+			self.tree=self.parse(tokens)
+		else:
+			self.tree=self.parse(i)
+
+	def parse(self, tokens):
+		level=0
+		stack=0
+		for i,t in enumerate(tokens):
+			if t=='(':
+				if level<=0:
+					sep=i
+				stack+=1
+				
+			elif t==')':
+				stack-=1
+
+			if stack:
+				continue
+
+			if level<=5 and t in ('&&', '||'):
+				sep=i
+				level=5
+			elif level<=4 and t in ('==', '!=','>=','<=','>','<'):
+				sep=i
+				level=4
+			elif level<=3 and t==',':
+				sep=i
+				level=3
+			elif level<=2 and ( t in ('!') or  re.match('^\w+$', t) ):
+				sep=i
+				level=2
+			elif level<=1 and ((len(t)>3 and t[0] in ('$','@','%') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"'))):
+				sep=i
+				level=1
+
+		self.lval=None
+		self.rval=None
+		t=self.op=tokens[sep]
+		if (len(t)>3 and t[0] in ('$','@','%') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"')):
+			pass
+		elif re.match('^\d+$',t):
+			pass
+		elif t=='(':
+			self.op='='
+			self.rval=SQL(tokens[sep+1:-1])
+		elif t in ('!','=') or re.match('^[A-Za-z]\w*$',t):
+			self.rval=SQL(tokens[sep+1:])
+		else:
+			self.lval=SQL(tokens[0:sep])
+			self.rval=SQL(tokens[sep+1:])
 		self.loaded=True
+		if self.lval!=None and not self.lval:
+			self.loaded=False
+		if self.rval!=None and not self.rval:
+			self.loaded=False
 
 	def __nonzero__(self):
 		return self.loaded
@@ -162,144 +214,106 @@ class SQL(object):
 	def __bool__(self):
 		return self.loaded
 
-	def isstr(self, s):
-		return s[0]==s[-1] and s[0] in ("'", '"')
-
-	def isvar(self, s):
-		return len(s)>3 and s[0] in ('$','@','%') and s[1]=='{' and s[-1]=='}'
-
-	def strval(self, s):
-		return s[1:-1]
-
-	def varval(self, s):
-		if s[0]=='$':
-			try:
-				return self.p['tags'][s[2:-1]]
-			except:
-				return ""
-		elif s[0]=='@':
-			t=self.p
-			r=None
-			while not r and t:
+	def eval(self, p):
+		if not self.loaded:
+			return None
+		t=self.op
+		if re.match('^\d+$',t):
+			return int(t)
+		if (t[0]==t[-1] and t[0] in ("'", '"')):
+			return t[1:-1]
+		if (len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}'):
+			key=t[2:-1]
+			if t[0]=='$':
 				try:
-					r=t['tags'][s[2:-1]]
+					return p['tags'][key]
 				except:
-					r=""
-				t=t['parent']
-		elif s[0]=='%':
-			k=s[2:-1]
-			if k.upper()=='COUNT':
-				return str(len(self.p['children']))
-			elif k.upper()=='ORDER':
-				if not self.p['children']:
-					return "t"
-				curr=(0,0)
-				trace=[curr]
-				last=self.p['children'][0]
-				for i in xrange(1,len(self.p['children'])):
-					c=self.p['children'][i]
-					x=c['x1']+c['x2']/2.0
-					if x<last['x1']:
-						x=-1
-					elif x>=last['x2']:
-						x=1
-					else:
-						x=0
-					y=c['y1']+c['y2']/2.0
-					if y<last['y1']:
-						y=-1
-					elif y>=last['y2']:
-						y=1
-					else:
-						y=0
-					curr=(curr[0]+x, curr[1]+y)
-					if curr in trace:
-						return ""
-					trace.append(curr)
-					last=c
-				return "t"
-
-	def op_eq(self, a, b):
-		return repr(["","t"][a==b])
-
-	def op_ne(self, a, b):
-		return repr(["","t"][a!=b])
-
-	def op_and(self, a, b):
-		return repr(["","t"][a and b])
-
-	def op_or(self, a, b):
-		return repr(["","t"][a or b])
-
-	def exe(self, p):
-		self.p=p
-		stack=[]
-		tokens=list(self.tokens)
-		oprtmap={"==":self.op_eq,"!=":self.op_ne,"&&":self.op_and,"||":self.op_or}
-		while stack or tokens:
-			o=tokens[0]
-			if len(tokens)==1:
-				if self.isvar(o):
-					return self.varval(o)
-				elif self.isstr(o):
-					return self.strval(o)
-
-			if o in ('(','!'):
-				stack.append(o)
-				tokens=tokens[1:]
-				continue
-
-			o1=tokens[1]
-			if self.isvar(o):
-				if stack and stack[-1]=='!':
-					del(stack[-1])
-					tokens=[["","t"][not self.varval(o)]]
-					tokens.extend(tokens[2:])
-					continue
-				if o1==')':
-					if stack and stack[-1]=='(':
-						del(stack[-1])
-						tokens=[o]
-						tokens.extend(tokens[2:])
-						continue
-					return None
-				if o1 not in ("==", "!=", "&&", "||"):
-					return None
-				o2=tokens[2]
-				if self.isvar(o2):
-					tokens=[oprtmap[o1](self.varval(o),self.varval(o2))]
-					tokens.extend(tokens[3:])
-				elif self.isstr(o2):
-					tokens=[oprtmap[o1](self.varval(o),self.strval(o2))]
-					tokens.extend(tokens[3:])
-				else:
-					return None
-			elif self.isstr(o):
-				if stack and stack[-1]=='!':
-					del(stack[-1])
-					tokens=[["","t"][not self.strval(o)]]
-					tokens.extend(tokens[2:])
-					continue
-				if o1==')':
-					if stack and stack[-1]=='(':
-						del(stack[-1])
-						tokens=[o]
-						tokens.extend(tokens[2:])
-						continue
-					return None
-				if o1 not in ("==", "!=", "&&", "||"):
-					return None
-				o2=tokens[2]
-				if self.isvar(o2):
-					tokens=[oprtmap[o1](self.strval(o),self.varval(o2))]
-					tokens.extend(tokens[3:])
-				elif self.isstr(o2):
-					tokens=[oprtmap[o1](self.strval(o),self.strval(o2))]
-					tokens.extend(tokens[3:])
-				else:
-					return None
+					return ""
+			elif t[0]=='@':
+				t=p
+				r=""
+				while not r and t:
+					try:
+						r=t['tags'][key]
+					except:
+						r=""
+					t=t['parent']
+			elif t[0]=='#':
+				ret=[]
+				for c in p['children']:
+					try:
+						ret.append(t['tags'][key])
+					except:
+						ret.append('')
+			elif t[0]=='%':
+				k=t[2:-1].upper()
+				if k=='COUNT':
+					return len(p['children'])
+				elif k=='ORDER':
+					if not p['children']:
+						return True
+					curr=(0,0)
+					trace=[curr]
+					last=p['children'][0]
+					for i in xrange(1,len(p['children'])):
+						c=p['children'][i]
+						x=c['x1']+c['x2']/2.0
+						if x<last['x1']:
+							x=-1
+						elif x>=last['x2']:
+							x=1
+						else:
+							x=0
+						y=c['y1']+c['y2']/2.0
+						if y<last['y1']:
+							y=-1
+						elif y>=last['y2']:
+							y=1
+						else:
+							y=0
+						curr=(curr[0]+x, curr[1]+y)
+						if curr in trace:
+							return False
+						trace.append(curr)
+						last=c
+					return True
+		rval=self.rval.eval(p)
+		if t=='!':
+			return not rval
+		if t=='=':
+			return rval
+		if re.match('^[A-Za-z_]\w*$', t):
+			t=t.upper()
+			if t=='ABS':
+				return abs(rval)
+			elif t=='JOIN':
+				return rval[0],join(rval[1])
 			else:
 				return None
+		lval=self.lval.eval(p)
+		if t==',':
+			if type(lval)==type([]):
+				lval.append(rval)
+				return lval
+			else:
+				return [lval,rval]
+		if t=='==':
+			return lval == rval
+			
+		if t=='!=':
+			return lval != rval
+		if t=='&&':
+			return lval and rval
+		if t=='||':
+			return lval or rval
+		if t=='>=':
+			return lval >= rval
+		if t=='<=':
+			return lval <= rval
+		if t=='>':
+			return lval > rval
+		if t=='<':
+			return lval < rval
 
 class CTIE(object):
 	def __init__(self):
@@ -1149,7 +1163,7 @@ class CTIE(object):
 			s=ns
 		last=None
 		for p in s:
-			if self.items_filter and not self.items_filter.exe(p):
+			if self.items_filter and not self.items_filter.eval(p):
 				continue
 			it=Item(p)
 			tfile=it.get_thumbnail()
