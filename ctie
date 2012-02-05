@@ -157,16 +157,18 @@ class SQL(object):
 			self.tree=self.parse(i)
 
 	def parse(self, tokens):
-		level=0
+		level=-1
 		stack=0
 		for i,t in enumerate(tokens):
 			if t=='(':
-				if level<=0:
+				if level<0:
 					sep=i
+					level=0
 				stack+=1
 				
 			elif t==')':
 				stack-=1
+				stack=max(stack,0)
 
 			if stack:
 				continue
