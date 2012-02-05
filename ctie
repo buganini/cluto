@@ -1630,6 +1630,8 @@ class CTIE(object):
 					yoff=int(self.selend[1]-self.selstart[1])
 					todo=[]
 					delete=[]
+					self.selections.sort()
+					self.selections.reverse()
 					for i in self.selections:
 						c=p['children'][i]
 						xoff2=max(xoff,c['x1']-c['x2'])
@@ -1646,6 +1648,8 @@ class CTIE(object):
 							delete.append(c)
 						else:
 							todo.extend(c['children'])
+					if delete:
+						self.selections=[]
 					for c in delete:
 						if c['parent']:
 							c['parent']['children'].remove(c)
