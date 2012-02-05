@@ -979,6 +979,8 @@ class CTIE(object):
 
 		cr.scale(factor, factor)
 		self.canvas.set_size_request(int(width*factor), int(height*factor))
+		self.canvas.set_halign(Gtk.Align.CENTER)
+		self.canvas.set_valign(Gtk.Align.CENTER)
 
 		it=Item(p)
 		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), 0, 0)
@@ -1502,8 +1504,9 @@ class CTIE(object):
 		
 		self.canvas.grab_focus()
 		factor=self.zoom*0.01
-		x=evt.x/factor
-		y=evt.y/factor
+		evtx,evty=self.builder.get_object('workarea').translate_coordinates(self.canvas, evt.x, evt.y)
+		x=evtx/factor
+		y=evty/factor
 		p=self.focus_item.get_data("p")
 		if str(type(evt))==repr(Gdk.EventButton):
 			if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
