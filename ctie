@@ -639,6 +639,10 @@ class CTIE(object):
 			if not evt.state & Gdk.ModifierType.SHIFT_MASK:
 				self.selections.extend(range(0, len(focus_p['children'])))
 			self.canvas.queue_draw()
+		elif (evt.keyval==Gdk.KEY_C or evt.keyval==Gdk.KEY_c) and evt.state & Gdk.ModifierType.CONTROL_MASK:
+			self.copy()
+		elif (evt.keyval==Gdk.KEY_V or evt.keyval==Gdk.KEY_v) and evt.state & Gdk.ModifierType.CONTROL_MASK:
+			self.paste()
 
 	def ltrim(self, *arg):
 		items_list=self.builder.get_object("items_list")
