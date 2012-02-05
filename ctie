@@ -612,8 +612,16 @@ class CTIE(object):
 					click(prev)
 			else:
 				self.previous()
-#		elif evt.keyval==Gdk.KEY_Delete:
-#			self.delete()
+		elif evt.keyval==Gdk.KEY_Delete:
+			self.delete()
+		elif (evt.keyval==Gdk.KEY_A or evt.keyval==Gdk.KEY_a) and evt.state & Gdk.ModifierType.CONTROL_MASK:
+			if not self.focus_item:
+				return
+			focus_p=self.focus_item.get_data("p")
+			self.selections=[]
+			if not evt.state & Gdk.ModifierType.SHIFT_MASK:
+				self.selections.extend(range(0, len(focus_p['children'])))
+			self.canvas.queue_draw()
 
 	def ltrim(self, *arg):
 		items_list=self.builder.get_object("items_list")
@@ -1285,6 +1293,7 @@ class CTIE(object):
 				c.destroy()
 			canvas=Gtk.DrawingArea()
 			self.canvas=canvas
+			canvas.set_can_focus(True)
 			workarea.add(canvas)
 			canvas.connect("draw", self.canvas_draw)
 			canvas.show()
@@ -1490,7 +1499,8 @@ class CTIE(object):
 	def workarea_mouse(self, obj, evt):
 		if not self.canvas:
 			return
-		factor=1
+		
+		self.canvas.grab_focus()
 		factor=self.zoom*0.01
 		x=evt.x/factor
 		y=evt.y/factor
