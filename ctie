@@ -547,6 +547,11 @@ class CTIE(object):
 		#launch
 		self.window.show()
 
+	def set_status(self, s):
+		status=self.builder.get_object('statusbar')
+		status.remove_all(0)
+		status.push(0, s)
+
 	def regex_apply(self, *arg):
 		b=self.builder.get_object("regex").get_buffer()
 		text=b.get_text(b.get_start_iter(), b.get_end_iter(), 0).strip()
@@ -980,6 +985,8 @@ class CTIE(object):
 		it=Item(p)
 		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), 0, 0)
 		cr.paint()
+		xoff=self.selend[0]-self.selstart[0]
+		yoff=self.selend[1]-self.selstart[1]
 		for i,c in enumerate(p['children']):
 			x1=(c['x1']-p['x1'])
 			y1=(c['y1']-p['y1'])
@@ -987,8 +994,6 @@ class CTIE(object):
 			y2=(c['y2']-p['y1'])
 			if i in self.selections:
 				cr.set_source_rgba(0,0,255,255)
-				xoff=self.selend[0]-self.selstart[0]
-				yoff=self.selend[1]-self.selstart[1]
 				if self.mode=='move':
 					cr.rectangle(x1+xoff, y1+yoff, x2-x1, y2-y1)
 				elif self.mode=='resize':
@@ -1005,6 +1010,11 @@ class CTIE(object):
 			cr.set_source_rgba(255,0,255,255)
 			cr.rectangle(self.selstart[0], self.selstart[1], self.selend[0]-self.selstart[0], self.selend[1]-self.selstart[1])
 			cr.stroke()
+			self.set_status('Box (%d,%d) -> (%d, %d)' % (self.selstart[0], self.selstart[1], self.selend[0], self.selend[1]))
+		elif self.mode=='resize':
+			self.set_status('Resize (%d,%d)' % (xoff, yoff))
+		elif self.mode=='move':
+			self.set_status('Move (%d,%d)' % (xoff, yoff))
 
 	def preview_draw(self, widget, cr):
 		if not self.focus_item:
