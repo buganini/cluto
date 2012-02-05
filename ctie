@@ -183,14 +183,14 @@ class SQL(object):
 			elif level<=2 and ( t in ('!') or  re.match('^\w+$', t) ):
 				sep=i
 				level=2
-			elif level<=1 and ((len(t)>3 and t[0] in ('$','@','%') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"'))):
+			elif level<=1 and ((len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"'))):
 				sep=i
 				level=1
 
 		self.lval=None
 		self.rval=None
 		t=self.op=tokens[sep]
-		if (len(t)>3 and t[0] in ('$','@','%') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"')):
+		if (len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"')):
 			pass
 		elif re.match('^\d+$',t):
 			pass
@@ -238,13 +238,15 @@ class SQL(object):
 					except:
 						r=""
 					t=t['parent']
+				return r
 			elif t[0]=='#':
-				ret=[]
+				r=[]
 				for c in p['children']:
 					try:
-						ret.append(t['tags'][key])
+						r.append(c['tags'][key])
 					except:
-						ret.append('')
+						r.append('')
+				return r
 			elif t[0]=='%':
 				k=t[2:-1].upper()
 				if k=='COUNT':
@@ -287,7 +289,8 @@ class SQL(object):
 			if t=='ABS':
 				return abs(rval)
 			elif t=='JOIN':
-				return rval[0],join(rval[1])
+				print rval[0].join(rval[1])
+				return rval[0].join(rval[1])
 			else:
 				return None
 		lval=self.lval.eval(p)
@@ -1202,6 +1205,8 @@ class CTIE(object):
 
 	def items_filter_apply(self, *arg):
 		self.items_filter=SQL(self.builder.get_object("items_filter").get_text())
+		if not self.items_filter:
+			self.set_status('Failed parsing filter')
 		self.redraw_items_list()
 
 	def redraw_items_list(self, *arg):
