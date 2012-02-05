@@ -1291,7 +1291,6 @@ class CTIE(object):
 
 		if self.focus_item:
 			click(self.focus_item)
-		self.btn_zoom_fit.grab_focus()
 
 	def autoscroll(self):
 		items_list=self.builder.get_object("items_list")
@@ -1403,6 +1402,7 @@ class CTIE(object):
 				self.selections.append(0)
 				self.canvas.queue_draw()
 				self.tags_refresh()
+			GObject.idle_add(lambda: self.canvas.grab_focus())
 
 	def tags_refresh(self, *arg):
 		if not self.focus_item:
@@ -1564,6 +1564,7 @@ class CTIE(object):
 		if not self.canvas:
 			return
 		
+		self.focus_field=(None, None)
 		self.canvas.grab_focus()
 		factor=self.zoom*0.01
 		evtx,evty=self.builder.get_object('workarea').translate_coordinates(self.canvas, evt.x, evt.y)
