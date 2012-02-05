@@ -944,6 +944,7 @@ class CTIE(object):
 			del(focus_p['children'][i])
 		self.selections=[]
 		self.canvas.queue_draw()
+		self.child_tags_refresh()
 
 	def do_export(self, *arg):
 		s=self.clips
@@ -1666,6 +1667,7 @@ class CTIE(object):
 							todo.extend(c['children'])
 					if delete:
 						self.selections=[]
+						self.child_tags_refresh()
 					for c in delete:
 						if c['parent']:
 							c['parent']['children'].remove(c)
