@@ -629,9 +629,9 @@ class CTIE(object):
 					click(prev)
 			else:
 				self.previous()
-		elif evt.keyval==Gdk.KEY_Delete:
+		elif evt.keyval==Gdk.KEY_Delete and self.canvas.has_focus():
 			self.delete()
-		elif (evt.keyval==Gdk.KEY_A or evt.keyval==Gdk.KEY_a) and evt.state & Gdk.ModifierType.CONTROL_MASK:
+		elif (evt.keyval==Gdk.KEY_A or evt.keyval==Gdk.KEY_a) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
 			if not self.focus_item:
 				return
 			focus_p=self.focus_item.get_data("p")
@@ -639,9 +639,9 @@ class CTIE(object):
 			if not evt.state & Gdk.ModifierType.SHIFT_MASK:
 				self.selections.extend(range(0, len(focus_p['children'])))
 			self.canvas.queue_draw()
-		elif (evt.keyval==Gdk.KEY_C or evt.keyval==Gdk.KEY_c) and evt.state & Gdk.ModifierType.CONTROL_MASK:
+		elif (evt.keyval==Gdk.KEY_C or evt.keyval==Gdk.KEY_c) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
 			self.copy()
-		elif (evt.keyval==Gdk.KEY_V or evt.keyval==Gdk.KEY_v) and evt.state & Gdk.ModifierType.CONTROL_MASK:
+		elif (evt.keyval==Gdk.KEY_V or evt.keyval==Gdk.KEY_v) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
 			self.paste()
 
 	def ltrim(self, *arg):
@@ -1303,6 +1303,18 @@ class CTIE(object):
 		if self.focus_item:
 			click(self.focus_item)
 
+	def reordered_children(self):
+		if not self.focus_item:
+			return
+		p=self.focus_item.get_data("p")
+		r=[]
+		for i in self.selections:
+			r.append(p['children'][i])
+		for i,c in enumerate(p['children']):
+			if i not in self.selections:
+				r.append(c)
+		return r
+
 	def autoscroll(self):
 		items_list=self.builder.get_object("items_list")
 		focus_widget=self.focus_item
@@ -1607,7 +1619,6 @@ class CTIE(object):
 								self.selections.remove(i)
 							else:
 								self.selections.append(i)
-					self.selections.sort()
 					self.child_tags_refresh()
 					self.set_status('Area: %d Select: %s' % (len(p['children']), ', '.join([str(i) for i in self.selections])))
 				elif self.mode=='rectangle':
