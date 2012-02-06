@@ -113,6 +113,9 @@ class Item(object):
 			cache_pil_l[oid]=weakref.ref(o)
 		return o
 
+	def get_pil_cropped(self):
+		return Image.open(self.p['path']).convert('RGB').crop((self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+
 	def get_cropped(self):
 		bfile=os.path.join(get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
 		if not os.path.exists(bfile):
@@ -263,6 +266,9 @@ class SQL(object):
 						r+=1
 						t=t['parent']
 					return r
+				elif k=='IMAGE':
+					it=Item(p)
+					return it.get_pil_cropped()
 				elif k=='ORDER':
 					if not p['children']:
 						return True
@@ -967,6 +973,9 @@ class CTIE(object):
 		ef=SQL(self.builder.get_object('export_filter').get_text())
 		if not ef:
 			return
+		ec=SQL(self.builder.get_object('export_content').get_text())
+		if not ec:
+			return
 		while s:
 			ns=[]
 			for p in s:
@@ -994,9 +1003,14 @@ class CTIE(object):
 					path=os.path.join(outputdir, path)
 					pdir=os.path.dirname(path)
 					if not os.path.exists(pdir):
-						os.makedirs(pdir)		
-					im=Image.open(p['path']).convert("RGBA").crop((p['x1'],p['y1'],p['x2'],p['y2']))
-					im.save(path)
+						os.makedirs(pdir)
+					cnt=ec.eval(p)
+					if str(cnt).startswith("<Image"):
+						cnt.save(path)
+					elif type(cnt)==str:
+						f=open(path,'w')
+						f.write(cnt)
+						f.close()
 				ns.extend(p['children'])
 			s=ns
 
@@ -1016,8 +1030,6 @@ class CTIE(object):
 		tag=self.builder.get_object('new_tag').get_text()
 		if tag and not tag in self.tags:
 			self.tags.append(tag)
-		elif tag in ('IMAGE'):
-			self.set_status("Tag IMAGE is preserved")
 		else:
 			self.set_status("Tag %s already exists" % tag)
 		self.tags_refresh()
