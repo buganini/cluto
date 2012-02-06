@@ -1019,6 +1019,10 @@ class CTIE(object):
 		tag=self.builder.get_object('new_tag').get_text()
 		if tag and not tag in self.tags:
 			self.tags.append(tag)
+		elif tag in ('IMAGE'):
+			self.set_status("Tag IMAGE is preserved")
+		else:
+			self.set_status("Tag %s already exists" % tag)
 		self.tags_refresh()
 
 	def canvas_draw(self, widget, cr):
