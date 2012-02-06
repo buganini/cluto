@@ -1068,8 +1068,8 @@ class CTIE(object):
 		if sy1>sy:
 			sy1,sy=sy,sy1
 		if self.selstart!=(None, None) and self.selend!=(None, None):
-			xoff=sx-sx1
-			yoff=sy-sy1
+			xoff=self.selend[0]-self.selstart[0]
+			yoff=self.selend[1]-self.selstart[1]
 		else:
 			xoff=0
 			yoff=0
