@@ -1061,17 +1061,15 @@ class CTIE(object):
 		it=Item(p)
 		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), 0, 0)
 		cr.paint()
-		x1,y1=self.selstart
-		x,y=self.selend
-		if x1>x:
-			x1,x=x,x1
-		if y1>y:
-			y1,y=y,y1
-		self.selstart=x1,y1
-		self.selend=x,y
+		sx1,sy1=self.selstart
+		sx,sy=self.selend
+		if sx1>sx:
+			sx1,sx=sx,sx1
+		if sy1>sy:
+			sy1,sy=sy,sy1
 		if self.selstart!=(None, None) and self.selend!=(None, None):
-			xoff=self.selend[0]-self.selstart[0]
-			yoff=self.selend[1]-self.selstart[1]
+			xoff=sx-sx1
+			yoff=sy-sy1
 		else:
 			xoff=0
 			yoff=0
@@ -1137,9 +1135,9 @@ class CTIE(object):
 				cr.set_line_width(1)
 		if self.selstart!=(None, None) and self.selend!=(None, None) and len(self.selections)==0:
 			cr.set_source_rgba(255,0,255,255)
-			cr.rectangle(self.selstart[0], self.selstart[1], self.selend[0]-self.selstart[0], self.selend[1]-self.selstart[1])
+			cr.rectangle(sx1, sy1, sx-sx1, sy-sy1)
 			cr.stroke()
-			self.set_status('Box (%d,%d) -> (%d, %d)' % (self.selstart[0], self.selstart[1], self.selend[0], self.selend[1]))
+			self.set_status('Box (%d,%d) -> (%d, %d)' % (sx1, sy1, sx, sy))
 		elif self.mode=='resize':
 			self.set_status('Resize (%d,%d)' % (xoff, yoff))
 		elif self.mode=='move':
