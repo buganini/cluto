@@ -315,9 +315,9 @@ class SQL(object):
 				return os.path.basename(rval)
 			elif t=='DIRNAME':
 				return os.path.dirname(rval)
-			elif t=='PREFIX'
+			elif t=='PREFIX':
 				return os.path.splitext(rval)[0]
-			elif t=='SUFFIX'
+			elif t=='SUFFIX':
 				return os.path.splitext(rval)[1]
 			elif t=='PATHJOIN':
 				return os.path.join(rval[0], rval[1])
