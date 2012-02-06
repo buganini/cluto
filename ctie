@@ -251,7 +251,7 @@ class SQL(object):
 						r.append(c['tags'][key])
 					except:
 						r.append('')
-				return r
+				return tuple(r)
 			elif t[0]=='%':
 				k=t[2:-1].upper()
 				if k=='COUNT':
