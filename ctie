@@ -256,6 +256,13 @@ class SQL(object):
 				k=t[2:-1].upper()
 				if k=='COUNT':
 					return len(p['children'])
+				elif k=='LEVEL':
+					t=p['parent']
+					r=0
+					while t:
+						r+=1
+						t=t['parent']
+					return r
 				elif k=='ORDER':
 					if not p['children']:
 						return True
