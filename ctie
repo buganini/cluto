@@ -1410,7 +1410,7 @@ class CTIE(object):
 						self.tags.append('text')
 				self.level_sanitize()
 				p['flags'].append('CHANGED')
-			if self.toggle_collation and p['children']:
+			if self.toggle_collation.get_active() and p['children']:
 				self.selections.append(0)
 				self.canvas.queue_draw()
 				self.tags_refresh()
