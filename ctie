@@ -497,6 +497,13 @@ class CTIE(object):
 		button.connect("clicked", self.delete)
 		toolbar.pack_start(button, False, False, 0)
 
+		button=Gtk.Button()
+		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_REFRESH, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("Reset Children Order")
+		button.set_image(btn_img)
+		button.connect("clicked", self.set_children_order)
+		toolbar.pack_start(button, False, False, 0)
+
 		toolbar.pack_start(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 1)
 
 		button=Gtk.Button()
@@ -520,7 +527,7 @@ class CTIE(object):
 		button.connect("toggled", lambda x: click(self.focus_item))
 		toolbar.pack_end(button, False, False, 0)
 
-		self.toggle_childpath=button=Gtk.ToggleButton()
+		self.toggle_childrenpath=button=Gtk.ToggleButton()
 		btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_INFO, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_tooltip_text("Display areas path")
 		button.set_image(btn_img)
@@ -1050,7 +1057,7 @@ class CTIE(object):
 				cr.set_source_rgba(255,0,0,255)
 				cr.rectangle(x1, y1, x2-x1, y2-y1)
 			cr.stroke()
-		if self.toggle_childpath.get_active():
+		if self.toggle_childrenpath.get_active():
 			cr.set_source_rgba(0,255,0,255)
 			for i,c in enumerate(p['children']):
 				xa=(c['x1']+c['x2'])/2-p['x1']
@@ -1069,6 +1076,27 @@ class CTIE(object):
 				else:
 					cr.line_to(xa,ya)
 			cr.stroke()
+			if self.selections:
+				cr.set_line_width(3)
+				cr.set_source_rgba(0,0,0,255)
+				for i,c in enumerate(self.reordered_children()):
+					xa=(c['x1']+c['x2'])/2-p['x1']
+					ya=(c['y1']+c['y2'])/2-p['y1']
+					if i in self.selections:
+						if self.mode=='move':
+							xa+=xoff
+							ya+=yoff
+						elif self.mode=='resize':
+							xoff2=max(xoff,x1-x2)
+							yoff2=max(yoff,y1-y2)
+							xa+=xoff2/2
+							ya+=yoff2/2
+					if i==0:
+						cr.move_to(xa,ya)
+					else:
+						cr.line_to(xa,ya)
+				cr.stroke()
+				cr.set_line_width(1)
 		if self.selstart!=(None, None) and self.selend!=(None, None) and len(self.selections)==0:
 			cr.set_source_rgba(255,0,255,255)
 			cr.rectangle(self.selstart[0], self.selstart[1], self.selend[0]-self.selstart[0], self.selend[1]-self.selstart[1])
@@ -1302,6 +1330,16 @@ class CTIE(object):
 
 		if self.focus_item:
 			click(self.focus_item)
+
+	def set_children_order(self, *arg):
+		if not self.focus_item:
+			return
+		if not self.toggle_childrenpath:
+			self.set_status("Please enable areas path display")
+			return
+		p=self.focus_item.get_data("p")
+		p['children']=self.reordered_children()
+		self.canvas.queue_draw()
 
 	def reordered_children(self):
 		if not self.focus_item:
