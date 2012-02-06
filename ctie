@@ -311,6 +311,16 @@ class SQL(object):
 				return abs(rval)
 			elif t=='JOIN':
 				return rval[0].join(rval[1])
+			elif t=='BASENAME':
+				return os.path.basename(rval)
+			elif t=='DIRNAME':
+				return os.path.dirname(rval)
+			elif t=='PREFIX'
+				return os.path.splitext(rval)[0]
+			elif t=='SUFFIX'
+				return os.path.splitext(rval)[1]
+			elif t=='PATHJOIN':
+				return os.path.join(rval[0], rval[1])
 			else:
 				return None
 		lval=self.lval.eval(p)
