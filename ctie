@@ -1256,6 +1256,7 @@ class CTIE(object):
 			filec.destroy()
 			return
 		self.level_sanitize()
+		self.redraw_items_list()
 
 	def add_item_r(self, path):
 		if os.path.isdir(path):
