@@ -1355,6 +1355,7 @@ class CTIE(object):
 			return
 		p=self.focus_item.get_data("p")
 		p['children']=self.reordered_children()
+		self.selections=range(0,len(p['children']))
 		self.canvas.queue_draw()
 
 	def reordered_children(self):
