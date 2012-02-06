@@ -321,6 +321,8 @@ class SQL(object):
 				return os.path.splitext(rval)[1]
 			elif t=='PATHJOIN':
 				return os.path.join(rval[0], rval[1])
+			elif t=='LIST_HAS':
+				return rval[1] in rval[0]
 			else:
 				return None
 		lval=self.lval.eval(p)
