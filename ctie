@@ -266,6 +266,8 @@ class SQL(object):
 						r+=1
 						t=t['parent']
 					return r
+				elif k=='FILE':
+					return p['path']
 				elif k=='IMAGE':
 					it=Item(p)
 					return it.get_pil_cropped()
@@ -368,7 +370,7 @@ class CTIE(object):
 		self.zoom=100
 		self.selstart=(None, None)
 		self.selend=(None, None)
-		self.tags=['filename']
+		self.tags=[]
 		self.copy_tag=[]
 		self.mode=None
 		self.builder = Gtk.Builder()
@@ -833,8 +835,6 @@ class CTIE(object):
 		tags_table=Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		tagsbox.add(tags_table)
 		for i,tag in enumerate(self.tags):
-			if tag=='filename':
-				continue
 			toggle=Gtk.CheckButton.new_with_label(tag)
 			if tag in self.copy_tag:
 				toggle.set_active(True)
@@ -874,7 +874,7 @@ class CTIE(object):
 		for c in focus_p['children']:
 			cs.append((c['x1']-focus_p['x1'], c['y1']-focus_p['y1'], c['x2']-focus_p['x1'], c['y2']-focus_p['y1']))
 		for p in self.clipboard:
-			tags={'filename':os.path.basename(focus_p['path'])}
+			tags={}
 			for tag in p['tags']:
 				tags[tag]=p['tags'][tag]
 			x1=p['x1']
@@ -960,7 +960,7 @@ class CTIE(object):
 				continue
 			del(im)
 			for cp in clipboard:
-				tags={'filename':os.path.basename(p['path'])}
+				tags={}
 				for tag in cp['tags']:
 					tags[tag]=cp['tags'][tag]
 				if x2-x1>1 and y2-y1>1:
@@ -1272,7 +1272,7 @@ class CTIE(object):
 			except:
 				return
 			id_map[path]=md5.new(path).hexdigest()
-			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{'filename':os.path.basename(path)}, 'parent':None, 'flags':[], 'reference':{}})
+			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{}, 'parent':None, 'flags':[], 'reference':{}})
 			del(im)
 
 	def change_level(self, *arg):
@@ -1709,7 +1709,7 @@ class CTIE(object):
 					x=min(x,p['x2']-p['x1'])
 					y=min(y,p['y2']-p['y1'])
 					if x-x1>5 and y-y1>5:
-						p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{'filename':os.path.basename(p['path'])}, 'flags':[], 'reference':{}})
+						p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{}, 'flags':[], 'reference':{}})
 					self.level_sanitize()
 				elif self.mode=='move':
 					xoff=int(self.selend[0]-self.selstart[0])
