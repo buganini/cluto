@@ -548,6 +548,7 @@ class CTIE(object):
 
 		#workarea
 		workarea=self.builder.get_object("workarea")
+		workarea.connect("scroll-event", self.workarea_mouse)
 		workarea.connect("button-press-event", self.workarea_mouse)
 		workarea.connect("button-release-event", self.workarea_mouse)
 		workarea.connect("motion-notify-event", self.workarea_mouse)
@@ -1765,6 +1766,13 @@ class CTIE(object):
 		elif str(type(evt))==repr(Gdk.EventMotion):
 			self.selend=(x,y)
 			self.canvas.queue_draw()
+		elif str(type(evt))==repr(Gdk.EventScroll) and evt.state & Gdk.ModifierType.CONTROL_MASK:
+			if evt.direction==Gdk.ScrollDirection.UP:
+				self.zoom+=5
+			elif evt.direction==Gdk.ScrollDirection.DOWN:
+				self.zoom-=5
+			self.canvas.queue_draw()
+			return False
 
 	def edge_limiter(self, todo):
 		while todo:
