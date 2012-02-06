@@ -1245,6 +1245,7 @@ class CTIE(object):
 				ns.extend(x['children'])
 			s=ns
 		last=None
+		idx=0
 		for p in s:
 			if self.items_filter and not self.items_filter.eval(p):
 				continue
@@ -1262,6 +1263,8 @@ class CTIE(object):
 			evtbox.set_data("p", p)
 			evtbox.set_data("prev", last)
 			evtbox.set_data("next", None)
+			evtbox.set_data("index", idx)
+			idx+=1
 			evtbox.get_style_context().add_provider(self.css, 10)
 			last=evtbox
 			evtbox.connect("button-press-event", self.item_button_press)
@@ -1291,6 +1294,7 @@ class CTIE(object):
 				elif focus_p==p:
 					self.focus_item=evtbox
 					flag=1
+		self.items_number=idx
 		if not self.focus_item:
 			cl=items_list.get_children()
 			if cl:
@@ -1344,6 +1348,7 @@ class CTIE(object):
 					p['flags'].remove('CHANGED')
 				except:
 					pass
+			self.set_status("Item: %d/%d" % (obj.get_data("index")+1, self.items_number))
 			p=obj.get_data("p")
 			self.focus_item=obj
 			obj.get_style_context().add_class("darkback")
