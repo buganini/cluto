@@ -621,7 +621,6 @@ class CTIE(object):
 		self.builder.get_object('btn_add_tag').connect('clicked', self.add_tag)
 
 		#export
-		self.builder.get_object('btn_append_tag').connect('clicked', self.append_tag)
 		self.builder.get_object('btn_export_close').connect('clicked', lambda x: self.builder.get_object('export_window').hide())
 		self.builder.get_object('btn_export').connect('clicked', self.do_export)
 
@@ -1026,6 +1025,9 @@ class CTIE(object):
 		ec=SQL(self.builder.get_object('export_content').get_text())
 		if not ec:
 			return
+		ep=SQL(self.builder.get_object('path_pattern').get_text())
+		if not ep:
+			return
 		while s:
 			ns=[]
 			for p in s:
@@ -1041,15 +1043,7 @@ class CTIE(object):
 						if tag not in tags:
 							tags[tag]=""						
 
-					path=self.builder.get_object('path_pattern').get_text()
-					path=path.split("${")
-					for i,t in enumerate(path):
-						t2=t.split("}",1)
-						if t2[0] in tags:
-							t2[0]=tags[t2[0]]
-						path[i]=''.join(t2)
-
-					path=''.join(path)
+					path=ep.eval(p)
 					path=os.path.join(outputdir, path)
 					pdir=os.path.dirname(path)
 					if not os.path.exists(pdir):
@@ -1069,11 +1063,6 @@ class CTIE(object):
 		b.set_text("%s${%s}" % (b.get_text(), self.builder.get_object('tags_list').get_active_text()))
 
 	def export_show(self, *arg):
-		tags_list=self.builder.get_object('tags_list')
-		tags_list.set_entry_text_column(0)
-		tags_list.remove_all()
-		for tag in self.tags:
-			tags_list.append_text(tag)
 		self.builder.get_object('export_window').show()
 
 	def add_tag(self, *arg):
