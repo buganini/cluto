@@ -155,7 +155,7 @@ class SQL(object):
 			return
 		if type(i)!=type([]):
 			try:
-				tokens=re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|[\$@%#]\{.+?\}|(?:"[^"]*\\(?:.[^"]*\\)*.[^"]*")|(?:"[^"]*")|(?:'[^']*\\(?:.[^']*\\)*.[^']*')|(?:'[^']*')|!|\(|\)|[A-Za-z_]\w*|\d+|,)""",i)
+				tokens=re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|[\$@%#]\{.+?\}|(?:"[^"]*\\(?:.[^"]*\\)*.[^"]*")|(?:"[^"]*")|(?:'[^']*\\(?:.[^']*\\)*.[^']*')|(?:'[^']*')|!|\(|\)|\[|\]|[A-Za-z_]\w*|\d+|,)""",i)
 			except:
 				return
 			self.tree=self.parse(tokens)
@@ -163,19 +163,27 @@ class SQL(object):
 			self.tree=self.parse(i)
 
 	def parse(self, tokens):
-		level=-1
-		stack=0
+		level=0
+		stack=[]
+		sep=-1
+		end=len(tokens)
 		for i,t in enumerate(tokens):
 			if t=='(':
-				if level<0:
+				if not stack and level<=1:
 					sep=i
-					level=0
-				stack+=1
-				
-			elif t==')':
-				stack-=1
-				stack=max(stack,0)
-
+					level=1
+				stack.append(')')
+			elif t=='[':
+				if not stack and level<=1:
+					sep=i
+					level=1
+				stack.append(']')
+			elif t in (')',']'):
+				if stack and t==stack[-1]:
+					end=i
+					stack.pop()
+				else:
+					return
 			if stack:
 				continue
 
@@ -195,6 +203,8 @@ class SQL(object):
 				sep=i
 				level=1
 
+		if sep<0:
+			return
 		self.lval=None
 		self.rval=None
 		t=self.op=tokens[sep]
@@ -204,7 +214,11 @@ class SQL(object):
 			pass
 		elif t=='(':
 			self.op='='
-			self.rval=SQL(tokens[sep+1:-1])
+			self.rval=SQL(tokens[sep+1:end])
+		elif t=='[':
+			self.op='[]'
+			self.lval=SQL(tokens[0:sep])
+			self.rval=SQL(tokens[sep+1:end])
 		elif t in ('!','=') or re.match('^[A-Za-z]\w*$',t):
 			self.rval=SQL(tokens[sep+1:])
 		else:
@@ -328,6 +342,8 @@ class SQL(object):
 			else:
 				return None
 		lval=self.lval.eval(p)
+		if t=='[]':
+			return lval[rval]
 		if t==',':
 			if type(lval)==type([]):
 				lval.append(rval)
