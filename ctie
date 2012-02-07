@@ -165,7 +165,7 @@ class SQL(object):
 	def parse(self, tokens):
 		level=0
 		stack=[]
-		sep=-1
+		sep=0
 		end=len(tokens)
 		for i,t in enumerate(tokens):
 			if t=='(':
