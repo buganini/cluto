@@ -1325,9 +1325,10 @@ class CTIE(object):
 
 	def items_filter_apply(self, *arg):
 		self.items_filter=SQL(self.builder.get_object("items_filter").get_text())
-		if not self.items_filter:
+		if self.items_filter:
+			self.redraw_items_list()
+		else:
 			self.set_status('Failed parsing filter')
-		self.redraw_items_list()
 
 	def redraw_items_list(self, *arg):
 		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
