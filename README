@@ -2,3 +2,47 @@ Dependencies:
 	GTK3
 	PIL
 	ocropus
+
+Query Language:
+	${KEY}: local variable
+	@{KEY}: lexical variable (inherit from parent)
+	#{KEY}: list of children's local variable
+	%{KEY}: system properties:
+		IMAGE: image itself (used as content in exporting)
+		FILE: original file path
+		LEVEL:	level
+		COUNT: number of children
+		ORDER: children are well ordered
+	Operators:
+		[]
+		,
+		+
+		-
+		==
+		!=
+		&&
+		||
+		!
+		>=
+		>
+		<=
+		<
+	Functions:
+		ABS
+			abs(-1) -> 1
+		JOIN
+			join(" ",("a","b")) -> "a b"
+		BASENAME
+			basename("a/b/c.d") -> "c.d"
+		DIRNAME
+			basename("a/b/c.d") -> "a/b"
+		PREFIX
+			prefix("c.d") -> "c"
+		SUFFIX
+			suffix("c.d") -> "d"
+		PATHJOIN
+			pathjoin("a/b","c.d") -> "a/b/c.d"
+		LIST_HAS
+			list_has(("a","b"),"a") -> true
+			list_has(("a","b"),"c") -> false
+
