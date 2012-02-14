@@ -293,6 +293,10 @@ class SQL(object):
 				elif k=='IMAGE':
 					it=Item(p)
 					return it.get_pil_cropped()
+				elif k=='WIDTH':
+					return p['x2']-p['x1']
+				elif k=='HEIGHT':
+					return p['y2']-p['y1']
 				elif k=='ORDER':
 					if not p['children']:
 						return True
