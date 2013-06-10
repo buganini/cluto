@@ -325,6 +325,11 @@ class SQL(object):
 						trace.append(curr)
 						last=c
 					return True
+				elif k=='INDEX':
+					if p['parent']:
+						return p['parent']['children'].index(p)+1
+					else:
+						return 0
 		rval=self.rval.eval(p)
 		if re.match('^-+$', t):
 			if type(rval)!=int:

@@ -15,6 +15,7 @@ Query Language:
 		LEVEL:	level
 		COUNT: number of children
 		ORDER: children are well ordered
+		INDEX: index in siblings
 	Operators:
 		[]
 		,
