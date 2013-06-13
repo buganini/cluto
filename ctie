@@ -1537,9 +1537,9 @@ class CTIE(object):
 				for i,line in enumerate(lines):
 					title=line.attr("title").split(" ")
 					x1=int(title[1])
-					y1=int(title[4])
+					y1=int(title[2])
 					x2=int(title[3])
-					y2=int(title[2])
+					y2=int(title[4])
 					# if (x1,y1,x2,y2) in ss:
 					# 	continue
 					text=line.text()
