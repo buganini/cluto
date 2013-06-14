@@ -866,6 +866,7 @@ class CTIE(object):
 			self.copy_tag=data['tags']
 			tempdir=data['tempdir']
 			self.builder.get_object("regex").get_buffer().set_text(data['regex'])
+			self.regex_apply()
 		self.level_sanitize()
 		self.redraw_items_list()
 		self.tags_refresh()
