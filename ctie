@@ -684,6 +684,7 @@ class CTIE(object):
 		self.child_tags_refresh()
 		self.canvas.queue_draw()
 		self.preview_canvas.queue_draw()
+		self.set_status('Area: %d Select: %s' % (len(focus_p['children']), ', '.join([str(i+1) for i in self.selections])))
 
 	def next(self, *arg):
 		if not self.focus_item:
@@ -699,6 +700,7 @@ class CTIE(object):
 		self.child_tags_refresh()
 		self.canvas.queue_draw()
 		self.preview_canvas.queue_draw()
+		self.set_status('Area: %d Select: %s' % (len(focus_p['children']), ', '.join([str(i+1) for i in self.selections])))
 
 	def key_press(self, obj, evt):
 		collation_mode=self.toggle_collation.get_active()
@@ -1748,7 +1750,7 @@ class CTIE(object):
 							else:
 								self.selections.append(i)
 					self.child_tags_refresh()
-					self.set_status('Area: %d Select: %s' % (len(p['children']), ', '.join([str(i) for i in self.selections])))
+					self.set_status('Area: %d Select: %s' % (len(p['children']), ', '.join([str(i+1) for i in self.selections])))
 				elif self.mode=='rectangle':
 					if x1>x:
 						x1,x=x,x1
