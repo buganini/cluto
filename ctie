@@ -662,7 +662,7 @@ class CTIE(object):
 			try:
 				a,b=line.split("\t")
 				try:
-					self.regex.append((re.compile(a), b))
+					self.regex.append((re.compile(a.decode("UTF-8")), b))
 				except:
 					pass
 			except:
