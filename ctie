@@ -363,7 +363,12 @@ class SQL(object):
 			if t=='ABS':
 				return abs(rval)
 			elif t=='JOIN':
-				return rval[0].join(rval[1])
+				if(type(rval[0])==unicode):
+					s=rval[0].encode("utf-8")
+				else:
+					s=rval[0]
+				a=[x.encode("utf-8") if type(x)==unicode else x for x in rval[1]]
+				return s.join(a)
 			elif t=='BASENAME':
 				return os.path.basename(rval)
 			elif t=='DIRNAME':
