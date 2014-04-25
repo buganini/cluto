@@ -1076,7 +1076,7 @@ class CTIE(object):
 					if not os.path.exists(pdir):
 						os.makedirs(pdir)
 					cnt=ec.eval(p)
-					if str(cnt).startswith("<Image"):
+					if str(cnt).startswith("<Image") or str(cnt).startswith("<PIL.Image"):
 						cnt.save(path)
 					elif type(cnt)==str:
 						f=open(path,'w')
