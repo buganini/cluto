@@ -677,7 +677,7 @@ class CTIE(object):
 	def previous(self, *arg):
 		if not self.focus_item:
 			return
-		focus_p=self.focus_item.get_data("p")
+		focus_p=self.focus_item.p
 		if not len(focus_p['children']):
 			pass
 		elif len(self.selections)!=1:
@@ -694,7 +694,7 @@ class CTIE(object):
 	def next(self, *arg):
 		if not self.focus_item:
 			return
-		focus_p=self.focus_item.get_data("p")
+		focus_p=self.focus_item.p
 		if not len(focus_p['children']):
 			pass
 		elif len(self.selections)!=1:
@@ -711,14 +711,14 @@ class CTIE(object):
 		collation_mode=self.toggle_collation.get_active()
 		if evt.keyval==Gdk.KEY_Page_Down:
 			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
-				next=self.focus_item.get_data("next")
+				next=self.focus_item.next
 				if next:
 					click(next)
 			else:
 				self.next()
 		elif evt.keyval==Gdk.KEY_Page_Up:
 			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
-				prev=self.focus_item.get_data("prev")
+				prev=self.focus_item.prev
 				if prev:
 					click(prev)
 			else:
@@ -728,7 +728,7 @@ class CTIE(object):
 		elif (evt.keyval==Gdk.KEY_A or evt.keyval==Gdk.KEY_a) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
 			if not self.focus_item:
 				return
-			focus_p=self.focus_item.get_data("p")
+			focus_p=self.focus_item.p
 			self.selections=[]
 			if not evt.state & Gdk.ModifierType.SHIFT_MASK:
 				self.selections.extend(range(0, len(focus_p['children'])))
@@ -743,7 +743,7 @@ class CTIE(object):
 		cs=items_list.get_children()
 		todo=[]
 		for c in cs:
-			p=c.get_data("p")
+			p=c.p
 			if not p:
 				continue
 			x1=p['x1']
@@ -792,7 +792,7 @@ class CTIE(object):
 		cs=items_list.get_children()
 		todo=[]
 		for c in cs:
-			p=c.get_data("p")
+			p=c.p
 			if not p:
 				continue
 			x1=p['x1']
@@ -919,7 +919,7 @@ class CTIE(object):
 	def copy(self, *arg):
 		if not self.focus_item:
 			return
-		focus_p=self.focus_item.get_data("p")
+		focus_p=self.focus_item.p
 		self.clipboard=[]
 		for i in self.selections:
 			p=focus_p['children'][i]
@@ -932,7 +932,7 @@ class CTIE(object):
 	def paste(self, *arg):
 		if not self.focus_item:
 			return
-		focus_p=self.focus_item.get_data("p")
+		focus_p=self.focus_item.p
 		self.selections=[]
 		cs=[]
 		for c in focus_p['children']:
@@ -962,7 +962,7 @@ class CTIE(object):
 		items_list=self.builder.get_object("items_list")
 		cs=items_list.get_children()
 		for c in cs:
-			p=c.get_data("p")
+			p=c.p
 			if not p:
 				continue
 			if len(p['children']):
@@ -1034,7 +1034,7 @@ class CTIE(object):
 	def delete(self, *arg):
 		if not self.focus_item:
 			return
-		focus_p=self.focus_item.get_data("p")
+		focus_p=self.focus_item.p
 		self.selections.sort()
 		self.selections.reverse()
 		for i in self.selections:
@@ -1103,7 +1103,7 @@ class CTIE(object):
 	def canvas_draw(self, widget, cr):
 		if not self.focus_item:
 			return
-		p=self.focus_item.get_data("p")
+		p=self.focus_item.p
 		factor=self.zoom*0.01
 		width=p['x2']-p['x1']
 		height=p['y2']-p['y1']
@@ -1113,7 +1113,7 @@ class CTIE(object):
 		self.canvas.set_halign(Gtk.Align.CENTER)
 		self.canvas.set_valign(Gtk.Align.CENTER)
 
-		p=self.focus_item.get_data("p")
+		p=self.focus_item.p
 		it=Item(p)
 		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), 0, 0)
 		cr.paint()
@@ -1202,7 +1202,7 @@ class CTIE(object):
 	def preview_draw(self, widget, cr):
 		if not self.focus_item:
 			return
-		focus_p=self.focus_item.get_data("p")
+		focus_p=self.focus_item.p
 		if len(self.selections)!=1:
 			return
 		p=focus_p['children'][self.selections[0]]
@@ -1219,7 +1219,7 @@ class CTIE(object):
 	def zoom_fit(self, *arg):
 		if not self.focus_item or not self.canvas:
 			return
-		p=self.focus_item.get_data("p")
+		p=self.focus_item.p
 		workarea_window=self.builder.get_object('workarea_window')
 		alloc=workarea_window.get_allocation()
 		win_width=alloc.width
@@ -1257,24 +1257,24 @@ class CTIE(object):
 		items_list=self.builder.get_object("items_list")
 
 		level_change=False
-		focus_p=self.focus_item.get_data("p")
-		prev=self.focus_item.get_data("prev")
-		next=self.focus_item.get_data("next")
+		focus_p=self.focus_item.p
+		prev=self.focus_item.prev
+		next=self.focus_item.next
 
-		self.focus_item.set_data("prev", None)
-		self.focus_item.set_data("next", None)
+		self.focus_item.prev=None
+		self.focus_item.next=None
 		items_list.remove(self.focus_item)
 
 		if next:
 			new_focus_widget=next
-			next.set_data("prev", prev)
+			next.prev=prev
 			if prev:
-				prev.set_data("next", next)
+				prev.next=next
 		elif prev:
 			new_focus_widget=prev
-			prev.set_data("next", next)
+			prev.next=next
 			if next:
-				next.set_data("prev", prev)
+				next.prev=prev
 		else:
 			level_change=True
 			new_focus_widget=None
@@ -1334,7 +1334,7 @@ class CTIE(object):
 		if level!=self.curr_level and level:
 			self.focus_field=(None, None)
 			if self.focus_item:
-				self.last_focus=self.focus_item.get_data("p")
+				self.last_focus=self.focus_item.p
 			self.last_level=self.curr_level
 			self.curr_level=level
 			self.redraw_items_list()
@@ -1351,7 +1351,7 @@ class CTIE(object):
 			return
 		focus_p=None
 		if self.focus_item:
-			focus_p=self.focus_item.get_data("p")
+			focus_p=self.focus_item.p
 			self.focus_item.get_style_context().remove_class("darkback")
 			self.focus_item.queue_draw()
 			self.focus_item=None
@@ -1381,11 +1381,11 @@ class CTIE(object):
 			box.pack_start(label, False, False, 0)
 			evtbox.add(box)
 			if last:
-				last.set_data("next", evtbox)
-			evtbox.set_data("p", p)
-			evtbox.set_data("prev", last)
-			evtbox.set_data("next", None)
-			evtbox.set_data("index", idx)
+				last.next=evtbox
+			evtbox.p=p
+			evtbox.prev=last
+			evtbox.next=None
+			evtbox.index=idx
 			idx+=1
 			evtbox.get_style_context().add_provider(self.css, 10)
 			last=evtbox
@@ -1431,7 +1431,7 @@ class CTIE(object):
 		if not self.toggle_childrenpath:
 			self.set_status("Please enable areas path display")
 			return
-		p=self.focus_item.get_data("p")
+		p=self.focus_item.p
 		p['children']=self.reordered_children()
 		self.selections=range(0,len(p['children']))
 		self.canvas.queue_draw()
@@ -1439,7 +1439,7 @@ class CTIE(object):
 	def reordered_children(self):
 		if not self.focus_item:
 			return
-		p=self.focus_item.get_data("p")
+		p=self.focus_item.p
 		r=[]
 		for i in self.selections:
 			r.append(p['children'][i])
@@ -1488,13 +1488,13 @@ class CTIE(object):
 			self.focus_item.queue_draw()
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 			if obj!=self.focus_item:
-				p=self.focus_item.get_data("p")
+				p=self.focus_item.p
 				try:
 					p['flags'].remove('CHANGED')
 				except:
 					pass
-			self.set_status("Item: %d/%d" % (obj.get_data("index")+1, self.items_number))
-			p=obj.get_data("p")
+			self.set_status("Item: %d/%d" % (obj.index+1, self.items_number))
+			p=obj.p
 			self.focus_item=obj
 			obj.get_style_context().add_class("darkback")
 			obj.queue_draw()
@@ -1574,10 +1574,10 @@ class CTIE(object):
 		if c:
 			tagsbox.remove(c)
 		collation_editor=self.builder.get_object("collation_editor")
-		collation_editor.set_data("master", None)
+		collation_editor.master=None
 		collation_editor.set_text("")
 
-		focus_p=self.focus_item.get_data("p")
+		focus_p=self.focus_item.p
 		t=focus_p
 		tags={}
 		while t:
@@ -1622,7 +1622,7 @@ class CTIE(object):
 		if len(self.selections)!=1:
 			return
 
-		focus_p=self.focus_item.get_data("p")
+		focus_p=self.focus_item.p
 		p=focus_p['children'][self.selections[0]]
 		t=p
 		tags={}
@@ -1693,7 +1693,7 @@ class CTIE(object):
 		if self.toggle_collation.get_active() and self.focus_field and self.focus_field[0]=='c':
 			self.builder.get_object("editor_label").set_text(self.focus_field[1])
 			self.builder.get_object("collation_window").show()
-			self.builder.get_object("collation_editor").set_data("master", obj)
+			self.builder.get_object("collation_editor").master=obj
 			if not self.signal_mask and obj:
 				GObject.idle_add(self.focus_collation_editor)
 				self.signal_mask=True
@@ -1710,7 +1710,7 @@ class CTIE(object):
 		self.builder.get_object("collation_editor").set_position(0)
 
 	def collation_editor_changed(self, obj, *arg):
-		master=obj.get_data("master")
+		master=obj.master
 		if master and not self.signal_mask:
 			self.signal_mask=True
 			master.set_text(obj.get_text())
@@ -1730,7 +1730,7 @@ class CTIE(object):
 		evtx,evty=self.builder.get_object('workarea').translate_coordinates(self.canvas, evt.x, evt.y)
 		x=evtx/factor
 		y=evty/factor
-		p=self.focus_item.get_data("p")
+		p=self.focus_item.p
 		if str(type(evt))==repr(Gdk.EventButton):
 			if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 				self.selstart=(x,y)
