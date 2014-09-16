@@ -301,7 +301,7 @@
               <object class="GtkPaned" id="paned1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="position">200</property>
+                <property name="position">225</property>
                 <child>
                   <object class="GtkBox" id="box4">
                     <property name="visible">True</property>
