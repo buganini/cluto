@@ -138,9 +138,9 @@ class Item(object):
 			ow,oh=im.size
 			nw,nh=(160,240)
 			if float(ow)/oh>float(nw)/nh:
-				newsize=(nw, math.ceil(float(nw)*oh/ow))
+				newsize=(nw, int(math.ceil(float(nw)*oh/ow)))
 			else:
-				newsize=(math.ceil(float(nh)*ow/oh), nh)
+				newsize=(int(math.ceil(float(nh)*ow/oh)), nh)
 			if newsize[0]<im.size[0] and newsize[1]<im.size[1]:
 				im.thumbnail(newsize)
 			else:
