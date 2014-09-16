@@ -28,6 +28,7 @@ import weakref
 import pickle
 import subprocess
 import uuid
+import math
 from pyquery import PyQuery as pq
 
 os.putenv("TESSDATA_PREFIX", "/usr/share")
@@ -135,9 +136,9 @@ class Item(object):
 			ow,oh=im.size
 			nw,nh=(160,240)
 			if float(ow)/oh>float(nw)/nh:
-				newsize=(nw, int(float(nw)*oh/ow))
+				newsize=(nw, math.ceil(float(nw)*oh/ow))
 			else:
-				newsize=(int(float(nh)*ow/oh), nh)
+				newsize=(math.ceil(float(nh)*ow/oh), nh)
 			if newsize[0]<im.size[0] and newsize[1]<im.size[1]:
 				im.thumbnail(newsize)
 			else:
