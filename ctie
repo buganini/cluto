@@ -1529,41 +1529,47 @@ class CTIE(object):
 			canvas.show()
 			self.zoom_fit()
 			if self.toggle_ocr.get_active():
-				if p['children']:
-					return
-				ss=[]
-				for sc in p['children']:
-					ss.append((sc['x1']-p['x1'], sc['y1']-p['y1'], sc['x2']-p['x1'], sc['y2']-p['y1']))
-				it=Item(p)
-				tempdir=it.get_ocr_tempdir()
-				if not os.path.exists(tempdir):
-					os.makedirs(tempdir)
-				im=it.get_pil_cropped()
-				im.save(os.path.join(tempdir, "eng.blah.exp0.tif"))
-				del(im)
-				os.chdir(tempdir)
-				subprocess.call(["tesseract", "eng.blah.exp0.tif", "eng.blah.exp0", "hocr"])
-				html=open("eng.blah.exp0.html").read()
-				lines=pq(html)(".ocr_line").items()
-				for i,line in enumerate(lines):
-					title=line.attr("title").split(" ")
-					x1=int(title[1])
-					y1=int(title[2])
-					x2=int(title[3])
-					y2=int(title[4])
-					# if (x1,y1,x2,y2) in ss:
-					# 	continue
-					text=line.text()
-					for a,b in self.regex:
-						text=a.sub(b,text)
-					p['children'].append({'path':p['path'],'x1':x1+p['x1'],'y1':y1+p['y1'],'x2':x2+p['x1'],'y2':y2+p['y1'],'children':[], 'tags':{'text':text}, 'parent':p, 'flags':['OCRed','CHANGED'], 'reference':{}})
+				if self.toggle_collation.get_active():
+					for cp in p['children']:
+						if cp['tags'].get('text', None):
+							continue
+						cit=Item(cp)
+						tempdir=cit.get_ocr_tempdir()
+						if not os.path.exists(tempdir):
+							os.makedirs(tempdir)
+						im=cit.get_pil_cropped()
+						im.save(os.path.join(tempdir, "clip.png"))
+						del(im)
+						os.chdir(tempdir)
+						subprocess.call(["tesseract", "clip.png", "out"])
+						text=open("out.txt").read().rstrip().decode("utf-8")
+						for rx,r in self.regex:
+							text2=re.sub(rx, r, text)
+							print text.encode("utf-8"), '|', rx.encode("utf-8"), '|', r.encode("utf-8"), '|', text2.encode("utf-8")
+							text=text2
+						cp['tags']['text']=text
+						if 'text' not in self.tags:
+							self.tags.append('text')
+						cp['flags'].append('CHANGED')
+					self.selections.append(0)
+					self.canvas.queue_draw()
+				else:
+					if p['tags'].get('text', None):
+						return
+					it=Item(p)
+					tempdir=it.get_ocr_tempdir()
+					if not os.path.exists(tempdir):
+						os.makedirs(tempdir)
+					im=it.get_pil_cropped()
+					im.save(os.path.join(tempdir, "clip.png"))
+					del(im)
+					os.chdir(tempdir)
+					subprocess.call(["tesseract", "clip.png", "out"])
+					p['tags']['text']=open("out.txt").read().rstrip()
 					if 'text' not in self.tags:
 						self.tags.append('text')
-				self.level_sanitize()
-				p['flags'].append('CHANGED')
-			if self.toggle_collation.get_active() and p['children']:
-				self.selections.append(0)
-				self.canvas.queue_draw()
+					self.level_sanitize()
+					p['flags'].append('CHANGED')
 				self.tags_refresh()
 			GObject.idle_add(lambda: self.canvas.grab_focus())
 
