@@ -1491,8 +1491,8 @@ class CTIE(object):
 			self.focus_item.queue_draw()
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 			if obj!=self.focus_item:
-				p=self.focus_item.p
 				try:
+					p=self.focus_item.p
 					p['flags'].remove('CHANGED')
 				except:
 					pass
