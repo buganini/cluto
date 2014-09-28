@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
- Copyright (c) 2012 Kuan-Chung Chiu <buganini@gmail.com>
+ Copyright (c) 2012-2014 Kuan-Chung Chiu <buganini@gmail.com>
 
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -670,7 +670,7 @@ class CTIE(object):
 			try:
 				a,b=line.split("\t")
 				try:
-					self.regex.append((re.compile(a.decode("UTF-8")), b))
+					self.regex.append((a.decode("UTF-8"), b.decode("utf-8")))
 				except:
 					pass
 			except:
