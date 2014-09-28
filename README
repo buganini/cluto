@@ -1,7 +1,6 @@
 Dependencies:
 	GTK3
 	PIL
-	ocropus
 
 Query Language:
 	${KEY}: local variable
