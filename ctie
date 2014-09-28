@@ -474,6 +474,10 @@ class CTIE(object):
 		item.connect("activate", self.rtrim)
 		menu_batch.attach(item, 0, 1, 1, 2)
 
+		item=Gtk.MenuItem.new_with_label("Set Value")
+		item.connect("activate", self.set_value)
+		menu_batch.attach(item, 0, 1, 2, 3)
+
 		menu_batch.show_all()
 
 		#toolbar
@@ -627,6 +631,10 @@ class CTIE(object):
 		toolbar.pack_end(button, False, False, 0)
 
 		toolbar.show_all()
+
+		#batch
+		self.builder.get_object('btn_set_value_close').connect('clicked', lambda x: self.builder.get_object('set_value_window').hide())
+		self.builder.get_object('btn_set_value_apply').connect('clicked', self.set_value_apply)
 
 		#items list
 		self.builder.get_object("btn_items_filter_apply").connect("clicked", self.items_filter_apply)
@@ -838,6 +846,31 @@ class CTIE(object):
 			todo.extend(p['children'])
 		self.edge_limiter(todo)
 		self.redraw_items_list()
+
+	def set_value(self, *arg):
+		self.builder.get_object('set_value_window').show()
+
+	def set_value_apply(self, *arg):
+		key=self.builder.get_object('set_value_key').get_text()
+		value=self.builder.get_object('set_value_value').get_text()
+		formula=None
+		if not key:
+			return
+		if self.builder.get_object('set_value_value_is_formula').get_active():
+			formula=SQL(value)
+		if key not in self.tags:
+			self.tags.append(key)
+		items_list=self.builder.get_object("items_list")
+		cs=items_list.get_children()
+		todo=[]
+		for c in cs:
+			p=c.p
+			if not p:
+				continue
+			if formula:
+				p["tags"][key]=formula.eval(p)
+			else:
+				p["tags"][key]=value
 
 	def open_project(self, *arg):
 		global id_map, tempdir, clear_tempdir
