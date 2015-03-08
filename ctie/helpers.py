@@ -1,3 +1,5 @@
+import os
+import tempfile
 import re
 
 def try_int(s):
@@ -10,6 +12,7 @@ def natsort_key(s):
 def natcmp(a, b):
 	return cmp(natsort_key(a), natsort_key(b))
 
+tempdir=None
 def get_tempdir():
 	global tempdir
 	if not tempdir or not os.path.exists(tempdir):

@@ -18,7 +18,6 @@
 import os
 import sys
 import glob
-import tempfile
 from gi.repository import Gtk, Gdk, cairo, GObject, Pango
 import md5
 import Image
@@ -31,12 +30,12 @@ import math
 from pyquery import PyQuery as pq
 from helpers import *
 from cql import *
+import imglib
 
 os.putenv("TESSDATA_PREFIX", "/usr/share")
 
 threshold=30
 
-tempdir=None
 id_map={}
 cache_gtk={}
 cache_pixbuf={}
@@ -486,36 +485,8 @@ class CTIE(object):
 			it=Item(p)
 			im=it.get_pil_l()
 
-			#x1
-			stop=False
-			for a in xrange(x1,x2):
-				last=im.getpixel((a,y1))
-				for i in xrange(y1,y2):
-					c=im.getpixel((a,i))
-					if abs(c-last)>threshold:
-						stop=True
-						break
-					last=c
-				if stop:
-					break
-			nx1=a-5
-
-			#y1
-			stop=False
-			for a in xrange(y1,y2):
-				last=im.getpixel((x1,a))
-				for i in xrange(x1,x2):
-					c=im.getpixel((i,a))
-					if abs(c-last)>threshold:
-						stop=True
-						break
-					last=c
-				if stop:
-					break
-			ny1=a-5
-
-			p['x1']=max(nx1,x1)
-			p['y1']=max(ny1,y1)
+			p['x1'] = imglib.leftTrim(im, x1, y1, x2, y2)
+			p['y1'] = imglib.topTrim(im, x1, y1, x2, y2)
 			todo.extend(p['children'])
 		self.edge_limiter(todo)
 		self.redraw_items_list()
@@ -535,36 +506,8 @@ class CTIE(object):
 			it=Item(p)
 			im=it.get_pil_l()
 
-			#x2
-			stop=False
-			for a in xrange(x2,x1,-1):
-				last=im.getpixel((a-1,y1))
-				for i in xrange(y1,y2):
-					c=im.getpixel((a-1,i))
-					if abs(c-last)>threshold:
-						stop=True
-						break
-					last=c
-				if stop:
-					break
-			nx2=a+5
-
-			#y2
-			stop=False
-			for a in xrange(y2,y1,-1):
-				last=im.getpixel((x1,a-1))
-				for i in xrange(x1,x2):
-					c=im.getpixel((i,a-1))
-					if abs(c-last)>threshold:
-						stop=True
-						break
-					last=c
-				if stop:
-					break
-			ny2=a+5
-
-			p['x2']=min(nx2, x2)
-			p['y2']=min(ny2, y2)
+			p['x2'] = imglib.rightTrim(im, x1, y1, x2, y2)
+			p['y2'] = imglib.bottomTrim(im, x1, y1, x2, y2)
 			todo.extend(p['children'])
 		self.edge_limiter(todo)
 		self.redraw_items_list()
