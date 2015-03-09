@@ -372,45 +372,11 @@ class CtieUI(object):
 			self.paste()
 
 	def ltrim(self, *arg):
-		items_list=self.builder.get_object("items_list")
-		cs=items_list.get_children()
-		todo=[]
-		for c in cs:
-			p=c.p
-			if not p:
-				continue
-			x1=p['x1']
-			y1=p['y1']
-			x2=p['x2']
-			y2=p['y2']
-			it=Item(p)
-			im=it.get_pil_l()
-
-			p['x1'] = imglib.leftTrim(im, x1, y1, x2, y2)
-			p['y1'] = imglib.topTrim(im, x1, y1, x2, y2)
-			todo.extend(p['children'])
-		self.edge_limiter(todo)
+		self.ctie.leftTopTrim();
 		self.redraw_items_list()
 
 	def rtrim(self, *arg):
-		items_list=self.builder.get_object("items_list")
-		cs=items_list.get_children()
-		todo=[]
-		for c in cs:
-			p=c.p
-			if not p:
-				continue
-			x1=p['x1']
-			y1=p['y1']
-			x2=p['x2']
-			y2=p['y2']
-			it=Item(p)
-			im=it.get_pil_l()
-
-			p['x2'] = imglib.rightTrim(im, x1, y1, x2, y2)
-			p['y2'] = imglib.bottomTrim(im, x1, y1, x2, y2)
-			todo.extend(p['children'])
-		self.edge_limiter(todo)
+		self.ctie.rightBottomTrim();
 		self.redraw_items_list()
 
 	def set_value(self, *arg):
@@ -419,24 +385,10 @@ class CtieUI(object):
 	def set_value_apply(self, *arg):
 		key=self.builder.get_object('set_value_key').get_text()
 		value=self.builder.get_object('set_value_value').get_text()
-		formula=None
+		isFormula = self.builder.get_object('set_value_value_is_formula').get_active()
 		if not key:
 			return
-		if self.builder.get_object('set_value_value_is_formula').get_active():
-			formula=CQL(value)
-		if key not in self.tags:
-			self.tags.append(key)
-		items_list=self.builder.get_object("items_list")
-		cs=items_list.get_children()
-		todo=[]
-		for c in cs:
-			p=c.p
-			if not p:
-				continue
-			if formula:
-				p["tags"][key]=formula.eval(p)
-			else:
-				p["tags"][key]=value
+		self.ctie.batchSetTag(key, value, isFormula)
 
 	def open_project(self, *arg):
 		global tempdir, clear_tempdir
@@ -458,7 +410,7 @@ class CtieUI(object):
 
 	def save_project(self, *arg):
 		global clear_tempdir
-		if not self.clips:
+		if not self.ctie.clips:
 			return
 		filec=Gtk.FileChooserDialog("Save", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
@@ -887,15 +839,19 @@ class CtieUI(object):
 			for path in cs:
 				self.ctie.addItem(path)
 			filec.destroy()
+			self.level_sanitize()
+			self.redraw_items_list()
 		else:
 			filec.destroy()
 			return
-		self.level_sanitize()
-		self.redraw_items_list()
 
 	def change_level(self, *arg):
-		level=self.builder.get_object("level").get_active_text()
-		if level!=self.curr_level and level:
+		level = self.builder.get_object("level").get_active_text()
+		if level is None:
+			return
+		level=int(level)
+		if level!=self.curr_level:
+			self.ctie.setLevel(level)
 			self.focus_field=(None, None)
 			if self.focus_item:
 				self.last_focus=self.focus_item.p
@@ -904,15 +860,13 @@ class CtieUI(object):
 			self.redraw_items_list()
 
 	def items_filter_apply(self, *arg):
-		self.items_filter=CQL(self.builder.get_object("items_filter").get_text())
-		if self.items_filter:
+		r = self.ctie.setFilter(self.builder.get_object("items_filter").get_text())
+		if r:
 			self.redraw_items_list()
 		else:
 			self.set_status('Failed parsing filter')
 
 	def redraw_items_list(self, *arg):
-		if self.ctie.isEmpty() or not self.builder.get_object("level").get_active_text():
-			return
 		focus_p=None
 		if self.focus_item:
 			focus_p=self.focus_item.p
@@ -924,29 +878,20 @@ class CtieUI(object):
 			items_list.remove(c)
 			c.destroy()
 		flag=0
-		s=self.ctie.clips
-		for i in xrange(0,int(self.builder.get_object("level").get_active_text())):
-			ns=[]
-			for x in s:
-				ns.extend(x['children'])
-			s=ns
 		last=None
 		idx=0
-		for p in s:
-			if self.items_filter and not self.items_filter.eval(p):
-				continue
-			it=Item(p)
+		for it in self.ctie.getItems():
 			tfile=it.get_thumbnail()
 			evtbox=Gtk.EventBox()
 			box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 			img=Gtk.Image.new_from_file(tfile)
-			label=Gtk.Label(os.path.basename(p['path']))
+			label=Gtk.Label(os.path.basename(it.p['path']))
 			box.pack_start(img, False, False, 0)
 			box.pack_start(label, False, False, 0)
 			evtbox.add(box)
 			if last:
 				last.next=evtbox
-			evtbox.p=p
+			evtbox.p=it.p
 			evtbox.prev=last
 			evtbox.next=None
 			evtbox.index=idx
@@ -958,7 +903,7 @@ class CtieUI(object):
 			evtbox.show_all()
 			if not flag:
 				if self.last_level and self.curr_level>self.last_level:
-					t=p
+					t=it.p
 					while t and not flag:
 						if self.last_focus==t['parent']:
 							flag=1
@@ -967,7 +912,7 @@ class CtieUI(object):
 						t=t['parent']
 				elif self.last_level and self.curr_level<self.last_level:
 					s=[]
-					s.extend(p['children'])
+					s.extend(it.p['children'])
 					while s and not flag:
 						ns=[]
 						for c in s:
@@ -977,10 +922,9 @@ class CtieUI(object):
 								break
 							ns.extend(c['children'])
 						s=ns
-				elif focus_p==p:
+				elif focus_p==it.p:
 					self.focus_item=evtbox
 					flag=1
-		self.items_number=idx
 		if not self.focus_item:
 			cl=items_list.get_children()
 			if cl:
@@ -995,22 +939,10 @@ class CtieUI(object):
 		if not self.toggle_childrenpath:
 			self.set_status("Please enable areas path display")
 			return
-		p=self.focus_item.p
-		p['children']=self.reordered_children()
-		self.selections=range(0,len(p['children']))
+		it=Item(self.focus_item.p)
+		it.reordered_children(self.selections)
+		self.selections=range(0,len(it.p['children']))
 		self.canvas.queue_draw()
-
-	def reordered_children(self):
-		if not self.focus_item:
-			return
-		p=self.focus_item.p
-		r=[]
-		for i in self.selections:
-			r.append(p['children'][i])
-		for i,c in enumerate(p['children']):
-			if i not in self.selections:
-				r.append(c)
-		return r
 
 	def autoscroll(self):
 		items_list=self.builder.get_object("items_list")
@@ -1032,12 +964,14 @@ class CtieUI(object):
 		except:
 			active=0
 		level.remove_all()
-		for i in xrange(0,l):
+		for i in range(0,l):
 			level.append_text(str(i))
 		if active<l:
 			level.set_active(active)
+			self.ctie.setLevel(active)
 		else:
 			level.set_active(l-1)
+			self.ctie.setLevel(l-1)
 
 	def item_button_press(self, obj, evt):
 		if self.focus_item:
@@ -1050,7 +984,7 @@ class CtieUI(object):
 					p['flags'].remove('CHANGED')
 				except:
 					pass
-			self.set_status("Item: %d/%d" % (obj.index+1, self.items_number))
+			self.set_status("Item: %d/%d" % (obj.index+1, len(self.ctie.getItems())))
 			p=obj.p
 			self.focus_item=obj
 			obj.get_style_context().add_class("darkback")
@@ -1188,19 +1122,11 @@ class CtieUI(object):
 
 		focus_p=self.focus_item.p
 		p=focus_p['children'][self.selections[0]]
-		t=p
-		tags={}
-		while t:
-			for tag in t['tags']:
-				if tag not in tags:
-					tags[tag]=t['tags'][tag]
-			t=t['parent']
-		for tag in self.tags:
-			if tag not in tags:
-				tags[tag]=""
+		tags = self.ctie.getTags(Item(p))
+
 		tags_table=Gtk.Grid()
 		tagsbox.add(tags_table)
-		for i,tag in enumerate(self.tags):
+		for i,tag in enumerate(self.ctie.getTags()):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
 			text.connect('changed', self.set_tag, (p, tag))
@@ -1404,7 +1330,7 @@ class CtieUI(object):
 							c['parent']['children'].remove(c)
 						else:
 							self.clips.remove(c)
-					self.edge_limiter(todo)
+					self.ctie.edge_limiter(todo)
 				self.selstart=(None, None)
 				self.selend=(None, None)
 				self.mode=None
@@ -1422,31 +1348,3 @@ class CtieUI(object):
 				self.zoom-=5
 			self.canvas.queue_draw()
 			return False
-
-	def edge_limiter(self, todo):
-		while todo:
-			delete=[]
-			newtodo=[]
-			for c in todo:
-				x1=c['x1']
-				y1=c['y1']
-				x=c['x2']
-				y=c['y2']
-				if x1>x:
-					x1,x=x,x1
-				if y1>y:
-					y1,y=y,y1
-				c['x1']=max(x1,c['parent']['x1'])
-				c['y1']=max(y1,c['parent']['y1'])
-				c['x2']=min(x,c['parent']['x2'])
-				c['y2']=min(y,c['parent']['y2'])
-				if abs(x-x1)<=1 or abs(y-y1)<=1:
-					delete.append(c)
-				else:
-					newtodo.extend(c['children'])
-			todo=newtodo
-			for c in delete:
-				if c['parent']:
-					c['parent']['children'].remove(c)
-				else:
-					self.clips.remove(c)
