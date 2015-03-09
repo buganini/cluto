@@ -19,7 +19,6 @@ import os
 import sys
 import glob
 from gi.repository import Gtk, Gdk, cairo, GObject, Pango
-import md5
 import re
 import pickle
 import subprocess
@@ -44,7 +43,7 @@ def click(o):
 
 class CtieUI(object):
 	def __init__(self):
-		self.regex=[]
+		self.ctie = Ctie(self)
 		self.signal_mask=False
 		self.items_filter=None
 		self.focus_field=(None, None)
@@ -56,11 +55,9 @@ class CtieUI(object):
 		self.focus_item=None
 		self.last_focus=None
 		self.canvas=None
-		self.clips=[]
 		self.zoom=100
 		self.selstart=(None, None)
 		self.selend=(None, None)
-		self.tags=[]
 		self.copy_tag=[]
 		self.mode=None
 		self.builder = Gtk.Builder()
@@ -446,37 +443,15 @@ class CtieUI(object):
 		filec=Gtk.FileChooserDialog("Open", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
 			filename=filec.get_filename()
-			fp=open(filename,'r')
 			filec.destroy()
-			try:
-				data=pickle.load(fp)
-				fp.close()
+			if self.ctie.load(filename):
 				clear_tempdir=False
-			except:
+			else:
 				self.set_status('Failed loading %s' % filename)
 				return
 		else:
 			filec.destroy()
 			return
-		if type(data)==type([]):
-			self.clips, self.tags, self.copy_tag, tempdir=data
-			todo=[]
-			todo.extend(self.clips)
-			while todo:
-				newtodo=[]
-				for p in todo:
-					if 'flags' not in p:
-						p['flags']=[]
-					newtodo.extend(p['children'])
-				todo=newtodo
-		else:
-			ctie.id_map=data['id_map']
-			self.clips=data['clips']
-			self.tags=data['tags']
-			self.copy_tag=data['tags']
-			tempdir=data['tempdir']
-			self.builder.get_object("regex").get_buffer().set_text(data['regex'])
-			self.regex_apply()
 		self.level_sanitize()
 		self.redraw_items_list()
 		self.tags_refresh()
@@ -489,10 +464,7 @@ class CtieUI(object):
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
 			b=self.builder.get_object("regex").get_buffer()
 			regex=b.get_text(b.get_start_iter(), b.get_end_iter(), 0).strip()
-			data={'id_map':ctie.id_map, 'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tag, 'tempdir':tempdir, 'regex':regex}
-			fp=open(filec.get_filename(),'w')
-			pickle.dump(data, fp)
-			fp.close()
+			ctie.save(filec.get_filename())
 			clear_tempdir=False
 		filec.destroy()
 
@@ -913,28 +885,13 @@ class CtieUI(object):
 			cs=filec.get_filenames()
 			cs.sort(natcmp)
 			for path in cs:
-				self.add_item_r(path)
+				self.ctie.addItem(path)
 			filec.destroy()
 		else:
 			filec.destroy()
 			return
 		self.level_sanitize()
 		self.redraw_items_list()
-
-	def add_item_r(self, path):
-		if os.path.isdir(path):
-			cs=os.listdir(path)
-			cs.sort(natcmp)
-			for c in cs:
-				self.add_item_r(os.path.join(path,c))
-		else:
-			try:
-				im=Image.open(path)
-			except:
-				return
-			id_map[path]=md5.new(path).hexdigest()
-			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{}, 'parent':None, 'flags':[], 'reference':{}})
-			del(im)
 
 	def change_level(self, *arg):
 		level=self.builder.get_object("level").get_active_text()
@@ -954,7 +911,7 @@ class CtieUI(object):
 			self.set_status('Failed parsing filter')
 
 	def redraw_items_list(self, *arg):
-		if len(self.clips)==0 or not self.builder.get_object("level").get_active_text():
+		if self.ctie.isEmpty() or not self.builder.get_object("level").get_active_text():
 			return
 		focus_p=None
 		if self.focus_item:
@@ -967,7 +924,7 @@ class CtieUI(object):
 			items_list.remove(c)
 			c.destroy()
 		flag=0
-		s=self.clips
+		s=self.ctie.clips
 		for i in xrange(0,int(self.builder.get_object("level").get_active_text())):
 			ns=[]
 			for x in s:
@@ -1069,14 +1026,7 @@ class CtieUI(object):
 
 	def level_sanitize(self):
 		level=self.builder.get_object("level")
-		l=0
-		s=self.clips
-		while s:
-			l+=1
-			ns=[]
-			for x in s:
-				ns.extend(x['children'])
-			s=ns
+		l=self.ctie.getLevel()
 		try:
 			active=int(level.get_active_text())
 		except:
@@ -1198,14 +1148,14 @@ class CtieUI(object):
 				if tag not in tags:
 					tags[tag]=t['tags'][tag]
 			t=t['parent']
-		for tag in self.tags:
+		for tag in self.ctie.tags:
 			if tag not in tags:
 				tags[tag]=""
 
 		tags_table=Gtk.Grid()
 		tagsbox.add(tags_table)
 		print self.focus_field
-		for i,tag in enumerate(self.tags):
+		for i,tag in enumerate(self.ctie.tags):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
 			text.connect('changed', self.set_tag, (focus_p, tag))

@@ -3,6 +3,7 @@ from gi.repository import Gtk
 import Image
 import weakref
 import math
+import md5
 
 from helpers import *
 
@@ -100,3 +101,71 @@ class Item(object):
 		rpath="%s-%dx%dx%dx%d" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2'])
 		os.chdir(get_tempdir())
 		return rpath
+
+class Ctie(object):
+	def __init__(self, ui, path=None):
+		self.regex=[]
+		self.clips=[]
+		self.tags=[]
+
+	def isEmpty(self):
+		return len(self.clips)==0
+
+	def getLevel(self):
+		l=0
+		s=self.clips
+		while s:
+			l+=1
+			ns=[]
+			for x in s:
+				ns.extend(x['children'])
+			s=ns
+		return l
+
+	def addItem(self, path):
+		if os.path.isdir(path):
+			cs=os.listdir(path)
+			cs.sort(natcmp)
+			for c in cs:
+				self.addItem(os.path.join(path,c))
+		else:
+			try:
+				im=Image.open(path)
+			except:
+				return
+			id_map[path]=md5.new(path).hexdigest()
+			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{}, 'parent':None, 'flags':[], 'reference':{}})
+			del(im)
+
+	def load(self, path):
+		fp=open(path,'r')
+		try:
+			data=pickle.load(fp)
+			fp.close()
+		except:
+			return False
+		if type(data)==type([]):
+			self.clips, self.tags, self.copy_tag, tempdir=data
+			todo=[]
+			todo.extend(self.clips)
+			while todo:
+				newtodo=[]
+				for p in todo:
+					if 'flags' not in p:
+						p['flags']=[]
+					newtodo.extend(p['children'])
+				todo=newtodo
+		else:
+			ctie.id_map=data['id_map']
+			self.clips=data['clips']
+			self.tags=data['tags']
+			self.copy_tag=data['tags']
+			tempdir=data['tempdir']
+			self.builder.get_object("regex").get_buffer().set_text(data['regex'])
+			self.regex_apply()
+
+	def save(self, path):
+		data={'id_map':id_map, 'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tag, 'tempdir':tempdir, 'regex':regex}
+		fp=open(path,'w')
+		pickle.dump(data, fp)
+		fp.close()
