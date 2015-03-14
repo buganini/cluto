@@ -1,18 +1,26 @@
 """
- Copyright (c) 2012-2014 Kuan-Chung Chiu <buganini@gmail.com>
+ Copyright (c) 2012-2015 Kuan-Chung Chiu <buganini@gmail.com>
 
- Permission to use, copy, modify, and distribute this software for any
- purpose with or without fee is hereby granted, provided that the above
- copyright notice and this permission notice appear in all copies.
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
 
- THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF MIND, USE, DATA OR PROFITS, WHETHER
- IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
- OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
 """
 
 import os
@@ -48,17 +56,10 @@ class CtieUI(object):
 		self.items_filter=None
 		self.focus_field=(None, None)
 		self.focus_entry=None
-		self.clipboard=[]
-		self.selections=[]
-		self.curr_level=None
-		self.last_level=None
-		self.focus_item=None
-		self.last_focus=None
 		self.canvas=None
 		self.zoom=100
 		self.selstart=(None, None)
 		self.selend=(None, None)
-		self.copy_tag=[]
 		self.mode=None
 		self.builder = Gtk.Builder()
 		for datadir in ['.','/usr/local/share/ctie']:
@@ -307,64 +308,38 @@ class CtieUI(object):
 				pass
 		self.builder.get_object("regex_window").hide()
 
-	def previous(self, *arg):
-		if not self.focus_item:
-			return
-		focus_p=self.focus_item.p
-		if not len(focus_p['children']):
-			pass
-		elif len(self.selections)!=1:
-			self.selections=[0]
-		else:
-			self.selections[0]-=1
-			self.selections[0]+=len(focus_p['children'])
-			self.selections[0]%=len(focus_p['children'])
+	def selectPreviousItem(self, *arg):
+		self.ctie.selectPrevChild()
 		self.child_tags_refresh()
 		self.canvas.queue_draw()
 		self.preview_canvas.queue_draw()
-		self.set_status('Area: %d Select: %s' % (len(focus_p['children']), ', '.join([str(i+1) for i in self.selections])))
+		self.set_status('Area: %d Select: %s' % (len(focus_p['children']), ', '.join([str(i+1) for i in self.ctie.getSelections()])))
 
-	def next(self, *arg):
-		if not self.focus_item:
-			return
-		focus_p=self.focus_item.p
-		if not len(focus_p['children']):
-			pass
-		elif len(self.selections)!=1:
-			self.selections=[0]
-		else:
-			self.selections[0]+=1
-			self.selections[0]%=len(focus_p['children'])
+	def selectNextItem(self, *arg):
+		self.ctie.selectNextChild()
 		self.child_tags_refresh()
 		self.canvas.queue_draw()
 		self.preview_canvas.queue_draw()
-		self.set_status('Area: %d Select: %s' % (len(focus_p['children']), ', '.join([str(i+1) for i in self.selections])))
+		self.set_status('Area: %d Select: %s' % (len(focus_p['children']), ', '.join([str(i+1) for i in self.ctie.getSelections()])))
 
 	def key_press(self, obj, evt):
 		collation_mode=self.toggle_collation.get_active()
 		if evt.keyval==Gdk.KEY_Page_Down:
 			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
-				next=self.focus_item.next
-				if next:
-					click(next)
+				self.selectNextItem()
 			else:
-				self.next()
+				self.ctie.selectNextChild()
 		elif evt.keyval==Gdk.KEY_Page_Up:
 			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
-				prev=self.focus_item.prev
-				if prev:
-					click(prev)
+				self.selectPreviousItem()
 			else:
-				self.previous()
+				self.ctie.selectPrevChild()
 		elif evt.keyval==Gdk.KEY_Delete and self.canvas.has_focus():
 			self.delete()
 		elif (evt.keyval==Gdk.KEY_A or evt.keyval==Gdk.KEY_a) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
-			if not self.focus_item:
-				return
-			focus_p=self.focus_item.p
-			self.selections=[]
+			self.ctie.selectNoneChildren()
 			if not evt.state & Gdk.ModifierType.SHIFT_MASK:
-				self.selections.extend(range(0, len(focus_p['children'])))
+				self.ctie.selectAllChildren()
 			self.canvas.queue_draw()
 		elif (evt.keyval==Gdk.KEY_C or evt.keyval==Gdk.KEY_c) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
 			self.copy()
@@ -439,50 +414,15 @@ class CtieUI(object):
 
 	def copy_setting_toggle(self, obj, tag):
 		if obj.get_active():
-			if tag not in self.copy_tag:
-				self.copy_tag.append(tag)
+			self.ctie.enableCopyTag(tag)
 		else:
-			if tag in self.copy_tag:
-				self.copy_tag.remove(tag)
+			self.ctie.disableCopyTag(tag)
 
 	def copy(self, *arg):
-		if not self.focus_item:
-			return
-		focus_p=self.focus_item.p
-		self.clipboard=[]
-		for i in self.selections:
-			p=focus_p['children'][i]
-			tags={}
-			for tag in self.copy_tag:
-				if tag in p['tags']:
-					tags[tag]=p['tags'][tag]
-			self.clipboard.append({'x1':p['x1']-focus_p['x1'], 'y1':p['y1']-focus_p['y1'], 'x2':p['x2']-focus_p['x1'] ,'y2':p['y2']-focus_p['y1'] ,'tags':tags, 'flags':[], 'reference':{}})
+		self.ctie.copy()
 
 	def paste(self, *arg):
-		if not self.focus_item:
-			return
-		focus_p=self.focus_item.p
-		self.selections=[]
-		cs=[]
-		for c in focus_p['children']:
-			cs.append((c['x1']-focus_p['x1'], c['y1']-focus_p['y1'], c['x2']-focus_p['x1'], c['y2']-focus_p['y1']))
-		for p in self.clipboard:
-			tags={}
-			for tag in p['tags']:
-				tags[tag]=p['tags'][tag]
-			x1=p['x1']
-			y1=p['y1']
-			x2=p['x2']
-			y2=p['y2']
-			x1=max(x1,0)
-			y1=max(y1,0)
-			x2=min(x2,focus_p['x2']-focus_p['x1'])
-			y2=min(y2,focus_p['y2']-focus_p['y1'])
-			if x2-x1>1 and y2-y1>1:
-				self.selections.append(len(focus_p['children']))
-				if (x1,y1,x2,y2) in cs:
-					continue
-				focus_p['children'].append({'path':focus_p['path'],'x1':x1+focus_p['x1'],'y1':y1+focus_p['y1'],'x2':x2+focus_p['x1'],'y2':y2+focus_p['y1'],'children':[], 'tags':tags, 'parent':focus_p, 'flags':[], 'reference':{}})
+		self.ctie.paste()
 		self.canvas.queue_draw()
 
 	def autopaste(self, *arg):
@@ -557,18 +497,11 @@ class CtieUI(object):
 				for tag in cp['tags']:
 					tags[tag]=cp['tags'][tag]
 				if x2-x1>1 and y2-y1>1:
-					p['children'].append({'path':p['path'],'x1':cp['x1']+p['x1'],'y1':cp['y1']+p['y1'],'x2':cp['x2']+p['x1'],'y2':cp['y2']+p['y1'],'children':[], 'tags':tags, 'parent':p, 'flags':[], 'reference':{}})
+					p['children'].append({'path':p['path'],'x1':cp['x1']+p['x1'],'y1':cp['y1']+p['y1'],'x2':cp['x2']+p['x1'],'y2':cp['y2']+p['y1'],'children':[], 'tags':tags, 'parent':p, 'reference':{}})
 		self.canvas.queue_draw()
 
 	def delete(self, *arg):
-		if not self.focus_item:
-			return
-		focus_p=self.focus_item.p
-		self.selections.sort()
-		self.selections.reverse()
-		for i in self.selections:
-			del(focus_p['children'][i])
-		self.selections=[]
+		self.ctie.deleteSelectedChildren()
 		self.canvas.queue_draw()
 		self.child_tags_refresh()
 
@@ -625,28 +558,27 @@ class CtieUI(object):
 
 	def add_tag(self, *arg):
 		tag=self.builder.get_object('new_tag').get_text()
-		if tag and not tag in self.tags:
-			self.tags.append(tag)
-		else:
+		if not tag:
+			return
+		r = self.ctie.addTag(tag)
+		if not r:
 			self.set_status("Tag %s already exists" % tag)
 		self.tags_refresh()
 
 	def canvas_draw(self, widget, cr):
-		if not self.focus_item:
+		item = self.ctie.getCurrentItem()
+		if item is None:
 			return
-		p=self.focus_item.p
 		factor=self.zoom*0.01
-		width=p['x2']-p['x1']
-		height=p['y2']-p['y1']
+		width=item['x2']-item['x1']
+		height=item['y2']-item['y1']
 
 		cr.scale(factor, factor)
 		self.canvas.set_size_request(int(width*factor), int(height*factor))
 		self.canvas.set_halign(Gtk.Align.CENTER)
 		self.canvas.set_valign(Gtk.Align.CENTER)
 
-		p=self.focus_item.p
-		it=Item(p)
-		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), 0, 0)
+		Gdk.cairo_set_source_pixbuf(cr, item.get_pixbuf(), 0, 0)
 		cr.paint()
 		sx1,sy1=self.selstart
 		sx,sy=self.selend
@@ -661,12 +593,12 @@ class CtieUI(object):
 			xoff=0
 			yoff=0
 
-		for i,c in enumerate(p['children']):
-			x1=(c['x1']-p['x1'])
-			y1=(c['y1']-p['y1'])
-			x2=(c['x2']-p['x1'])
-			y2=(c['y2']-p['y1'])
-			if i in self.selections:
+		for i,c in enumerate(item.getChildren()):
+			x1=(c['x1']-item['x1'])
+			y1=(c['y1']-item['y1'])
+			x2=(c['x2']-item['x1'])
+			y2=(c['y2']-item['y1'])
+			if i in self.ctie.getSelections():
 				cr.set_source_rgba(0,0,255,255)
 				if self.mode=='move':
 					cr.rectangle(x1+xoff, y1+yoff, x2-x1, y2-y1)
@@ -682,10 +614,10 @@ class CtieUI(object):
 			cr.stroke()
 		if self.toggle_childrenpath.get_active():
 			cr.set_source_rgba(0,255,0,255)
-			for i,c in enumerate(p['children']):
-				xa=(c['x1']+c['x2'])/2-p['x1']
-				ya=(c['y1']+c['y2'])/2-p['y1']
-				if i in self.selections:
+			for i,c in enumerate(item.getChildren()):
+				xa=(c['x1']+c['x2'])/2-item['x1']
+				ya=(c['y1']+c['y2'])/2-item['y1']
+				if i in self.ctie.getSelections():
 					if self.mode=='move':
 						xa+=xoff
 						ya+=yoff
@@ -699,13 +631,13 @@ class CtieUI(object):
 				else:
 					cr.line_to(xa,ya)
 			cr.stroke()
-			if self.selections:
+			if self.ctie.getSelections():
 				cr.set_line_width(3)
 				cr.set_source_rgba(0,0,0,255)
-				for i,c in enumerate(self.reordered_children()):
-					xa=(c['x1']+c['x2'])/2-p['x1']
-					ya=(c['y1']+c['y2'])/2-p['y1']
-					if i in self.selections:
+				for i,c in enumerate(self.reorder_children()):
+					xa=(c['x1']+c['x2'])/2-item['x1']
+					ya=(c['y1']+c['y2'])/2-item['y1']
+					if i in self.ctie.getSelections():
 						if self.mode=='move':
 							xa+=xoff
 							ya+=yoff
@@ -720,7 +652,7 @@ class CtieUI(object):
 						cr.line_to(xa,ya)
 				cr.stroke()
 				cr.set_line_width(1)
-		if self.selstart!=(None, None) and self.selend!=(None, None) and len(self.selections)==0:
+		if self.selstart!=(None, None) and self.selend!=(None, None) and len(self.ctie.getSelections())==0:
 			cr.set_source_rgba(255,0,255,255)
 			cr.rectangle(sx1, sy1, sx-sx1, sy-sy1)
 			cr.stroke()
@@ -731,32 +663,31 @@ class CtieUI(object):
 			self.set_status('Move (%d,%d)' % (xoff, yoff))
 
 	def preview_draw(self, widget, cr):
-		if not self.focus_item:
+		item = self.ctie.getCurrentItem()
+		if item is None:
 			return
-		focus_p=self.focus_item.p
-		if len(self.selections)!=1:
+		if len(self.ctie.getSelections())!=1:
 			return
-		p=focus_p['children'][self.selections[0]]
-		width=p['x2']-p['x1']
-		height=p['y2']-p['y1']
+		child=item['children'][self.ctie.getSelections()[0]]
+		width=child['x2']-child['x1']
+		height=child['y2']-child['y1']
 
 		self.canvas.set_size_request(width, height)
 
-		it=Item(focus_p)
-		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), focus_p['x1']-p['x1'], focus_p['y1']-p['y1'])
+		Gdk.cairo_set_source_pixbuf(cr, it.get_pixbuf(), item['x1']-child['x1'], item['y1']-child['y1'])
 		cr.rectangle(0, 0, width, height)
 		cr.fill()
 
 	def zoom_fit(self, *arg):
-		if not self.focus_item or not self.canvas:
+		item = self.ctie.getCurrentItem()
+		if item is None or not self.canvas:
 			return
-		p=self.focus_item.p
 		workarea_window=self.builder.get_object('workarea_window')
 		alloc=workarea_window.get_allocation()
 		win_width=alloc.width
 		win_height=alloc.height
-		width=p['x2']-p['x1']
-		height=p['y2']-p['y1']
+		width=item['x2']-item['x1']
+		height=item['y2']-item['y1']
 		if width>win_width*0.8:
 			self.zoom=(win_width*0.8/width)*100
 		else:
@@ -783,18 +714,12 @@ class CtieUI(object):
 		self.canvas.queue_draw()
 
 	def remove_item(self, *arg):
-		if not self.focus_item:
+		item = self.ctie.getCurrentItem()
+		if item is None:
 			return
-		items_list=self.builder.get_object("items_list")
 
 		level_change=False
-		focus_p=self.focus_item.p
-		prev=self.focus_item.prev
-		next=self.focus_item.next
-
-		self.focus_item.prev=None
-		self.focus_item.next=None
-		items_list.remove(self.focus_item)
+		items_list.remove(item.ui)
 
 		if next:
 			new_focus_widget=next
@@ -850,13 +775,8 @@ class CtieUI(object):
 		if level is None:
 			return
 		level=int(level)
-		if level!=self.curr_level:
-			self.ctie.setLevel(level)
+		if self.ctie.setLevel(level):
 			self.focus_field=(None, None)
-			if self.focus_item:
-				self.last_focus=self.focus_item.p
-			self.last_level=self.curr_level
-			self.curr_level=level
 			self.redraw_items_list()
 
 	def items_filter_apply(self, *arg):
@@ -867,20 +787,15 @@ class CtieUI(object):
 			self.set_status('Failed parsing filter')
 
 	def redraw_items_list(self, *arg):
-		focus_p=None
-		if self.focus_item:
-			focus_p=self.focus_item.p
-			self.focus_item.get_style_context().remove_class("darkback")
-			self.focus_item.queue_draw()
-			self.focus_item=None
+		item = self.ctie.getCurrentItem()
+		if not item is None and hasattr(item, "ui"):
+			item.ui.get_style_context().remove_class("darkback")
+			item.ui.queue_draw()
 		items_list=self.builder.get_object("items_list")
 		for c in items_list.get_children():
 			items_list.remove(c)
 			c.destroy()
-		flag=0
-		last=None
-		idx=0
-		for it in self.ctie.getItems():
+		for idx, it in enumerate(self.ctie.getItems()):
 			tfile=it.get_thumbnail()
 			evtbox=Gtk.EventBox()
 			box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -889,64 +804,26 @@ class CtieUI(object):
 			box.pack_start(img, False, False, 0)
 			box.pack_start(label, False, False, 0)
 			evtbox.add(box)
-			if last:
-				last.next=evtbox
 			evtbox.p=it.p
-			evtbox.prev=last
-			evtbox.next=None
+			it.ui=evtbox
 			evtbox.index=idx
-			idx+=1
 			evtbox.get_style_context().add_provider(self.css, 10)
-			last=evtbox
 			evtbox.connect("button-press-event", self.item_button_press)
 			items_list.pack_start(evtbox, False, False, 5)
 			evtbox.show_all()
-			if not flag:
-				if self.last_level and self.curr_level>self.last_level:
-					t=it.p
-					while t and not flag:
-						if self.last_focus==t['parent']:
-							flag=1
-							self.focus_item=evtbox
-							break
-						t=t['parent']
-				elif self.last_level and self.curr_level<self.last_level:
-					s=[]
-					s.extend(it.p['children'])
-					while s and not flag:
-						ns=[]
-						for c in s:
-							if self.last_focus==c:
-								flag=1
-								self.focus_item=evtbox
-								break
-							ns.extend(c['children'])
-						s=ns
-				elif focus_p==it.p:
-					self.focus_item=evtbox
-					flag=1
-		if not self.focus_item:
-			cl=items_list.get_children()
-			if cl:
-				self.focus_item=cl[-1]
 
-		if self.focus_item:
-			click(self.focus_item)
+		click(self.ctie.getCurrentItem().ui)
 
 	def set_children_order(self, *arg):
-		if not self.focus_item:
-			return
 		if not self.toggle_childrenpath:
 			self.set_status("Please enable areas path display")
 			return
-		it=Item(self.focus_item.p)
-		it.reordered_children(self.selections)
-		self.selections=range(0,len(it.p['children']))
+		self.ctie.reorder_children()
 		self.canvas.queue_draw()
 
 	def autoscroll(self):
 		items_list=self.builder.get_object("items_list")
-		focus_widget=self.focus_item
+		focus_widget=self.ctie.getCurrentItem().ui
 		alloc=items_list.get_allocation()
 		x,y=focus_widget.translate_coordinates(items_list, 0, 0)
 		scr=self.builder.get_object("scroll_items_list")
@@ -974,24 +851,18 @@ class CtieUI(object):
 			self.ctie.setLevel(l-1)
 
 	def item_button_press(self, obj, evt):
-		if self.focus_item:
-			self.focus_item.get_style_context().remove_class("darkback")
-			self.focus_item.queue_draw()
+		if self.ctie.getCurrentItem():
+			ui = self.ctie.getCurrentItem().ui
+			ui.get_style_context().remove_class("darkback")
+			ui.queue_draw()
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
-			if obj!=self.focus_item:
-				try:
-					p=self.focus_item.p
-					p['flags'].remove('CHANGED')
-				except:
-					pass
 			self.set_status("Item: %d/%d" % (obj.index+1, len(self.ctie.getItems())))
-			p=obj.p
-			self.focus_item=obj
+			self.ctie.setCurrentIndex(obj.index)
 			obj.get_style_context().add_class("darkback")
 			obj.queue_draw()
 			GObject.idle_add(self.autoscroll)
 
-			self.selections=[]
+			self.ctie.selectNoneChildren()
 			self.tags_refresh()
 			workarea=self.builder.get_object('workarea')
 			c=workarea.get_child()
@@ -1038,8 +909,7 @@ class CtieUI(object):
 						cp['tags']['text']=text
 						if 'text' not in self.tags:
 							self.tags.append('text')
-						cp['flags'].append('CHANGED')
-					self.selections.append(0)
+					self.ctie.getSelections().append(0)
 					self.canvas.queue_draw()
 				else:
 					if p['tags'].get('text', None):
@@ -1057,12 +927,12 @@ class CtieUI(object):
 					if 'text' not in self.tags:
 						self.tags.append('text')
 					self.level_sanitize()
-					p['flags'].append('CHANGED')
 				self.tags_refresh()
 			# GObject.idle_add(lambda: self.canvas.grab_focus())
 
 	def tags_refresh(self, *arg):
-		if not self.focus_item:
+		item = self.ctie.getCurrentItem()
+		if item is None:
 			return
 		self.builder.get_object('tags_pane').show_all()
 
@@ -1074,33 +944,22 @@ class CtieUI(object):
 		collation_editor.master=None
 		collation_editor.set_text("")
 
-		focus_p=self.focus_item.p
-		t=focus_p
-		tags={}
-		while t:
-			for tag in t['tags']:
-				if tag not in tags:
-					tags[tag]=t['tags'][tag]
-			t=t['parent']
-		for tag in self.ctie.tags:
-			if tag not in tags:
-				tags[tag]=""
+		tags = self.ctie.getTags(item)
 
 		tags_table=Gtk.Grid()
 		tagsbox.add(tags_table)
-		print self.focus_field
 		for i,tag in enumerate(self.ctie.tags):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
-			text.connect('changed', self.set_tag, (focus_p, tag))
-			text.connect("focus-in-event", self.entry_focus, ('p', focus_p, tag))
+			text.connect('changed', self.set_tag, (item, tag))
+			text.connect("focus-in-event", self.entry_focus, ('p', item, tag))
 			if self.focus_field[0]=='p' and self.focus_field[1]==tag:
 				self.focus_entry=text
 			label=Gtk.Label(tag)
 			button=Gtk.Button()
 			btn_img=Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
 			button.set_image(btn_img)
-			button.connect("clicked", self.clear_tag, (focus_p, tag))
+			button.connect("clicked", self.clear_tag, (item, tag))
 			tags_table.attach(label,0,i,1,1)
 			tags_table.attach(text,1,i,1,1)
 			tags_table.attach(button,2,i,1,1)
@@ -1109,7 +968,8 @@ class CtieUI(object):
 		self.child_tags_refresh()
 
 	def child_tags_refresh(self, *arg):
-		if not self.focus_item:
+		item = self.ctie.getCurrentItem()
+		if item is None:
 			return
 
 		tagsbox=self.builder.get_object('child_tags')
@@ -1117,11 +977,10 @@ class CtieUI(object):
 		if c:
 			tagsbox.remove(c)
 
-		if len(self.selections)!=1:
+		if len(self.ctie.getSelections())!=1:
 			return
 
-		focus_p=self.focus_item.p
-		p=focus_p['children'][self.selections[0]]
+		p=item.p['children'][self.ctie.getSelections()[0]]
 		tags = self.ctie.getTags(Item(p))
 
 		tags_table=Gtk.Grid()
@@ -1129,7 +988,7 @@ class CtieUI(object):
 		for i,tag in enumerate(self.ctie.getTags()):
 			text=Gtk.Entry()
 			text.set_text(tags[tag])
-			text.connect('changed', self.set_tag, (p, tag))
+			text.connect('changed', self.set_tag, (Item(p), tag))
 			text.connect("focus-in-event", self.entry_focus, ('c', p, tag))
 
 			if self.focus_field[0]=='c' and self.focus_field[1]==tag:
@@ -1147,20 +1006,14 @@ class CtieUI(object):
 		GObject.idle_add(self.autofocus)
 
 	def autofocus(self, *arg):
-		print "autofocus A"
 		if self.focus_entry:
-			print "autofocus B"
 			if not self.focus_entry.get_text():
-				print "autofocus D"
 				auto_fill=self.builder.get_object("auto_fill").get_active_text()
 				if auto_fill=="Clipboard":
 					self.focus_entry.paste_clipboard()
 					GObject.idle_add(self.autofocus2)
-				print "autofocus F"
 				self.focus_entry.grab_focus()
-				print "autofocus G"
 			else:
-				print "autofocus C"
 				self.focus_entry.grab_focus()
 				self.focus_entry=None
 
@@ -1173,17 +1026,11 @@ class CtieUI(object):
 	def entry_focus(self, obj, evt, data, *arg):
 		t,item,tag=data
 		self.focus_field=(t,tag)
-		print "set", self.focus_field
 		self.collation_cb(obj)
 
 	def set_tag(self, obj, data):
 		item,tag=data
-		item['tags'][tag]=obj.get_buffer().get_text()
-		if 'CHANGED' not in item['flags']:
-			item['flags'].append('CHANGED')
-		if item['parent']:
-			if 'CHANGED' not in item['parent']['flags']:
-				item['parent']['flags'].append('CHANGED')
+		item.setTag(tag, obj.get_buffer().get_text())
 		self.collation_cb(obj)
 
 	def collation_cb(self, obj, *arg):
@@ -1219,7 +1066,8 @@ class CtieUI(object):
 		self.tags_refresh()
 
 	def workarea_mouse(self, obj, evt):
-		if not self.canvas:
+		item = self.ctie.getCurrentItem()
+		if item is None or not self.canvas:
 			return
 		self.focus_field=(None, None)
 		self.canvas.grab_focus()
@@ -1227,14 +1075,14 @@ class CtieUI(object):
 		evtx,evty=self.builder.get_object('workarea').translate_coordinates(self.canvas, evt.x, evt.y)
 		x=evtx/factor
 		y=evty/factor
-		p=self.focus_item.p
+		p=item.p
 		if str(type(evt))==repr(Gdk.EventButton):
 			if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 				self.selstart=(x,y)
-				if not len(self.selections):
+				if not len(self.ctie.getSelections()):
 					self.mode='rectangle'
 				else:
-					for i in self.selections:
+					for i in self.ctie.getSelections():
 						c=p['children'][i]
 						if x+p['x1']>c['x1'] and x+p['x1']<c['x2'] and y+p['y1']>c['y1'] and y+p['y1']<c['y2']:
 							self.mode='move'
@@ -1248,12 +1096,12 @@ class CtieUI(object):
 				if x1==x and y1==y:
 					for i,c in enumerate(p['children']):
 						if x+p['x1']>c['x1'] and x+p['x1']<c['x2'] and y+p['y1']>c['y1'] and y+p['y1']<c['y2']:
-							if i in self.selections:
-								self.selections.remove(i)
+							if i in self.ctie.getSelections():
+								self.ctie.getSelections().remove(i)
 							else:
-								self.selections.append(i)
+								self.ctie.getSelections().append(i)
 					self.child_tags_refresh()
-					self.set_status('Area: %d Select: %s' % (len(p['children']), ', '.join([str(i+1) for i in self.selections])))
+					self.set_status('Area: %d Select: %s' % (len(p['children']), ', '.join([str(i+1) for i in self.ctie.getSelections()])))
 				elif self.mode=='rectangle':
 					if x1>x:
 						x1,x=x,x1
@@ -1264,13 +1112,13 @@ class CtieUI(object):
 					x=min(x,p['x2']-p['x1'])
 					y=min(y,p['y2']-p['y1'])
 					if x-x1>5 and y-y1>5:
-						p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{}, 'flags':[], 'reference':{}})
+						p['children'].append({'path':p['path'], 'x1':int(x1+p['x1']), 'y1':int(y1+p['y1']), 'x2':int(x+p['x1']), 'y2':int(y+p['y1']), 'children':[], 'parent':p, 'tags':{}, 'reference':{}})
 					self.level_sanitize()
 				elif self.mode=='move':
 					xoff=int(self.selend[0]-self.selstart[0])
 					yoff=int(self.selend[1]-self.selstart[1])
 					todo=[]
-					for i in self.selections:
+					for i in self.ctie.getSelections():
 						todo.append(p['children'][i])
 					while todo:
 						delete=[]
@@ -1304,9 +1152,9 @@ class CtieUI(object):
 					yoff=int(self.selend[1]-self.selstart[1])
 					todo=[]
 					delete=[]
-					self.selections.sort()
-					self.selections.reverse()
-					for i in self.selections:
+					self.ctie.getSelections().sort()
+					self.ctie.getSelections().reverse()
+					for i in self.ctie.getSelections():
 						c=p['children'][i]
 						xoff2=max(xoff,c['x1']-c['x2'])
 						yoff2=max(yoff,c['y1']-c['y2'])
@@ -1323,7 +1171,7 @@ class CtieUI(object):
 						else:
 							todo.extend(c['children'])
 					if delete:
-						self.selections=[]
+						self.ctie.selectNoneChildren()
 						self.child_tags_refresh()
 					for c in delete:
 						if c['parent']:
