@@ -25,13 +25,19 @@
 
 import os
 import Image
-import md5
+import pickle
 
 from item import *
+from cql import *
 from helpers import *
 
+instance = None
+
 class Ctie(object):
-	def __init__(self, ui, path=None):
+	def __init__(self, ui, path = None):
+		global instance
+		instance = self
+		self.ui = ui
 		self.regex = []
 		self.clips = []
 		self.tags = []
@@ -39,171 +45,323 @@ class Ctie(object):
 		self.items = []
 		self.currentLevel = -1
 		self.currentIndex = -1
-		self.selections=[]
-		self.clipboard=[]
-		self.copy_tags=[]
+		self.selections = []
+		self.clipboard = []
+		self.copy_tags = []
+		self.tempdir = None
 
 	def getLevel(self):
-		l=0
-		s=self.clips
+		l = 0
+		s = self.clips
 		while s:
 			l+=1
-			ns=[]
+			ns = []
 			for x in s:
-				ns.extend(x['children'])
-			s=ns
+				ns.extend(x.children)
+			s = ns
 		return l
 
 	def setLevel(self, level):
 		r = False
+		orig = self.getCurrentItem()
 		if self.currentLevel != level:
 			r = True
 			self.currentLevel = level
 			self._genItems()
+			self.currentIndex = 0
+			self.ui.onItemListChanged()
+		item = self.getCurrentItem()
+		if orig != item:
+			self.ui.onItemBlurred(orig)
+			self.ui.onItemFocused()
 		return r
-
-	def getSelections(self):
-		return self.selections
 
 	def selectAllChildren(self):
 		item = self.getCurrentItem()
 		if item is None:
 			return
-		self.selections = range(0, len(item["children"]))
+		self.selections = range(0, len(item.children))
+		self.ui.onSelectionChanged()
 
-	def selectNoneChildren(self):
+	def deselectAllChildren(self):
 		self.selections = []
+		self.ui.onSelectionChanged()
 
-	def setCurrentIndex(self, index):
+	def selectChildByIndex(self, index):
+		if index not in self.selections:
+			self.selections.append(index)
+		self.ui.onSelectionChanged()
+
+	def deselectChildByIndex(self, index):
+		if index in self.selections:
+			self.selections.remove(index)
+		self.ui.onSelectionChanged()
+
+	def selectItemByIndex(self, index):
+		orig = self.getCurrentItem()
 		self.currentIndex = index
+		item = self.getCurrentItem()
+		if orig != item:
+			self.selections = []
+			self.ui.onItemBlurred(orig)
+			self.ui.onItemFocused()
+		self.selections = []
+		self.ui.onItemChanged()
 
 	def selectNextItem(self):
+		orig = self.getCurrentItem()
 		self.currentIndex = (self.currentIndex + 1) % len(self.items)
+		item = self.getCurrentItem()
+		if orig != item:
+			self.selections = []
+			self.ui.onItemBlurred(orig)
+			self.ui.onItemFocused()
+		self.ui.onItemChanged()
 
 	def selectPrevItem(self):
+		orig = self.getCurrentItem()
 		self.currentIndex = (self.currentIndex + len(self.items) - 1) % len(self.items)
+		item = self.getCurrentItem()
+		if orig != item:
+			self.selections = []
+			self.ui.onItemBlurred(orig)
+			self.ui.onItemFocused()
+		self.ui.onItemChanged()
 
 	def getCurrentItem(self):
-		return self.items[self.currentIndex]
-
-	def getItems(self):
-		return self.items
+		l = self.items[self.currentIndex:]
+		if l:
+			return l[0]
+		return None
 
 	def _genItems(self):
-		s=self.clips
+		s = self.clips
 		for i in range(0, self.currentLevel):
-			ns=[]
+			ns = []
 			for x in s:
-				ns.extend(x['children'])
-			s=ns
-		self.items = []
+				ns.extend(x.children)
+			s = ns
+		items = []
 		for p in s:
 			if self.filter and not self.filter.eval(p):
 				continue
-			self.items.append(Item(p))
+			items.append(p)
+		for item in self.items:
+			if item not in items and hasattr(self, "ui"):
+				self.ui.onItemRemoved(item)
+		self.items = items
 
-	def addItem(self, path):
+	def addItemByPath(self, path):
 		if os.path.isdir(path):
-			cs=os.listdir(path)
+			cs = os.listdir(path)
 			cs.sort(natcmp)
 			for c in cs:
-				self.addItem(os.path.join(path,c))
+				self.addItemByPath(os.path.join(path,c))
 		else:
 			try:
-				im=Image.open(path)
+				im = Image.open(path)
 			except:
 				return
-			id_map[path]=md5.new(path).hexdigest()
-			self.clips.append({'path':path,'x1':0,'y1':0,'x2':im.size[0],'y2':im.size[1],'children':[], 'tags':{}, 'parent':None, 'flags':[], 'reference':{}})
+			self.addItem(path = path, x1 = 0, y1 = 0, x2 = im.size[0], y2 = im.size[1])
 			del(im)
 
-	def removeItem(self):
-		item = self.getCurrentItem()
-		if item is None:
-			return
-		item.remove()
+	def addItem(self, **arg):
+		self.clips.append(Item(**arg))
 
+	def removeItem(self, item):
+		focusedItem = self.getCurrentItem()
+		if item.parent == focusedItem:
+			index = focusedItem.children.index(item)
+			if index in self.selections:
+				self.selections.remove(index)
+		if item in self.clips:
+			self.clips.remove(item)
+		if item in self.items:
+			self.items.remove(item)
+		self.ui.onItemTreeChanged()
+
+	def setRegex(self, text):
+		self.regex = []
+		for line in text.split("\n"):
+			try:
+				a,b = line.split("\t")
+				self.regex.append((a, b))
+			except:
+				pass
 
 	def setFilter(self, filter):
 		f = CQL(filter)
 		r = False
-		if f:
+		if f or filter=="":
 			self.filter = f
 			r = True
-		self._genItems()
+			self._genItems()
+			self.ui.onItemListChanged()
 		return r
 
 	def load(self, path):
-		fp=open(path,'r')
+		fp = open(path,'r')
 		try:
-			data=pickle.load(fp)
+			data = pickle.load(fp)
 			fp.close()
 		except:
 			return False
-		if type(data)==type([]):
-			self.clips, self.tags, self.copy_tags, tempdir=data
-			todo=[]
-			todo.extend(self.clips)
-			while todo:
-				newtodo=[]
-				for p in todo:
-					if 'flags' not in p:
-						p['flags']=[]
-					newtodo.extend(p['children'])
-				todo=newtodo
-		else:
-			ctie.id_map=data['id_map']
-			self.clips=data['clips']
-			self.tags=data['tags']
-			self.copy_tags=data['tags']
-			tempdir=data['tempdir']
-			self.builder.get_object("regex").get_buffer().set_text(data['regex'])
-			self.regex_apply()
+		self.clips = data['clips']
+		self.tags = data['tags']
+		self.copy_tags = data['tags']
+		self.tempdir = data['tempdir']
+		self.regex = data['regex']
+		return True
 
 	def save(self, path):
-		data={'id_map':id_map, 'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tags, 'tempdir':tempdir, 'regex':regex}
-		fp=open(path,'w')
+		for item in self.items:
+			self.ui.onItemRemoved(item)
+		data = {'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tags, 'tempdir':self.tempdir, 'regex':self.regex}
+		fp = open(path,'w')
 		pickle.dump(data, fp)
 		fp.close()
+
+	def export(self, export_filter, export_content, export_path, outputdir):
+		todo = self.clips
+		while todo:
+			newtodo = []
+			for item in todo:
+				if export_filter.eval(item):
+					t = item
+					tags = {}
+					while t:
+						for key in t.tags:
+							if key not in tags:
+								tags[key] = t.tags[key]
+						t = t.parent
+					for key in self.tags:
+						if key not in tags:
+							tags[key] = ""
+
+					path = export_path.eval(item)
+					path = os.path.join(outputdir, path)
+					pdir = os.path.dirname(path)
+					if not os.path.exists(pdir):
+						os.makedirs(pdir)
+					if os.path.exists(path):
+						print "Exists:", path
+					cnt = export_content.eval(item)
+					if hasattr(cnt, "save"):
+						cnt.save(path)
+					else:
+						f = open(path,'w')
+						f.write(cnt)
+						f.close()
+				newtodo.extend(item.children)
+			todo = newtodo
 
 	def copy(self):
 		item = self.getCurrentItem()
 		if item is None:
 			return
-		self.clipboard=[]
+		self.clipboard = []
 		for i in self.selections:
-			p=item.p['children'][i]
-			tags={}
-			for tag in self.copy_tag:
-				if tag in p['tags']:
-					tags[tag]=p['tags'][tag]
-			self.clipboard.append({'x1':p['x1']-item.p['x1'], 'y1':p['y1']-item.p['y1'], 'x2':p['x2']-item.p['x1'] ,'y2':p['y2']-item.p['y1'] ,'tags':tags, 'flags':[], 'reference':{}})
+			child = item.children[i]
+			tags = {}
+			for key in self.copy_tags:
+				if key in child.tags:
+					tags[key] = child.tags[key]
+			self.clipboard.append({'x1':child.x1-item.x1, 'y1':child.y1-item.y1, 'x2':child.x2-item.x1 ,'y2':child.y2-item.y1 ,'tags':tags})
 
 	def paste(self):
+		if not self.clipboard:
+			return
 		item = self.getCurrentItem()
 		if item is None:
 			return
-		self.selections=[]
-		cs=[]
-		for c in item.p['children']:
-			cs.append((c['x1']-itempo['x1'], c['y1']-item.o['y1'], c['x2']-item.o['x1'], c['y2']-item.o['y1']))
+		self.selections = []
+		cs = []
+		for child in item.children:
+			cs.append((child.x1-item.x1, child.y1-item.y1, child.x2-item.x1, child.y2-item.y1))
 		for p in self.clipboard:
-			tags={}
-			for tag in p['tags']:
-				tags[tag]=p['tags'][tag]
-			x1=p['x1']
-			y1=p['y1']
-			x2=p['x2']
-			y2=p['y2']
-			x1=max(x1,0)
-			y1=max(y1,0)
-			x2=min(x2,ipem.o['x2']-item.o['x1'])
-			y2=min(y2,item.p['y2']-item.p['y1'])
+			x1 = p['x1']
+			y1 = p['y1']
+			x2 = p['x2']
+			y2 = p['y2']
+			x1 = max(x1, 0)
+			y1 = max(y1, 0)
+			x2 = min(x2, item.x2-item.x1)
+			y2 = min(y2, item.y2-item.y1)
 			if x2-x1>1 and y2-y1>1:
-				self.selections.append(len(item.p['children']))
+				self.selections.append(len(item.children))
 				if (x1,y1,x2,y2) in cs:
 					continue
-				item.p['chipdren'].append({'path':item.o['path'],'x1':x1+item.o['x1'],'y1':y1+item.o['y1'],'x2':x2+item.o['x1'],'y2':y2+item.o['y1'],'children':[], 'tags':tags, 'parent':item.o, 'flags':[], 'reference':{}})
+				item.addChild(x1 = x1+item.x1, y1 = y1+item.y1, x2 = x2+item.x1, y2 = y2+item.y1, tags = p['tags'])
+
+	def autoPaste(self):
+		threshold = 30
+		if not self.clipboard:
+			return
+		item = self.getCurrentItem()
+		if item is None:
+			return
+		for item in self.items:
+			if item.children:
+				continue
+			im = Image.open(item.path).convert('L')
+			paste = True
+			clipboard = []
+			for p in self.clipboard:
+				x1 = p['x1']
+				y1 = p['y1']
+				x2 = p['x2']
+				y2 = p['y2']
+				x1 = max(x1, 0)
+				y1 = max(y1, 0)
+				x2 = min(x2, item.x2-item.x1)
+				y2 = min(y2, item.y2-item.y1)
+
+				lastpixel = im.getpixel((x1+item.x1, y1+item.y1))
+				if y1!=0:
+					y = y1+item.y1
+					for x in range(x1+item.x1+1, x2+item.x1-1):
+						pixel = im.getpixel((x,y))
+						if abs(pixel-lastpixel)>threshold:
+							paste = False
+							break
+						lastpixel = pixel
+					if not paste:
+						break
+				if x2!=item.x2-item.x1:
+					x = x2+item.x1-1
+					for y in range(y1+item.y1+1,y2+item.y1-1):
+						pixel = im.getpixel((x,y))
+						if abs(pixel-lastpixel)>threshold:
+							paste = False
+							break
+						lastpixel = pixel
+					if not paste:
+						break
+				if y2!=item.y2-item.y1:
+					y = y2+item.y1-1
+					for x in range(x1+item.x1+1,x2+item.x1):
+						pixel = im.getpixel((x,y))
+						if abs(pixel-lastpixel)>threshold:
+							paste = False
+							break
+						lastpixel = pixel
+					if not paste:
+						break
+				if x1!=0:
+					x = x1+item.x1
+					for y in range(y1+item.y1+1,y2+item.y1):
+						pixel = im.getpixel((x,y))
+						if abs(pixel-lastpixel)>threshold:
+							paste = False
+							break
+						lastpixel = pixel
+					if not paste:
+						break
+				clipboard.append({'x1':x1, 'y1':y1, 'x2':x2, 'y2':y2, 'tags':p['tags']})
+			del(im)
+			for p in clipboard:
+				if x2-x1>1 and y2-y1>1:
+					item.addChild(x1 = p['x1']+item.x1, y1 = p['y1']+item.y1, x2 = p['x2']+item.x1, y2 = p['y2']+item.y1, tags = p['tags'])
 
 	def deleteSelectedChildren(self):
 		item = self.getCurrentItem()
@@ -212,28 +370,28 @@ class Ctie(object):
 		self.selections.sort()
 		self.selections.reverse()
 		for i in self.selections:
-			del(item.p['children'][i])
-		self.selections=[]
+			del(item.children[i])
+		self.selections = []
 
-	def enableCopyTag(self, tag):
-		if tag in self.tags and tag not in self.copy_tags:
-			self.copy_tags.append(tag)
+	def enableCopyTag(self, key):
+		if key in self.tags and key not in self.copy_tags:
+			self.copy_tags.append(key)
 
-	def disableCopyTag(self, tag):
-		if tag in self.copy_tag:
-			self.copy_tag.remove(tag)
+	def disableCopyTag(self, key):
+		if key in self.copy_tags:
+			self.copy_tags.remove(key)
 
-	def addTag(self, tag):
-		if not tag in self.tags:
-			self.tags.append(tag)
+	def addTag(self, key):
+		if not key in self.tags:
+			self.tags.append(key)
 
-	def getTags(self, item=None):
+	def getTags(self, item = None):
 		if item is None:
 			return self.tags
 		tags = item.getTags()
 		for tag in self.tags:
 			if tag not in tags:
-				tags[tag]=""
+				tags[tag] = ""
 		return tags
 
 	def batchSetTag(self, key, value, isFormula):
@@ -246,90 +404,87 @@ class Ctie(object):
 		item = self.getCurrentItem()
 		if item is None:
 			return
-		p = item.p
-		if not len(p['children']):
+		if not item.children:
 			pass
 		elif len(self.selections)!=1:
-			self.selections=[0]
+			self.selections = [0]
 		else:
-			self.selections[0]+=len(p['children'])-1
-			self.selections[0]%=len(p['children'])
+			self.selections[0]+=len(item.children)-1
+			self.selections[0]%=len(item.children)
 
 
 	def selectNextChild(self):
 		item = self.getCurrentItem()
 		if item is None:
 			return
-		p = item.p
-		if not len(p['children']):
+		if not item.children:
 			pass
 		elif len(self.selections)!=1:
-			self.selections=[0]
+			self.selections = [0]
 		else:
 			self.selections[0]+=1
-			self.selections[0]%=len(p['children'])
+			self.selections[0]%=len(item.children)
+
+	def move(self, xoff, yoff):
+		item = self.getCurrentItem()
+		if item is None:
+			return
+		for i in self.selections:
+			item.move(i, xoff, yoff)
+
+	def resize(self, xoff, yoff):
+		item = self.getCurrentItem()
+		if item is None:
+			return
+		selections = list(self.selections)
+		selections.sort(reverse = True)
+		for i in selections:
+			item.resize(i, xoff, yoff)
+
 
 	def reorder_children(self):
 		item = self.getCurrentItem()
 		if item is None:
 			return
 		item.reorder_children(self.selections)
-		self.selections=range(0,len(item.p['children']))
+		self.selections = range(0,len(item.children))
+		self.ui.onSelectionChanged()
 
 	def leftTopTrim(self):
-		todo=[]
-		for it in self.items:
-			p = it.p
-			x1=p['x1']
-			y1=p['y1']
-			x2=p['x2']
-			y2=p['y2']
-			im=it.get_pil_l()
-
-			p['x1'] = imglib.leftTrim(im, x1, y1, x2, y2)
-			p['y1'] = imglib.topTrim(im, x1, y1, x2, y2)
-			todo.extend(p['children'])
-		self.edge_limiter(todo)
+		for item in self.items:
+			item.leftTopTrim()
+		self.edge_limiter(self.items)
 
 	def rightBottomTrim(self):
-		todo=[]
-		for it in self.items:
-			p = it.p
-			x1=p['x1']
-			y1=p['y1']
-			x2=p['x2']
-			y2=p['y2']
-			im=it.get_pil_l()
-
-			p['x1'] = imglib.rightTrim(im, x1, y1, x2, y2)
-			p['y1'] = imglib.bottomTrim(im, x1, y1, x2, y2)
-			todo.extend(p['children'])
-		self.edge_limiter(todo)
+		for item in self.items:
+			item.rightBottomTrim()
+		self.edge_limiter(self.items)
 
 	def edge_limiter(self, todo):
 		while todo:
-			delete=[]
-			newtodo=[]
-			for c in todo:
-				x1=c['x1']
-				y1=c['y1']
-				x=c['x2']
-				y=c['y2']
+			delete = []
+			newtodo = []
+			for item in todo:
+				x1 = item.x1
+				y1 = item.y1
+				x = item.x2
+				y = item.y2
 				if x1>x:
-					x1,x=x,x1
+					x1,x = x,x1
 				if y1>y:
-					y1,y=y,y1
-				c['x1']=max(x1,c['parent']['x1'])
-				c['y1']=max(y1,c['parent']['y1'])
-				c['x2']=min(x,c['parent']['x2'])
-				c['y2']=min(y,c['parent']['y2'])
+					y1,y = y,y1
+				if item.parent:
+					item.x1 = max(x1, item.parent.x1)
+					item.y1 = max(y1, item.parent.y1)
+					item.x2 = min(x, item.parent.x2)
+					item.y2 = min(y, item.parent.y2)
 				if abs(x-x1)<=1 or abs(y-y1)<=1:
-					delete.append(c)
+					delete.append(item)
 				else:
-					newtodo.extend(c['children'])
-			todo=newtodo
-			for c in delete:
-				if c['parent']:
-					c['parent']['children'].remove(c)
+					newtodo.extend(item.children)
+			todo = newtodo
+			for item in delete:
+				if item.parent:
+					item.parent.children.remove(item)
 				else:
-					self.clips.remove(c)
+					self.clips.remove(item)

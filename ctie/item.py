@@ -27,134 +27,225 @@ import os
 import Image
 import weakref
 import math
+import md5
 from gi.repository import Gtk
 
+import ctie
+import imglib
 from helpers import *
 from cql import *
 
-id_map={}
-cache_gtk={}
-cache_pixbuf={}
-cache_pil_rgb={}
-cache_pil_l={}
+cache_gtk = {}
+cache_pixbuf = {}
+cache_pil_rgb = {}
+cache_pil_l = {}
 
 class Item(object):
-	def __init__(self, p):
-		self.p=p
-		self.hash=id_map[p['path']]
+	def __init__(self, path = None, parent = None, x1 = 0, y1 = 0, x2 = 0, y2 = 0, tags = {}):
+		self.path = path
+		self.parent = parent
+		self.x1 = int(x1)
+		self.y1 = int(y1)
+		self.x2 = int(x2)
+		self.y2 = int(y2)
+		self.children = []
+		self.tags = dict(tags)
+		if self.path is None:
+			self.path = parent.path
 
-	def __getitem__(self, key):
-		return self.p[key]
+		self.hash = md5.new(self.path).hexdigest()
+
+	def __str__(self):
+		return "{0:X} # {1} ({2},{3},{4},{5})".format(id(self), os.path.basename(self.path), self.x1, self.y1, self.x2, self.y2)
 
 	def get_gtk(self):
 		global cache_gtk
-		oid=id(self.p)
+		oid = id(self)
 		try:
-			o=cache_gtk[oid]()
-#			o=cache_gtk[oid]
+			o = cache_gtk[oid]()
 		except:
-			o=None
+			o = None
 		if not o:
-			o=Gtk.Image.new_from_file(self.get_cropped())
-			cache_gtk[oid]=weakref.ref(o)
-#			cache_gtk[oid]=o
+			o = Gtk.Image.new_from_file(self.get_cropped())
+			cache_gtk[oid] = weakref.ref(o)
 		return o
 
 	def get_pixbuf(self):
 		global cache_pixbuf
-		oid=id(self.p)
+		oid = id(self)
 		try:
-			o=cache_pixbuf[oid]()
+			o = cache_pixbuf[oid]()
 		except:
-			o=None
+			o = None
 		if not o:
-			o=self.get_gtk().get_pixbuf()
-			cache_pixbuf[oid]=weakref.ref(o)
+			o = self.get_gtk().get_pixbuf()
+			cache_pixbuf[oid] = weakref.ref(o)
 		return o
 
 	def get_pil_rgb(self):
 		global cache_pil_rgb
-		oid=id(self.p['path'])
+		oid = id(self.path)
 		try:
-			o=cache_pil_rgb[oid]()
+			o = cache_pil_rgb[oid]()
 		except:
-			o=None
+			o = None
 		if not o:
-			o=Image.open(self.p['path']).convert('RGB')
-			cache_pil_rgb[oid]=weakref.ref(o)
+			o = Image.open(self.path).convert('RGB')
+			cache_pil_rgb[oid] = weakref.ref(o)
 		return o
 
 	def get_pil_l(self):
 		global cache_pil_l
-		oid=id(self.p['path'])
+		oid = id(self.path)
 		try:
-			o=cache_pil_l[oid]()
+			o = cache_pil_l[oid]()
 		except:
-			o=None
+			o = None
 		if not o:
-			o=Image.open(self.p['path']).convert('L')
-			cache_pil_l[oid]=weakref.ref(o)
+			o = Image.open(self.path).convert('L')
+			cache_pil_l[oid] = weakref.ref(o)
 		return o
 
 	def get_pil_cropped(self):
-		return Image.open(self.p['path']).convert('RGB').crop((self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+		return Image.open(self.path).convert('RGB').crop((self.x1, self.y1, self.x2, self.y2))
 
 	def get_cropped(self):
-		bfile=os.path.join(get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+		bfile = os.path.join(get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
 		if not os.path.exists(bfile):
-			im=self.get_pil_rgb().crop((self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+			im = self.get_pil_rgb().crop((self.x1, self.y1, self.x2, self.y2))
 			im.save(bfile)
 			del(im)
 		return bfile
 
 	def get_thumbnail(self):
-		tfile=os.path.join(get_tempdir(), "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2']))
+		tfile = os.path.join(get_tempdir(), "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
 		if not os.path.exists(tfile):
-			im=Image.open(self.get_cropped())
-			ow,oh=im.size
-			nw,nh=(160,240)
+			im = Image.open(self.get_cropped())
+			ow,oh = im.size
+			nw,nh = (160,240)
 			if float(ow)/oh>float(nw)/nh:
-				newsize=(nw, int(math.ceil(float(nw)*oh/ow)))
+				newsize = (nw, int(math.ceil(float(nw)*oh/ow)))
 			else:
-				newsize=(int(math.ceil(float(nh)*ow/oh)), nh)
+				newsize = (int(math.ceil(float(nh)*ow/oh)), nh)
 			if newsize[0]<im.size[0] and newsize[1]<im.size[1]:
 				im.thumbnail(newsize)
 			else:
-				im=im.resize(newsize)
+				im = im.resize(newsize)
 			im.save(tfile)
 			del(im)
 		return tfile
 
 	def get_ocr_tempdir(self):
-		rpath="%s-%dx%dx%dx%d" % (self.hash, self.p['x1'], self.p['y1'], self.p['x2'], self.p['y2'])
+		rpath = "%s-%dx%dx%dx%d" % (self.hash, self.x1, self.y1, self.x2, self.y2)
 		os.chdir(get_tempdir())
 		return rpath
 
 	def getTags(self):
-		t=self.p
-		tags={}
+		tags = {}
+		t = self
 		while t:
-			for tag in t['tags']:
-				if tag not in tags:
-					tags[tag]=t['tags'][tag]
-			t=t['parent']
+			for key in t.tags:
+				if key not in tags:
+					tags[key] = t.tags[key]
+			t = t.parent
 		return tags
 
-	def setTag(self, key, value, isFormula=False):
+	def setTag(self, key, value, isFormula = False):
 		if isFormula:
-			self.p["tags"][key]=CQL(value).eval(self.p)
+			self.tags[key] = str(CQL(value).eval(self))
 		else:
-			self.p["tags"][key]=value
+			self.tags[key] = value
 
-	def getChildren(self):
-		return self.p["children"]
+	def contains(self, x, y):
+		return x>self.x1 and x<self.x2 and y>self.y1 and y<self.y2
 
+	def addChild(self, **arg):
+		self.children.append(Item(parent = self, **arg))
+		ctie.instance.ui.onItemTreeChanged()
 
-	def reorder_children(self, ordered_list):
-		r=[]
+	def removeChild(self, child):
+		self.children.remove(child)
+		ctie.instance.ui.onItemTreeChanged()
+
+	def remove(self):
+		ctie.instance.removeItem(self)
+		if self.parent:
+			self.parent.children.remove(self)
+			ctie.instance.ui.onItemTreeChanged()
+
+	def move(self, index, xoff, yoff):
+		xoff = int(xoff)
+		yoff = int(yoff)
+		todo = [self.children[index]]
+		while todo:
+			delete = []
+			newtodo = []
+			for c in todo:
+				x1 = c.x1+xoff
+				y1 = c.y1+yoff
+				x = c.x2+xoff
+				y = c.y2+yoff
+				x1 = max(x1, c.parent.x1)
+				y1 = max(y1, c.parent.y1)
+				x = min(x, c.parent.x2)
+				y = min(y, c.parent.y2)
+				c.x1 = min(x1, c.parent.x2)
+				c.y1 = min(y1, c.parent.y2)
+				c.x2 = max(x, c.parent.x1)
+				c.y2 = max(y, c.parent.y1)
+				if abs(x-x1)<=1 or abs(y-y1)<=1:
+					delete.append(c)
+				else:
+					newtodo.extend(c.children)
+			todo = newtodo
+			for item in delete:
+				item.remove()
+
+	def resize(self, index, xoff, yoff):
+		xoff = int(xoff)
+		yoff = int(yoff)
+		child = self.children[index]
+		xoff2 = max(xoff, child.x1-child.x2)
+		yoff2 = max(yoff, child.y1-child.y2)
+		x1 = child.x1
+		y1 = child.y1
+		x = child.x2+xoff2
+		y = child.y2+yoff2
+		child.x1 = max(x1, self.x1)
+		child.y1 = max(y1, self.y1)
+		child.x2 = min(x, self.x2)
+		child.y2 = min(y, self.y2)
+		if abs(x-x1)<=1 or abs(y-y1)<=1:
+			child.remove()
+
+	def reorder_children(self, ordered_list = []):
+		self.children = self.reordered_children(ordered_list)
+
+	def reordered_children(self, ordered_list = []):
+		r = []
 		for i in ordered_list:
-			r.append(self.p['children'][i])
-		for i,c in enumerate(self.p['children']):
+			r.append(self.children[i])
+		for i,c in enumerate(self.children):
 			if i not in ordered_list:
 				r.append(c)
-		self.p['children'] = r
+		return r
+
+	def leftTopTrim(self):
+		x1 = self.x1
+		y1 = self.y1
+		x2 = self.x2
+		y2 = self.y2
+		im = self.get_pil_l()
+
+		self.x1 = imglib.leftTrim(im, x1, y1, x2, y2)
+		self.y1 = imglib.topTrim(im, x1, y1, x2, y2)
+
+	def rightBottomTrim(self):
+		x1 = self.x1
+		y1 = self.y1
+		x2 = self.x2
+		y2 = self.y2
+		im = self.get_pil_l()
+
+		self.x2 = imglib.rightTrim(im, x1, y1, x2, y2)
+		self.y2 = imglib.bottomTrim(im, x1, y1, x2, y2)
