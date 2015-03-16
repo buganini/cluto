@@ -446,8 +446,7 @@ class CtieUI(object):
 		self.canvas.set_halign(Gtk.Align.CENTER)
 		self.canvas.set_valign(Gtk.Align.CENTER)
 
-		Gdk.cairo_set_source_pixbuf(cr, item.get_pixbuf(), 0, 0)
-		cr.paint()
+		item.draw(self.canvas, cr)
 		sx1, sy1 = self.selstart
 		sx, sy = self.selend
 		if sx1>sx:
@@ -542,9 +541,7 @@ class CtieUI(object):
 
 		self.canvas.set_size_request(width, height)
 
-		Gdk.cairo_set_source_pixbuf(cr, item.get_pixbuf(), item.x1-child.x1, item.y1-child.y1)
-		cr.rectangle(0, 0, width, height)
-		cr.fill()
+		child.draw(self.preview_canvas, cr)
 
 	def zoom_fit(self, *arg):
 		item = self.ctie.getCurrentItem()
@@ -619,15 +616,16 @@ class CtieUI(object):
 		for c in items_list.get_children():
 			items_list.remove(c)
 		for idx, item in enumerate(self.ctie.items):
-			tfile = item.get_thumbnail()
 			if hasattr(item, "ui"):
 				evtbox = item.ui
 			else:
 				evtbox = Gtk.EventBox()
 				box = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
-				img = Gtk.Image.new_from_file(tfile)
 				label = Gtk.Label(os.path.basename(item.path))
-				box.pack_start(img, False, False, 0)
+				canvas = Gtk.DrawingArea()
+				canvas.connect("draw", item.drawThumbnail)
+				canvas.set_size_request(160, 240)
+				box.pack_start(canvas, False, False, 0)
 				box.pack_start(label, False, False, 0)
 				evtbox.add(box)
 				evtbox.p = item
@@ -804,7 +802,6 @@ class CtieUI(object):
 			self.canvas.queue_draw()
 
 	def onItemChanged(self):
-		self.tags_refresh()
 		if not self.canvas:
 			self.canvas = Gtk.DrawingArea()
 			self.canvas.set_can_focus(True)
@@ -820,6 +817,7 @@ class CtieUI(object):
 		self.canvas.queue_draw()
 		self.preview_canvas.queue_draw()
 		self.zoom_fit()
+		self.tags_refresh()
 
 	def onSelectionChanged(self):
 		self.child_tags_refresh()

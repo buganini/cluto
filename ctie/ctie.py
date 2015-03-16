@@ -27,7 +27,10 @@ import os
 import Image
 import pickle
 
-from item import *
+from gi.repository import Poppler
+
+from imageItem import *
+from pdfItem import *
 from cql import *
 from helpers import *
 
@@ -44,7 +47,7 @@ class Ctie(object):
 		self.filter = None
 		self.items = []
 		self.currentLevel = -1
-		self.currentIndex = -1
+		self.currentIndex = None
 		self.selections = []
 		self.clipboard = []
 		self.copy_tags = []
@@ -132,6 +135,8 @@ class Ctie(object):
 		self.ui.onItemChanged()
 
 	def getCurrentItem(self):
+		if self.currentIndex is None:
+			return None
 		l = self.items[self.currentIndex:]
 		if l:
 			return l[0]
@@ -161,15 +166,18 @@ class Ctie(object):
 			for c in cs:
 				self.addItemByPath(os.path.join(path,c))
 		else:
-			try:
-				im = Image.open(path)
-			except:
-				return
-			self.addItem(path = path, x1 = 0, y1 = 0, x2 = im.size[0], y2 = im.size[1])
-			del(im)
-
-	def addItem(self, **arg):
-		self.clips.append(Item(**arg))
+			if path.lower().endswith(".pdf"):
+				pdf = Poppler.Document.new_from_file("file://"+path, None)
+				for i in range(pdf.get_n_pages()):
+					item = PdfItem(pdf = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
+					self.clips.append(item)
+			else:
+				item = ImageItem(path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
+				self.clips.append(item)
+			self._genItems()
+			self.ui.onItemListChanged()
+			if len(self.clips)==1:
+				self.selectItemByIndex(0)
 
 	def removeItem(self, item):
 		focusedItem = self.getCurrentItem()

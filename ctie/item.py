@@ -26,20 +26,11 @@
 import os
 import Image
 import weakref
-import math
 import md5
-import subprocess
 from gi.repository import Gtk
 
 import ctie
-import imglib
-from helpers import *
 from cql import *
-
-cache_gtk = {}
-cache_pixbuf = {}
-cache_pil_rgb = {}
-cache_pil_l = {}
 
 class Item(object):
 	def __init__(self, path = None, parent = None, x1 = 0, y1 = 0, x2 = 0, y2 = 0, tags = {}):
@@ -59,87 +50,11 @@ class Item(object):
 	def __str__(self):
 		return "{0:X} # {1} ({2},{3},{4},{5})".format(id(self), os.path.basename(self.path), self.x1, self.y1, self.x2, self.y2)
 
-	def get_gtk(self):
-		global cache_gtk
-		oid = id(self)
-		try:
-			o = cache_gtk[oid]()
-		except:
-			o = None
-		if not o:
-			o = Gtk.Image.new_from_file(self.get_cropped())
-			cache_gtk[oid] = weakref.ref(o)
-		return o
+	def drawThumbnail(self, widget, cr):
+		pass
 
-	def get_pixbuf(self):
-		global cache_pixbuf
-		oid = id(self)
-		try:
-			o = cache_pixbuf[oid]()
-		except:
-			o = None
-		if not o:
-			o = self.get_gtk().get_pixbuf()
-			cache_pixbuf[oid] = weakref.ref(o)
-		return o
-
-	def get_pil_rgb(self):
-		global cache_pil_rgb
-		oid = id(self.path)
-		try:
-			o = cache_pil_rgb[oid]()
-		except:
-			o = None
-		if not o:
-			o = Image.open(self.path).convert('RGB')
-			cache_pil_rgb[oid] = weakref.ref(o)
-		return o
-
-	def get_pil_l(self):
-		global cache_pil_l
-		oid = id(self.path)
-		try:
-			o = cache_pil_l[oid]()
-		except:
-			o = None
-		if not o:
-			o = Image.open(self.path).convert('L')
-			cache_pil_l[oid] = weakref.ref(o)
-		return o
-
-	def get_pil_cropped(self):
-		return Image.open(self.path).convert('RGB').crop((self.x1, self.y1, self.x2, self.y2))
-
-	def get_cropped(self):
-		bfile = os.path.join(get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
-		if not os.path.exists(bfile):
-			im = self.get_pil_rgb().crop((self.x1, self.y1, self.x2, self.y2))
-			im.save(bfile)
-			del(im)
-		return bfile
-
-	def get_thumbnail(self):
-		tfile = os.path.join(get_tempdir(), "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
-		if not os.path.exists(tfile):
-			im = Image.open(self.get_cropped())
-			ow,oh = im.size
-			nw,nh = (160,240)
-			if float(ow)/oh>float(nw)/nh:
-				newsize = (nw, int(math.ceil(float(nw)*oh/ow)))
-			else:
-				newsize = (int(math.ceil(float(nh)*ow/oh)), nh)
-			if newsize[0]<im.size[0] and newsize[1]<im.size[1]:
-				im.thumbnail(newsize)
-			else:
-				im = im.resize(newsize)
-			im.save(tfile)
-			del(im)
-		return tfile
-
-	def get_ocr_tempdir(self):
-		rpath = "%s-%dx%dx%dx%d" % (self.hash, self.x1, self.y1, self.x2, self.y2)
-		os.chdir(get_tempdir())
-		return rpath
+	def draw(self, widget, cr):
+		pass
 
 	def getTags(self):
 		tags = {}
@@ -165,7 +80,8 @@ class Item(object):
 		return x>self.x1 and x<self.x2 and y>self.y1 and y<self.y2
 
 	def addChild(self, **arg):
-		self.children.append(Item(parent = self, **arg))
+		k = self.__class__
+		self.children.append(k(parent = self, **arg))
 		ctie.instance.ui.onItemTreeChanged()
 
 	def removeChild(self, child):
@@ -236,37 +152,10 @@ class Item(object):
 		return r
 
 	def ocr(self):
-		if 'text' in self.tags:
-			return
-		tempdir = self.get_ocr_tempdir()
-		if not os.path.exists(tempdir):
-			os.makedirs(tempdir)
-		im = self.get_pil_cropped()
-		im.save(os.path.join(tempdir, "clip.png"))
-		del(im)
-		os.chdir(tempdir)
-		subprocess.call(["tesseract", "clip.png", "out"])
-		text = open("out.txt").read().rstrip().decode("utf-8")
-		text = ctie.instance.evalRegex(text)
-		self.tags['text'] = text
-		ctie.instance.addTag('text')
+		pass
 
 	def leftTopTrim(self):
-		x1 = self.x1
-		y1 = self.y1
-		x2 = self.x2
-		y2 = self.y2
-		im = self.get_pil_l()
-
-		self.x1 = imglib.leftTrim(im, x1, y1, x2, y2)
-		self.y1 = imglib.topTrim(im, x1, y1, x2, y2)
+		pass
 
 	def rightBottomTrim(self):
-		x1 = self.x1
-		y1 = self.y1
-		x2 = self.x2
-		y2 = self.y2
-		im = self.get_pil_l()
-
-		self.x2 = imglib.rightTrim(im, x1, y1, x2, y2)
-		self.y2 = imglib.bottomTrim(im, x1, y1, x2, y2)
+		pass

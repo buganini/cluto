@@ -1,6 +1,7 @@
 Dependencies:
 	GTK3
 	PIL
+	Poppler
 
 Query Language:
 	${KEY}: local variable
