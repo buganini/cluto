@@ -28,6 +28,7 @@ import Image
 import weakref
 import math
 import md5
+import subprocess
 from gi.repository import Gtk
 
 import ctie
@@ -156,6 +157,10 @@ class Item(object):
 		else:
 			self.tags[key] = value
 
+	def unsetTag(self, key):
+		del(self.tags[key])
+		ctie.ui.onTagChanged()
+
 	def contains(self, x, y):
 		return x>self.x1 and x<self.x2 and y>self.y1 and y<self.y2
 
@@ -229,6 +234,22 @@ class Item(object):
 			if i not in ordered_list:
 				r.append(c)
 		return r
+
+	def ocr(self):
+		if 'text' in self.tags:
+			return
+		tempdir = self.get_ocr_tempdir()
+		if not os.path.exists(tempdir):
+			os.makedirs(tempdir)
+		im = self.get_pil_cropped()
+		im.save(os.path.join(tempdir, "clip.png"))
+		del(im)
+		os.chdir(tempdir)
+		subprocess.call(["tesseract", "clip.png", "out"])
+		text = open("out.txt").read().rstrip().decode("utf-8")
+		text = ctie.instance.evalRegex(text)
+		self.tags['text'] = text
+		ctie.instance.addTag('text')
 
 	def leftTopTrim(self):
 		x1 = self.x1

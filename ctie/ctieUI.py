@@ -23,25 +23,14 @@
  SUCH DAMAGE.
 """
 
-import os
 import sys
-import glob
 from gi.repository import Gtk, Gdk, cairo, GObject, Pango
-import re
-import subprocess
-from pyquery import PyQuery as pq
 from helpers import *
 from ctie import *
 
 os.putenv("TESSDATA_PREFIX", "/usr/share")
 
 clear_tempdir = True
-
-def click(o):
-	evt = Gdk.Event(Gdk.EventType.BUTTON_PRESS)
-	evt.button.type = Gdk.EventType.BUTTON_PRESS
-	evt.button.button = 1
-	o.emit("button-press-event", evt)
 
 class CtieUI(object):
 	def __init__(self):
@@ -236,7 +225,7 @@ class CtieUI(object):
 		btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_SELECT_FONT, Gtk.IconSize.SMALL_TOOLBAR)
 		button.set_tooltip_text("OCR on selecting empty item")
 		button.set_image(btn_img)
-		button.connect("toggled", lambda x: click(self.focus_item))
+		button.connect("toggled", lambda x: self.onItemFocused())
 		toolbar.pack_end(button, False, False, 0)
 
 		self.toggle_childrenpath = button = Gtk.ToggleButton()
@@ -351,7 +340,6 @@ class CtieUI(object):
 		if not key:
 			return
 		self.ctie.batchSetTag(key, value, isFormula)
-		self.tags_refresh()
 
 	def open_project(self, *arg):
 		global tempdir, clear_tempdir
@@ -367,9 +355,6 @@ class CtieUI(object):
 		else:
 			filec.destroy()
 			return
-		self.level_sanitize()
-		self.redraw_items_list()
-		self.tags_refresh()
 
 	def save_project(self, *arg):
 		global clear_tempdir
@@ -419,8 +404,6 @@ class CtieUI(object):
 
 	def delete(self, *arg):
 		self.ctie.deleteSelectedChildren()
-		self.canvas.queue_draw()
-		self.child_tags_refresh()
 
 	def do_export(self, *arg):
 		outputdir = self.builder.get_object('output_dir').get_filename()
@@ -449,7 +432,6 @@ class CtieUI(object):
 		r = self.ctie.addTag(tag)
 		if not r:
 			self.set_status("Tag %s already exists" % tag)
-		self.tags_refresh()
 
 	def canvas_draw(self, widget, cr):
 		item = self.ctie.getCurrentItem()
@@ -656,10 +638,6 @@ class CtieUI(object):
 			items_list.pack_start(evtbox, False, False, 5)
 			evtbox.show_all()
 
-		item = self.ctie.getCurrentItem()
-		if item:
-			click(item.ui)
-
 	def set_children_order(self, *arg):
 		if not self.toggle_childrenpath:
 			self.set_status("Please enable areas path display")
@@ -685,72 +663,7 @@ class CtieUI(object):
 
 	def item_button_press(self, obj, evt):
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
-			self.set_status("Item: %d/%d" % (obj.index+1, len(self.ctie.items)))
 			self.ctie.selectItemByIndex(obj.index)
-
-			self.ctie.deselectAllChildren()
-			self.tags_refresh()
-			workarea = self.builder.get_object('workarea')
-			c = workarea.get_child()
-			if c:
-				workarea.remove(c)
-				c.destroy()
-			canvas = Gtk.DrawingArea()
-			self.canvas = canvas
-			canvas.set_can_focus(True)
-			workarea.add(canvas)
-			canvas.connect("draw", self.canvas_draw)
-			canvas.show()
-
-			preview = self.builder.get_object('preview')
-			c = preview.get_child()
-			if c:
-				preview.remove(c)
-				c.destroy()
-			canvas = Gtk.DrawingArea()
-			self.preview_canvas = canvas
-			preview.add(canvas)
-			canvas.connect("draw", self.preview_draw)
-			canvas.show()
-			self.zoom_fit()
-			if self.toggle_ocr.get_active():
-				if self.toggle_collation.get_active():
-					for cp in p.children:
-						if cp.tags.get('text', None):
-							continue
-						cit = Item(cp)
-						tempdir = cit.get_ocr_tempdir()
-						if not os.path.exists(tempdir):
-							os.makedirs(tempdir)
-						im = cit.get_pil_cropped()
-						im.save(os.path.join(tempdir, "clip.png"))
-						del(im)
-						os.chdir(tempdir)
-						subprocess.call(["tesseract", "clip.png", "out"])
-						text = open("out.txt").read().rstrip().decode("utf-8")
-						for rx,r in self.regex:
-							text2 = re.sub(rx, r, text)
-							text = text2
-						cp.tags['text'] = text
-						if 'text' not in self.tags:
-							self.tags.append('text')
-					self.ctie.selectChildByIndex(0)
-				else:
-					if p.tags.get('text', None):
-						return
-					it = Item(p)
-					tempdir = it.get_ocr_tempdir()
-					if not os.path.exists(tempdir):
-						os.makedirs(tempdir)
-					im = it.get_pil_cropped()
-					im.save(os.path.join(tempdir, "clip.png"))
-					del(im)
-					os.chdir(tempdir)
-					subprocess.call(["tesseract", "clip.png", "out"])
-					p.tags['text'] = open("out.txt").read().rstrip()
-					if 'text' not in self.tags:
-						self.tags.append('text')
-			# GObject.idle_add(lambda: self.canvas.grab_focus())
 
 	def tags_refresh(self, *arg):
 		item = self.ctie.getCurrentItem()
@@ -883,9 +796,7 @@ class CtieUI(object):
 			self.signal_mask = False
 
 	def clear_tag(self, obj, data):
-		item,tag = data
-		del(item.tags[tag])
-		self.tags_refresh()
+		item, key = data
 
 	def onItemListChanged(self):
 		self.redraw_items_list()
@@ -893,9 +804,22 @@ class CtieUI(object):
 			self.canvas.queue_draw()
 
 	def onItemChanged(self):
-		self.child_tags_refresh()
-		if self.canvas:
-			self.canvas.queue_draw()
+		self.tags_refresh()
+		if not self.canvas:
+			self.canvas = Gtk.DrawingArea()
+			self.canvas.set_can_focus(True)
+			self.builder.get_object('workarea').add(self.canvas)
+			self.canvas.connect("draw", self.canvas_draw)
+			self.canvas.show()
+
+		if not self.preview_canvas:
+			self.preview_canvas = Gtk.DrawingArea()
+			self.builder.get_object('preview').add(self.preview_canvas)
+			self.preview_canvas.connect("draw", self.preview_draw)
+			self.preview_canvas.show()
+		self.canvas.queue_draw()
+		self.preview_canvas.queue_draw()
+		self.zoom_fit()
 
 	def onSelectionChanged(self):
 		self.child_tags_refresh()
@@ -911,6 +835,9 @@ class CtieUI(object):
 		self.level_sanitize()
 		self.redraw_items_list()
 
+	def onTagChanged(self):
+		self.tags_refresh()
+
 	def onItemRemoved(self, item):
 		items_list = self.builder.get_object("items_list")
 		items_list.remove(item.ui)
@@ -919,10 +846,18 @@ class CtieUI(object):
 
 	def onItemFocused(self):
 		item = self.ctie.getCurrentItem()
+		self.set_status("Item: %d/%d" % (item.ui.index+1, len(self.ctie.items)))
 		if not item is None and hasattr(item, "ui"):
 			item.ui.get_style_context().add_class("darkback")
 			item.ui.queue_draw()
 			GObject.idle_add(self.autoscroll)
+		if self.toggle_ocr.get_active():
+			if self.toggle_collation.get_active():
+				for child in item.children:
+					child.ocr()
+				self.ctie.selectChildByIndex(0)
+			else:
+				item.ocr()
 
 	def onItemBlurred(self, item):
 		if not item is None and hasattr(item, "ui"):

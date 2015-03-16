@@ -205,7 +205,7 @@ class CQL(object):
 					return True
 				elif k=='INDEX':
 					if item.parent:
-						return item.parent.children.index(item)+1
+						return item.getIndex()+1
 					else:
 						return 0
 				elif k=='UUID':

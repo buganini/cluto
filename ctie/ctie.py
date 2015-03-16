@@ -88,7 +88,10 @@ class Ctie(object):
 		self.ui.onSelectionChanged()
 
 	def selectChildByIndex(self, index):
-		if index not in self.selections:
+		item = self.getCurrentItem()
+		if item is None:
+			return
+		if index not in self.selections and index < len(item.children):
 			self.selections.append(index)
 		self.ui.onSelectionChanged()
 
@@ -189,6 +192,12 @@ class Ctie(object):
 			except:
 				pass
 
+	def evalRegex(self, text):
+		for pattern, replacement in self.regex:
+			text2 = re.sub(pattern, replacement, text)
+			text = text2
+		return text
+
 	def setFilter(self, filter):
 		f = CQL(filter)
 		r = False
@@ -211,6 +220,8 @@ class Ctie(object):
 		self.copy_tags = data['tags']
 		self.tempdir = data['tempdir']
 		self.regex = data['regex']
+		self.ui.onItemTreeChanged()
+		self.ui.onItemChanged()
 		return True
 
 	def save(self, path):
@@ -372,6 +383,7 @@ class Ctie(object):
 		for i in self.selections:
 			del(item.children[i])
 		self.selections = []
+		self.ui.onItemTreeChanged()
 
 	def enableCopyTag(self, key):
 		if key in self.tags and key not in self.copy_tags:
@@ -384,6 +396,7 @@ class Ctie(object):
 	def addTag(self, key):
 		if not key in self.tags:
 			self.tags.append(key)
+		self.ui.onTagChanged()
 
 	def getTags(self, item = None):
 		if item is None:
@@ -399,6 +412,7 @@ class Ctie(object):
 			self.tags.append(key)
 		for it in self.items:
 			it.setTag(key, value, isFormula)
+		self.ui.onTagChanged()
 
 	def selectPrevChild(self):
 		item = self.getCurrentItem()
@@ -409,8 +423,9 @@ class Ctie(object):
 		elif len(self.selections)!=1:
 			self.selections = [0]
 		else:
-			self.selections[0]+=len(item.children)-1
-			self.selections[0]%=len(item.children)
+			self.selections[0] += len(item.children)-1
+			self.selections[0] %= len(item.children)
+		self.ui.onSelectionChanged()
 
 
 	def selectNextChild(self):
@@ -422,8 +437,9 @@ class Ctie(object):
 		elif len(self.selections)!=1:
 			self.selections = [0]
 		else:
-			self.selections[0]+=1
-			self.selections[0]%=len(item.children)
+			self.selections[0] += 1
+			self.selections[0] %= len(item.children)
+		self.ui.onSelectionChanged()
 
 	def move(self, xoff, yoff):
 		item = self.getCurrentItem()
