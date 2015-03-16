@@ -131,9 +131,11 @@ class ImageItem(Item):
 		Gdk.cairo_set_source_pixbuf(cr, pb, (widget.get_allocated_width()-self.thumbnail_size[0])/2, (widget.get_allocated_height()-self.thumbnail_size[1])/2)
 		cr.paint()
 
-	def draw(self, widget, cr):
+	def draw(self, widget, cr, factor):
+		cr.scale(factor, factor)
 		Gdk.cairo_set_source_pixbuf(cr, self.get_pixbuf(), 0, 0)
 		cr.paint()
+		cr.scale(1/factor, 1/factor)
 
 	def ocr(self):
 		if 'text' in self.tags:

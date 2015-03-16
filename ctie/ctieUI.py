@@ -441,12 +441,13 @@ class CtieUI(object):
 		width = item.x2-item.x1
 		height = item.y2-item.y1
 
-		cr.scale(factor, factor)
 		self.canvas.set_size_request(int(width*factor), int(height*factor))
 		self.canvas.set_halign(Gtk.Align.CENTER)
 		self.canvas.set_valign(Gtk.Align.CENTER)
 
-		item.draw(self.canvas, cr)
+		item.draw(self.canvas, cr, factor)
+
+		cr.scale(factor, factor)
 		sx1, sy1 = self.selstart
 		sx, sy = self.selend
 		if sx1>sx:

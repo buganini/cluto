@@ -23,12 +23,14 @@
  SUCH DAMAGE.
 """
 
-from gi.repository import Poppler
+from gi.repository import Gtk, Gdk, Poppler
+import cairo
 
 from item import Item
 
 cache_pdf = {}
 cache_pdf_page = {}
+lastRender = None
 
 class PdfItem(Item):
 	def __init__(self, pdf=None, page=None, **args):
@@ -45,12 +47,44 @@ class PdfItem(Item):
 	def drawThumbnail(self, widget, cr):
 		cr.set_source_rgba(255,255,255,255)
 		cr.paint()
-		self.getPdfPage().render(cr)
 
-	def draw(self, widget, cr):
+		w = widget.get_allocated_width()
+		h = widget.get_allocated_height()
+		wf = w/(self.x2-self.x1)
+		hf = h/(self.y2-self.y1)
+		factor = min(wf, hf)
+
+		pw, ph =self.getPdfPage().get_size()
+		pw = int(pw*factor)
+		ph = int(ph*factor)
+		surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, pw, ph)
+		ctx = cairo.Context(surface)
+		ctx.scale(factor, factor)
+		self.getPdfPage().render(ctx)
+		ctx.scale(1/factor, 1/factor)
+		pb = Gdk.pixbuf_get_from_surface(ctx.get_target(), 0, 0, pw, ph)
+		Gdk.cairo_set_source_pixbuf(cr, pb, -self.x1*factor, -self.y1*factor)
+		cr.paint()
+
+	def draw(self, widget, cr, factor):
+		global lastRender
 		cr.set_source_rgba(255,255,255,255)
 		cr.paint()
-		self.getPdfPage().render(cr)
+		pw, ph =self.getPdfPage().get_size()
+		pw = int(pw*factor)
+		ph = int(ph*factor)
+		if lastRender and (id(self), factor) == (lastRender[0], lastRender[1]):
+			pb = lastRender[2]
+		else:
+			surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, pw, ph)
+			ctx = cairo.Context(surface)
+			ctx.scale(factor, factor)
+			self.getPdfPage().render(ctx)
+			ctx.scale(1/factor, 1/factor)
+			pb = Gdk.pixbuf_get_from_surface(ctx.get_target(), 0, 0, pw, ph)
+			lastRender = (id(self), factor, pb)
+		Gdk.cairo_set_source_pixbuf(cr, pb, -self.x1*factor, -self.y1*factor)
+		cr.paint()
 
 	def getPdfPage(self):
 		global cache_pdf, cache_pdf_page
