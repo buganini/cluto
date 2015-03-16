@@ -27,27 +27,37 @@ from gi.repository import Poppler
 
 from item import Item
 
+cache_pdf = {}
+cache_pdf_page = {}
+
 class PdfItem(Item):
 	def __init__(self, pdf=None, page=None, **args):
+		global cache_pdf
 		super(PdfItem, self).__init__(**args)
-		self.pdf = pdf
-		if self.pdf is None:
-			self.pdf = self.parent.pdf
 		self.page = page
 		if self.page is None:
 			self.page = self.parent.page
-		self.pdfPage = self.pdf.get_page(self.page)
-		# print dir(self.pdfPage)
+		if pdf:
+			cache_pdf[self.path] = pdf
 		if self.x2==-1 or self.y2==-1:
-			self.x2, self.y2 = self.pdfPage.get_size()
+			self.x2, self.y2 = self.getPdfPage().get_size()
 
 	def drawThumbnail(self, widget, cr):
 		cr.set_source_rgba(255,255,255,255)
 		cr.paint()
-		self.pdfPage.render(cr)
+		self.getPdfPage().render(cr)
 
 	def draw(self, widget, cr):
 		cr.set_source_rgba(255,255,255,255)
 		cr.paint()
-		self.pdfPage.render(cr)
+		self.getPdfPage().render(cr)
 
+	def getPdfPage(self):
+		global cache_pdf, cache_pdf_page
+		if self.path not in cache_pdf:
+			cache_pdf[self.path] = Poppler.Document.new_from_file("file://"+self.path, None)
+		if self.path not in cache_pdf_page:
+			cache_pdf_page[self.path]={}
+		if self.page not in cache_pdf_page[self.path]:
+			cache_pdf_page[self.path][self.page] = cache_pdf[self.path].get_page(self.page)
+		return cache_pdf_page[self.path][self.page]
