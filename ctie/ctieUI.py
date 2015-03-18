@@ -678,11 +678,26 @@ class CtieUI(object):
 		collation_editor.master = None
 		collation_editor.set_text("")
 
-		tags = self.ctie.getTags(item)
-
+		grid_i = 0
 		tags_table = Gtk.Grid()
 		tagsbox.add(tags_table)
-		for i,tag in enumerate(self.ctie.tags):
+
+		types = item.getTypes()
+		if types:
+			group = None
+			for t in types:
+				radio = Gtk.RadioButton.new_with_label_from_widget(group, t)
+				group = radio
+				if t == item.getType():
+					radio.set_active(True)
+				else:
+					radio.set_active(False)
+				radio.connect('toggled', self.set_type, (item, t))
+				tags_table.attach(radio,0,grid_i,3,1)
+				grid_i += 1
+
+		tags = self.ctie.getTags(item)
+		for tag in self.ctie.tags:
 			text = Gtk.Entry()
 			text.set_text(tags[tag])
 			text.connect('changed', self.set_tag, (item, tag))
@@ -694,12 +709,18 @@ class CtieUI(object):
 			btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
 			button.set_image(btn_img)
 			button.connect("clicked", self.clear_tag, (item, tag))
-			tags_table.attach(label,0,i,1,1)
-			tags_table.attach(text,1,i,1,1)
-			tags_table.attach(button,2,i,1,1)
+			tags_table.attach(label,0,grid_i,1,1)
+			tags_table.attach(text,1,grid_i,1,1)
+			tags_table.attach(button,2,grid_i,1,1)
+			grid_i += 1
 		tagsbox.show_all()
 		GObject.idle_add(self.autofocus)
 		self.child_tags_refresh()
+
+	def set_type(self, obj, data):
+		item, t = data
+		if obj.get_active():
+			item.setType(t)
 
 	def child_tags_refresh(self, *arg):
 		item = self.ctie.getCurrentItem()
@@ -717,9 +738,25 @@ class CtieUI(object):
 		child = item.children[self.ctie.selections[0]]
 		tags = self.ctie.getTags(child)
 
+		grid_i = 0
 		tags_table = Gtk.Grid()
 		tagsbox.add(tags_table)
-		for i,key in enumerate(self.ctie.tags):
+
+		types = child.getTypes()
+		if types:
+			group = None
+			for t in types:
+				radio = Gtk.RadioButton.new_with_label_from_widget(group, t)
+				group = radio
+				if t == child.getType():
+					radio.set_active(True)
+				else:
+					radio.set_active(False)
+				radio.connect('toggled', self.set_type, (child, t))
+				tags_table.attach(radio,0,grid_i,3,1)
+				grid_i += 1
+
+		for key in self.ctie.tags:
 			text = Gtk.Entry()
 			text.set_text(tags[key])
 			text.connect('changed', self.set_tag, (child, key))
@@ -732,9 +769,10 @@ class CtieUI(object):
 			btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
 			button.set_image(btn_img)
 			button.connect("clicked", self.clear_tag, (child, key))
-			tags_table.attach(label,0,i,1,1)
-			tags_table.attach(text,1,i,1,1)
-			tags_table.attach(button,2,i,1,1)
+			tags_table.attach(label,0,grid_i,1,1)
+			tags_table.attach(text,1,grid_i,1,1)
+			tags_table.attach(button,2,grid_i,1,1)
+			grid_i += 1
 		tagsbox.show_all()
 		self.collation_cb(None)
 		GObject.idle_add(self.autofocus)

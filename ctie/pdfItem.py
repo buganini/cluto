@@ -44,6 +44,16 @@ class PdfItem(Item):
 		if self.x2==-1 or self.y2==-1:
 			self.x2, self.y2 = self.getPdfPage().get_size()
 
+	def getTypes(self):
+		return ("Text", "Image")
+
+	def getType(self):
+		if self.parent:
+			default = self.parent.getType()
+		else:
+			default = "Text"
+		return self.tags.get("_type", default)
+
 	def drawThumbnail(self, widget, cr):
 		cr.set_source_rgba(255,255,255,255)
 		cr.paint()

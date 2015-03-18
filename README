@@ -9,6 +9,7 @@ Query Language:
 	#{KEY}: list of children's local variable
 	%{KEY}: system properties:
 		IMAGE: image itself (used as content in exporting)
+		TYPE: area type
 		WIDTH: image width
 		HEIGHT: image height
 		FILE: original file path

@@ -50,6 +50,15 @@ class Item(object):
 	def __str__(self):
 		return "{0:X} # {1} ({2},{3},{4},{5})".format(id(self), os.path.basename(self.path), self.x1, self.y1, self.x2, self.y2)
 
+	def getTypes():
+		return False
+
+	def getType(self):
+		return self.tags.get("_type", None)
+
+	def setType(self, t):
+		self.tags["_type"] = t
+
 	def drawThumbnail(self, widget, cr):
 		pass
 

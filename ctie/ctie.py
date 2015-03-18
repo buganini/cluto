@@ -143,6 +143,7 @@ class Ctie(object):
 		return None
 
 	def _genItems(self):
+		self.selections = []
 		s = self.clips
 		for i in range(0, self.currentLevel):
 			ns = []
@@ -402,6 +403,8 @@ class Ctie(object):
 			self.copy_tags.remove(key)
 
 	def addTag(self, key):
+		if key.startswith("_"):
+			return
 		if not key in self.tags:
 			self.tags.append(key)
 		self.ui.onTagChanged()

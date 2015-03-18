@@ -167,6 +167,8 @@ class CQL(object):
 					return r
 				elif k=='FILE':
 					return item.path
+				elif k=='TYPE':
+					return item.getType()
 				elif k=='IMAGE':
 					return item.get_pil_cropped()
 				elif k=='WIDTH':
