@@ -51,7 +51,7 @@ class Ctie(object):
 		self.selections = []
 		self.clipboard = []
 		self.copy_tags = []
-		self.tempdir = None
+		self.tempdir = get_tempdir()
 
 	def getLevel(self):
 		l = 0

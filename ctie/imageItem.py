@@ -30,6 +30,7 @@ import Image
 import subprocess
 import weakref
 
+import ctie
 from helpers import *
 from item import Item
 import imglib
@@ -99,7 +100,7 @@ class ImageItem(Item):
 		return Image.open(self.path).convert('RGB').crop((self.x1, self.y1, self.x2, self.y2))
 
 	def get_cropped(self):
-		bfile = os.path.join(get_tempdir(), "%s-%dx%dx%dx%d.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
+		bfile = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
 		if not os.path.exists(bfile):
 			im = self.get_pil_rgb().crop((self.x1, self.y1, self.x2, self.y2))
 			im.save(bfile)
@@ -108,11 +109,11 @@ class ImageItem(Item):
 
 	def get_ocr_tempdir(self):
 		rpath = "%s-%dx%dx%dx%d" % (self.hash, self.x1, self.y1, self.x2, self.y2)
-		os.chdir(get_tempdir())
+		os.chdir(ctie.instance.tempdir)
 		return rpath
 
 	def drawThumbnail(self, widget, cr):
-		tfile = os.path.join(get_tempdir(), "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
+		tfile = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
 		if not os.path.exists(tfile):
 			im = Image.open(self.get_cropped())
 			ow,oh = im.size
