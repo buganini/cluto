@@ -37,12 +37,7 @@ class Line:
 		return bool(self.s)
 
 	def readStr(self):
-		s=self.s.split(' ', 1)
-		r=s[0]
-		if len(s)>1:
-			self.s=s[1]
-		else:
-			self.s=""
+		r, self.s = re.match("^(.[^ ]*) ?(.*)$", self.s).groups()
 		return r
 
 	def readFloat(self):
@@ -133,8 +128,6 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 				x1, y1 = translate(ctm[-1], x1, y1)
 				x2, y2 = translate(ctm[-1], x2, y2)
 				c = l.readStr()
-				if c=="":
-					c = " "
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
 					text[(y1,x1,y2,x2)]=c
 			elif cmd=="drawImage":
