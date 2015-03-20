@@ -112,6 +112,9 @@ class ImageItem(Item):
 		os.chdir(ctie.instance.tempdir)
 		return rpath
 
+	def getContent(self):
+		return self.get_pil_cropped()
+
 	def drawThumbnail(self, widget, cr):
 		tfile = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
 		if not os.path.exists(tfile):

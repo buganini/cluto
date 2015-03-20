@@ -59,6 +59,9 @@ class Item(object):
 	def setType(self, t):
 		self.tags["_type"] = t
 
+	def getContent(self):
+		pass
+
 	def drawThumbnail(self, widget, cr):
 		pass
 

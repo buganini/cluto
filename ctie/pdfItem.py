@@ -25,6 +25,7 @@
 
 from gi.repository import Gtk, Gdk, Poppler
 import cairo
+import pdf
 
 from item import Item
 
@@ -53,6 +54,14 @@ class PdfItem(Item):
 		else:
 			default = "Text"
 		return self.tags.get("_type", default)
+
+	def getContent(self):
+		if self.getType()=="Text":
+			return pdf.getText(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+		elif self.getType()=="Image":
+			return pdf.getImage(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+		else:
+			return None
 
 	def drawThumbnail(self, widget, cr):
 		cr.set_source_rgba(255,255,255,255)

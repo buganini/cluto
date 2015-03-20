@@ -409,12 +409,15 @@ class CtieUI(object):
 		outputdir = self.builder.get_object('output_dir').get_filename()
 		export_filter = CQL(self.builder.get_object('export_filter').get_text())
 		if not export_filter:
+			print "Invalid filter"
 			return
 		export_content = CQL(self.builder.get_object('export_content').get_text())
 		if not export_content:
+			print "Invalid content"
 			return
 		export_path = CQL(self.builder.get_object('path_pattern').get_text())
 		if not export_path:
+			print "Invalid path"
 			return
 		self.ctie.export(export_filter, export_content, export_path, outputdir)
 

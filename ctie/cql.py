@@ -163,14 +163,14 @@ class CQL(object):
 					r = 0
 					while t:
 						r += 1
-						t = t['parent']
+						t = t.parent
 					return r
 				elif k=='FILE':
 					return item.path
 				elif k=='TYPE':
 					return item.getType()
-				elif k=='IMAGE':
-					return item.get_pil_cropped()
+				elif k=='CONTENT':
+					return item.getContent()
 				elif k=='WIDTH':
 					return item.x2-item.x1
 				elif k=='HEIGHT':
