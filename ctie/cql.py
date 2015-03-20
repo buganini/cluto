@@ -25,6 +25,7 @@
 
 import os
 import re
+import uuid
 
 class CQL(object):
 	def __init__(self, i):
