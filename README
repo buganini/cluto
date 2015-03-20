@@ -8,7 +8,7 @@ Query Language:
 	@{KEY}: lexical variable (inherit from parent)
 	#{KEY}: list of children's local variable
 	%{KEY}: system properties:
-		IMAGE: image itself (used as content in exporting)
+		CONTENT: content (image or text)
 		TYPE: area type
 		WIDTH: image width
 		HEIGHT: image height
