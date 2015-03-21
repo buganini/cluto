@@ -16,7 +16,7 @@ Query Language:
 		LEVEL:	level
 		COUNT: number of children
 		ORDER: children are well ordered
-		INDEX: index in siblings, started from 1, 0 if %{LEVEL}==0
+		INDEX: index in siblings, started from 1
 	Operators:
 		[]
 		,

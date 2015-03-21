@@ -50,7 +50,13 @@ class Item(object):
 	def __str__(self):
 		return "{0:X} # {1} ({2},{3},{4},{5})".format(id(self), os.path.basename(self.path), self.x1, self.y1, self.x2, self.y2)
 
-	def getTypes():
+	def getIndex(self):
+		if self.parent:
+			return self.parent.children.index(self)
+		else:
+			return ctie.instance.clips.index(self)
+
+	def getTypes(self):
 		return False
 
 	def getType(self):
