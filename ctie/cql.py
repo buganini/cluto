@@ -213,6 +213,9 @@ class CQL(object):
 						return 0
 				elif k=='UUID':
 					return str(uuid.uuid4())
+				else:
+					print("Unknown attribute", t)
+					return None
 		rval = self.rval.eval(item)
 		if re.match('^-+$', t):
 			if type(rval)!=int:
@@ -257,7 +260,10 @@ class CQL(object):
 			elif t=='LIST_HAS':
 				return rval[1] in rval[0]
 			else:
+				print("Unknown function", t)
 				return None
+		if self.lval is None:
+			return rval
 		lval = self.lval.eval(item)
 		if t=='[]':
 			return lval[rval]
