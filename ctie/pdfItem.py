@@ -23,6 +23,7 @@
  SUCH DAMAGE.
 """
 
+from __future__ import division
 from gi.repository import Gtk, Gdk, Poppler
 import cairo
 import pdf
@@ -64,14 +65,20 @@ class PdfItem(Item):
 			return None
 
 	def drawThumbnail(self, widget, cr):
-		cr.set_source_rgba(255,255,255,255)
-		cr.paint()
-
-		w = widget.get_allocated_width()
-		h = widget.get_allocated_height()
-		wf = w/(self.x2-self.x1)
-		hf = h/(self.y2-self.y1)
-		factor = min(wf, hf)
+		cw = widget.get_allocated_width()
+		ch = widget.get_allocated_height()
+		w = self.x2-self.x1
+		h = self.y2-self.y1
+		wf = cw/w
+		hf = ch/h
+		if wf < hf:
+			sw = cw
+			sh = h*wf
+			factor = wf
+		else:
+			sw = w*hf
+			sh = ch
+			factor = hf
 
 		pw, ph =self.getPdfPage().get_size()
 		pw = int(pw*factor)
@@ -82,8 +89,13 @@ class PdfItem(Item):
 		self.getPdfPage().render(ctx)
 		ctx.scale(1/factor, 1/factor)
 		pb = Gdk.pixbuf_get_from_surface(ctx.get_target(), 0, 0, pw, ph)
-		Gdk.cairo_set_source_pixbuf(cr, pb, -self.x1*factor, -self.y1*factor)
-		cr.paint()
+		xo, yo = (cw-sw)/2, (ch-sh)/2
+		cr.set_source_rgba(255,255,255,255)
+		cr.rectangle(xo, yo, sw, sh)
+		cr.fill()
+		cr.rectangle(xo, yo, sw, sh)
+		Gdk.cairo_set_source_pixbuf(cr, pb, xo-self.x1*factor, yo-self.y1*factor)
+		cr.fill()
 
 	def draw(self, widget, cr, factor):
 		global lastRender
