@@ -45,6 +45,8 @@ class PdfItem(Item):
 			cache_pdf[self.path] = pdf
 		if self.x2==-1 or self.y2==-1:
 			self.x2, self.y2 = self.getPdfPage().get_size()
+		self.text = None
+		self.image = None
 
 	def getTypes(self):
 		return ("Text", "Image")
@@ -56,11 +58,25 @@ class PdfItem(Item):
 			default = "Text"
 		return self.tags.get("_type", default)
 
+	def getExtension(self):
+		if self.getType()=="Text":
+			return "txt"
+		elif self.getType()=="Image":
+			if self.image is None:
+				self.image = pdf.getImage(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+			return self.image.extension
+		else:
+			return ""
+
 	def getContent(self):
 		if self.getType()=="Text":
-			return pdf.getText(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+			if self.text is None:
+				self.text = pdf.getText(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+			return self.text
 		elif self.getType()=="Image":
-			return pdf.getImage(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+			if self.image is None:
+				self.image = pdf.getImage(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+			return self.image
 		else:
 			return None
 

@@ -208,6 +208,8 @@ class CQL(object):
 					return True
 				elif k=='INDEX':
 					return item.getIndex()+1
+				elif k=='EXTENSION':
+					return item.getExtension()
 				elif k=='UUID':
 					return str(uuid.uuid4())
 				else:

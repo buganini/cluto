@@ -112,6 +112,9 @@ class ImageItem(Item):
 		os.chdir(ctie.instance.tempdir)
 		return rpath
 
+	def getExtension(self):
+		return "png"
+
 	def getContent(self):
 		return self.get_pil_cropped()
 

@@ -17,6 +17,7 @@ Query Language:
 		COUNT: number of children
 		ORDER: children are well ordered
 		INDEX: index in siblings, started from 1
+		EXTENSION: recommended file name extension for content
 	Operators:
 		[]
 		,

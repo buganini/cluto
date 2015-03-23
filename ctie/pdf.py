@@ -24,7 +24,7 @@ class Image:
 		self.extension = extension
 
 	def save(self, path):
-		f=open(path+"."+self.extension, "w")
+		f=open(path, "w")
 		f.write(self.blob)
 		f.close()
 

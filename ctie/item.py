@@ -65,6 +65,9 @@ class Item(object):
 	def setType(self, t):
 		self.tags["_type"] = t
 
+	def getExtension(self):
+		pass
+
 	def getContent(self):
 		pass
 
