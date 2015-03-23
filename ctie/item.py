@@ -26,7 +26,7 @@
 import os
 import Image
 import weakref
-import md5
+import uuid
 from gi.repository import Gtk
 
 import ctie
@@ -45,7 +45,7 @@ class Item(object):
 		if self.path is None:
 			self.path = parent.path
 
-		self.hash = md5.new(self.path).hexdigest()
+		self.hash = str(uuid.uuid4())
 
 	def __str__(self):
 		return "{0:X} # {1} ({2},{3},{4},{5})".format(id(self), os.path.basename(self.path), self.x1, self.y1, self.x2, self.y2)

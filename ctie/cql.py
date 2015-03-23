@@ -25,7 +25,6 @@
 
 import os
 import re
-import uuid
 
 class CQL(object):
 	def __init__(self, i):
@@ -210,8 +209,8 @@ class CQL(object):
 					return item.getIndex()+1
 				elif k=='EXTENSION':
 					return item.getExtension()
-				elif k=='UUID':
-					return str(uuid.uuid4())
+				elif k=='HASH':
+					return item.hash
 				else:
 					print("Unknown attribute", t)
 					return None
