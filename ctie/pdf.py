@@ -37,8 +37,11 @@ class Line:
 		return bool(self.s)
 
 	def readStr(self):
-		r, self.s = re.match("^(.[^ ]*) ?(.*)$", self.s).groups()
-		return r
+		try:
+			r, self.s = re.match("^(.[^ ]*) ?(.*)$", self.s).groups()
+			return r
+		except:
+			return ''
 
 	def readFloat(self):
 		return float(self.readStr())
@@ -122,11 +125,13 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 				m01 = l.readFloat()
 				m10 = l.readFloat()
 				m11 = l.readFloat()
+				fontSize = l.readFloat()
 				m = (m00, m01, m10, m11, 0, 0)
-				x1, y1 = translate(m, x1, y1)
-				x2, y2 = translate(m, x2, y2)
+				# x1, y1 = translate(m, x1, y1)
+				# x2, y2 = translate(m, x2, y2)
 				x1, y1 = translate(ctm[-1], x1, y1)
 				x2, y2 = translate(ctm[-1], x2, y2)
+
 				c = l.readStr()
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
 					text[(y1,x1,y2,x2)]=c
