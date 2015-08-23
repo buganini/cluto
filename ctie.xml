@@ -145,7 +145,7 @@
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="invisible_char">•</property>
-                <property name="text" translatable="yes">PREFIX(BASENAME(%{FILE}))+"-"+%{LEVEL}+"-"+%{INDEX}+"."+%{EXTENSION}</property>
+                <property name="text" translatable="yes">PREFIX(BASENAME(%{FILE}))+"#"+%{PAGE}+"-"+%{LEVEL}+"-"+%{INDEX}+"."+%{EXTENSION}</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>

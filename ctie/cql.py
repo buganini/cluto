@@ -167,6 +167,11 @@ class CQL(object):
 					return r
 				elif k=='FILE':
 					return item.path
+				elif k=='PAGE':
+					if hasattr(item, "page"):
+						return "{0}".format(item.page)
+					else:
+						return "0"
 				elif k=='TYPE':
 					return item.getType()
 				elif k=='CONTENT':
