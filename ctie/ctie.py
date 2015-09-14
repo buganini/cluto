@@ -228,6 +228,8 @@ class Ctie(object):
 		self.tags = data['tags']
 		self.copy_tags = data['tags']
 		self.tempdir = data['tempdir']
+		if not os.path.exists(self.tempdir):
+			os.makedirs(self.tempdir)
 		self.regex = data['regex']
 		self.ui.onItemTreeChanged()
 		self.ui.onItemChanged()
