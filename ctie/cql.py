@@ -262,6 +262,10 @@ class CQL(object):
 				return os.path.join(rval[0], rval[1])
 			elif t=='LIST_HAS':
 				return rval[1] in rval[0]
+			elif t=='SPLIT':
+				return rval[1].split(rval[0])
+			elif t=='REPLACE':
+				return rval[2].replace(rval[0], rval[1])
 			else:
 				print("Unknown function", t)
 				return None
