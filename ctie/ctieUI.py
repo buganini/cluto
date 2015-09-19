@@ -557,7 +557,7 @@ class CtieUI(object):
 
 		self.canvas.set_size_request(width, height)
 
-		child.draw(self.preview_canvas, cr)
+		child.draw(self.preview_canvas, cr, 1)
 
 	def zoom_fit(self, *arg):
 		item = self.ctie.getCurrentItem()
