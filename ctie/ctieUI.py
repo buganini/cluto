@@ -205,6 +205,12 @@ class CtieUI(object):
 		button.connect("clicked", self.set_children_order)
 		toolbar.pack_start(button, False, False, 0)
 
+		self.toggle_horizontal_splitter = button = Gtk.ToggleButton()
+		btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_REFRESH, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("Horizontal Splitter")
+		button.set_image(btn_img)
+		toolbar.pack_start(button, False, False, 0)
+
 		toolbar.pack_start(Gtk.Separator(orientation = Gtk.Orientation.VERTICAL), False, False, 1)
 
 		button = Gtk.Button()
@@ -464,6 +470,12 @@ class CtieUI(object):
 			xoff = 0
 			yoff = 0
 
+		if self.toggle_horizontal_splitter.get_active() and self.selend[0]:
+			cr.set_source_rgba(0,255,0,255)
+			cr.move_to(self.selend[0],float(0))
+			cr.line_to(self.selend[0],float(item.y2-item.y1))
+			cr.stroke()
+			return
 		for i, child in enumerate(item.children):
 			x1 = (child.x1-item.x1)
 			y1 = (child.y1-item.y1)
@@ -929,6 +941,7 @@ class CtieUI(object):
 		if str(type(evt))==repr(Gdk.EventButton):
 			if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
 				self.selstart = (x, y)
+				self.selend = (x, y)
 				if not len(self.ctie.selections):
 					self.mode = 'rectangle'
 				else:
@@ -940,35 +953,40 @@ class CtieUI(object):
 					else:
 						self.mode = 'resize'
 			elif evt.button==1 and evt.type==Gdk.EventType.BUTTON_RELEASE:
-				x1,y1 = self.selstart
-				if (x1,y1)==(None, None):
-					return
-				if x1==x and y1==y:
-					for i, child in enumerate(item.children):
-						if child.contains(x+item.x1, y+item.y1):
-							if i in self.ctie.selections:
-								self.ctie.deselectChildByIndex(i)
-							else:
-								self.ctie.selectChildByIndex(i)
-				elif self.mode=='rectangle':
-					if x1>x:
-						x1, x = x, x1
-					if y1>y:
-						y1, y = y, y1
-					x1 = max(x1, 0)
-					y1 = max(y1, 0)
-					x = min(x, item.x2-item.x1)
-					y = min(y, item.y2-item.y1)
-					if x-x1>5 and y-y1>5:
-						item.addChild(x1 = x1+item.x1, y1 = y1+item.y1, x2 = x+item.x1, y2 = y+item.y1)
-				elif self.mode=='move':
-					xoff = self.selend[0]-self.selstart[0]
-					yoff = self.selend[1]-self.selstart[1]
-					self.ctie.move(xoff, yoff)
-				elif self.mode=='resize':
-					xoff = self.selend[0]-self.selstart[0]
-					yoff = self.selend[1]-self.selstart[1]
-					self.ctie.resize(xoff, yoff)
+				if self.toggle_horizontal_splitter.get_active() and self.selend[0]:
+					x = self.selend[0]
+					item.addChild(x1 = item.x1, y1 = item.y1, x2 = x+item.x1, y2 = item.y2)
+					item.addChild(x1 = x+item.x1, y1 = item.y1, x2 = item.x2, y2 = item.y2)
+				else:
+					x1,y1 = self.selstart
+					if (x1,y1)==(None, None):
+						return
+					if x1==x and y1==y:
+						for i, child in enumerate(item.children):
+							if child.contains(x+item.x1, y+item.y1):
+								if i in self.ctie.selections:
+									self.ctie.deselectChildByIndex(i)
+								else:
+									self.ctie.selectChildByIndex(i)
+					elif self.mode=='rectangle':
+						if x1>x:
+							x1, x = x, x1
+						if y1>y:
+							y1, y = y, y1
+						x1 = max(x1, 0)
+						y1 = max(y1, 0)
+						x = min(x, item.x2-item.x1)
+						y = min(y, item.y2-item.y1)
+						if x-x1>5 and y-y1>5:
+							item.addChild(x1 = x1+item.x1, y1 = y1+item.y1, x2 = x+item.x1, y2 = y+item.y1)
+					elif self.mode=='move':
+						xoff = self.selend[0]-self.selstart[0]
+						yoff = self.selend[1]-self.selstart[1]
+						self.ctie.move(xoff, yoff)
+					elif self.mode=='resize':
+						xoff = self.selend[0]-self.selstart[0]
+						yoff = self.selend[1]-self.selstart[1]
+						self.ctie.resize(xoff, yoff)
 				self.selstart = (None, None)
 				self.selend = (None, None)
 				self.mode = None
