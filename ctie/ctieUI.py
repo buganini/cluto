@@ -282,7 +282,7 @@ class CtieUI(object):
 		status.push(0, s)
 
 	def edit_regex(self, *arg):
-		self.builder.get_object("regex").get_buffer().set_text(self.ctie.regex)
+		self.builder.get_object("regex").get_buffer().set_text(self.ctie.getRegex())
 		self.builder.get_object("regex_window").show()
 
 	def regex_apply(self, *arg):

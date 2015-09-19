@@ -192,6 +192,12 @@ class Ctie(object):
 			self.items.remove(item)
 		self.ui.onItemTreeChanged()
 
+	def getRegex(self):
+		l = []
+		for r in self.regex:
+			l.append("\t".join(r))
+		return "\n".join(l)
+
 	def setRegex(self, text):
 		self.regex = []
 		for line in text.split("\n"):
