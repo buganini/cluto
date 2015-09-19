@@ -120,20 +120,20 @@ class ImageItem(Item):
 
 	def drawThumbnail(self, widget, cr):
 		tfile = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
+		im = Image.open(self.get_cropped())
+		ow,oh = im.size
+		nw,nh = (widget.get_allocated_width(), widget.get_allocated_height())
+		if float(ow)/oh>float(nw)/nh:
+			self.thumbnail_size = (nw, int(math.ceil(float(nw)*oh/ow)))
+		else:
+			self.thumbnail_size = (int(math.ceil(float(nh)*ow/oh)), nh)
 		if not os.path.exists(tfile):
-			im = Image.open(self.get_cropped())
-			ow,oh = im.size
-			nw,nh = (widget.get_allocated_width(), widget.get_allocated_height())
-			if float(ow)/oh>float(nw)/nh:
-				self.thumbnail_size = (nw, int(math.ceil(float(nw)*oh/ow)))
-			else:
-				self.thumbnail_size = (int(math.ceil(float(nh)*ow/oh)), nh)
 			if self.thumbnail_size[0]<im.size[0] and self.thumbnail_size[1]<im.size[1]:
 				im.thumbnail(self.thumbnail_size)
 			else:
 				im = im.resize(self.thumbnail_size)
 			im.save(tfile)
-			del(im)
+		del(im)
 		pb = Gtk.Image.new_from_file(tfile).get_pixbuf()
 		Gdk.cairo_set_source_pixbuf(cr, pb, (widget.get_allocated_width()-self.thumbnail_size[0])/2, (widget.get_allocated_height()-self.thumbnail_size[1])/2)
 		cr.paint()
