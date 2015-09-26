@@ -211,6 +211,12 @@ class CtieUI(object):
 		button.set_image(btn_img)
 		toolbar.pack_start(button, False, False, 0)
 
+		self.toggle_vertical_splitter = button = Gtk.ToggleButton()
+		btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_REFRESH, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("Vertical Splitter")
+		button.set_image(btn_img)
+		toolbar.pack_start(button, False, False, 0)
+
 		toolbar.pack_start(Gtk.Separator(orientation = Gtk.Orientation.VERTICAL), False, False, 1)
 
 		button = Gtk.Button()
@@ -474,6 +480,12 @@ class CtieUI(object):
 			cr.set_source_rgba(0,255,0,255)
 			cr.move_to(self.selend[0],float(0))
 			cr.line_to(self.selend[0],float(item.y2-item.y1))
+			cr.stroke()
+			return
+		if self.toggle_vertical_splitter.get_active() and self.selend[0]:
+			cr.set_source_rgba(0,255,0,255)
+			cr.move_to(float(0), self.selend[1])
+			cr.line_to(float(item.x2-item.x1), self.selend[1])
 			cr.stroke()
 			return
 		for i, child in enumerate(item.children):
@@ -955,8 +967,12 @@ class CtieUI(object):
 			elif evt.button==1 and evt.type==Gdk.EventType.BUTTON_RELEASE:
 				if self.toggle_horizontal_splitter.get_active() and self.selend[0]:
 					x = self.selend[0]
-					item.addChild(x1 = item.x1, y1 = item.y1, x2 = x+item.x1, y2 = item.y2)
-					item.addChild(x1 = x+item.x1, y1 = item.y1, x2 = item.x2, y2 = item.y2)
+					item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x1+x, y2 = item.y2)
+					item.addChild(x1 = item.x1+x, y1 = item.y1, x2 = item.x2, y2 = item.y2)
+				elif self.toggle_vertical_splitter.get_active() and self.selend[0]:
+					y = self.selend[1]
+					item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x2, y2 = item.y1+y)
+					item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x2, y2 = item.y2)
 				else:
 					x1,y1 = self.selstart
 					if (x1,y1)==(None, None):
