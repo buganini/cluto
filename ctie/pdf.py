@@ -88,11 +88,11 @@ def getImage(file, page, bx1, by1, bx2, by2):
 
 	ret = None
 	bf=open("blob", "r")
-	fmtmap={"JPEG":"jpg", "PPM":"ppm"}
+	fmtmap={"JPEG":"jpg"}
 	for offset, size, fmt, x1, y1, x2, y2 in imgs[0:1]:
 		bf.seek(offset)
 		blob=bf.read(size)
-		ret = Image(blob, fmtmap[fmt])
+		ret = Image(blob, fmtmap.get(fmt, fmt.lower()))
 	bf.close()
 	return ret
 
