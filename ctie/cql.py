@@ -243,6 +243,8 @@ class CQL(object):
 			t = t.upper()
 			if t=='ABS':
 				return abs(rval)
+			elif t=='TEXT':
+				return str(rval)
 			elif t=='JOIN':
 				if(type(rval[0])==unicode):
 					s = rval[0].encode("utf-8")

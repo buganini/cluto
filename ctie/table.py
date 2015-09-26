@@ -31,6 +31,17 @@ class Table(object):
 		self.maxr = -1
 		self.maxc = -1
 
+	def __str__(self):
+		ret = []
+		for r in range(self.maxr+1):
+			row = []
+			for c in range(self.maxc+1):
+				t = self.data.get((r,c), None)
+				if not t is None:
+					row.append(t)
+			ret.append(": ".join(row))
+		return "\n".join(ret)
+
 	def set(self, row, col, content):
 		self.data[(row, col)] = content
 		if row > self.maxr:

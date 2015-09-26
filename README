@@ -56,3 +56,5 @@ Query Language:
 			split(";","a;b") -> ["a","b"]
 		REPLACE
 			replace("a","b","abc") -> "bbc"
+		TEXT
+			TEXT(content) -> text
