@@ -47,9 +47,10 @@ class PdfItem(Item):
 			self.x2, self.y2 = self.getPdfPage().get_size()
 		self.text = None
 		self.image = None
+		self.table = None
 
 	def getTypes(self):
-		return ("Text", "Image")
+		return ("Text", "Image", "Table")
 
 	def getType(self):
 		if self.parent:
@@ -65,6 +66,8 @@ class PdfItem(Item):
 			if self.image is None:
 				self.image = pdf.getImage(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
 			return self.image.extension
+		elif self.getType()=="Table":
+			return "csv"
 		else:
 			return ""
 
@@ -77,6 +80,10 @@ class PdfItem(Item):
 			if self.image is None:
 				self.image = pdf.getImage(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
 			return self.image
+		elif self.getType()=="Table":
+			# if self.table is None:
+			self.table = pdf.getTable(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+			return self.table
 		else:
 			return None
 
