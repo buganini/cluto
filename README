@@ -2,6 +2,7 @@ Dependencies:
 	GTK3
 	PIL
 	Poppler
+	xpdfimport from LibreOffice/OpenOffice.org
 
 Query Language:
 	${KEY}: local variable
