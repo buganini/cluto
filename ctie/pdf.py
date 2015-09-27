@@ -40,21 +40,44 @@ class Line:
 	def unshift(self, token):
 		self.s = token + " " + self.s
 
-	def readStr(self):
+	def readToken(self):
 		try:
 			r, self.s = re.match("^(.[^ ]*) ?(.*)$", self.s).groups()
 			return r
 		except:
 			return ''
 
+	def readStr(self):
+		s = self.readToken()
+		r = []
+		escape = False
+		for c in s:
+			if escape:
+				escape = False
+				if c == "\\":
+					r.append("\\")
+				elif c == "r":
+					r.append("\r")
+				elif c == "n":
+					r.append("\n")
+				else:
+					r.append("\\")
+					r.append(c)
+			else:
+				if c == "\\":
+					escape = True
+				else:
+					r.append(c)
+		return "".join(r)
+
 	def readFloat(self):
-		return float(self.readStr())
+		return float(self.readToken())
 
 	def readInt(self):
-		return int(self.readStr())
+		return int(self.readToken())
 
 	def readBool(self):
-		return self.readStr()=="1"
+		return self.readToken()=="1"
 
 	def __str__(self):
 		return self.s_orig
@@ -128,7 +151,7 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 				end=True
 				break
 			l = Line(ls)
-			cmd = l.readStr()
+			cmd = l.readToken()
 			if cmd=='setPageNum':
 				pagenum = l.readInt()
 			elif cmd=='startPage':
@@ -165,7 +188,7 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 				height = l.readInt()
 				maskBufSize = l.readInt()
 				blobOffset += maskBufSize
-				fmt = l.readStr()
+				fmt = l.readToken()
 				bufSize = l.readInt()
 				m = (1.0/width, 0, 0, -1.0/height, 0, 1)
 				x1, y1 = translate(m, 0, 0)
@@ -184,7 +207,7 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 				isUnderline = l.readInt()
 				fs = l.readFloat()
 				sz = l.readInt()
-				fname = l.readStr()
+				fname = l.readToken()
 				blobOffset += sz
 			elif cmd=="updateCtm":
 				m0 = l.readFloat()
@@ -236,7 +259,7 @@ def getTable(file, page, bx1, by1, bx2, by2):
 				end=True
 				break
 			l = Line(ls)
-			cmd = l.readStr()
+			cmd = l.readToken()
 			if cmd=='setPageNum':
 				pagenum = l.readInt()
 			elif cmd=='startPage':
@@ -255,7 +278,7 @@ def getTable(file, page, bx1, by1, bx2, by2):
 				isUnderline = l.readInt()
 				fs = l.readFloat()
 				sz = l.readInt()
-				fname = l.readStr()
+				fname = l.readToken()
 				blobOffset += sz
 			elif cmd=="updateCtm":
 				m0 = l.readFloat()
@@ -295,7 +318,7 @@ def getTable(file, page, bx1, by1, bx2, by2):
 					continue
 				pts = []
 				while l:
-					token = l.readStr()
+					token = l.readToken()
 					if token == "subpath":
 						isBorder = True
 						isInside = False
