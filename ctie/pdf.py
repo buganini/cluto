@@ -18,6 +18,7 @@ import sys
 import subprocess
 import re
 from table import Table
+from ranges import CRanges
 
 class Image:
 	def __init__(self, blob, extension):
@@ -241,8 +242,8 @@ def getTable(file, page, bx1, by1, bx2, by2):
 
 	cmds=pdf.stdout.readlines().__iter__()
 
-	vsep = []
-	hsep = []
+	vsep = {}
+	hsep = {}
 	text = {}
 
 	ctm=[]
@@ -343,19 +344,55 @@ def getTable(file, page, bx1, by1, bx2, by2):
 				if ps and isBorder and isInside:
 					pts.append(ps)
 
-				for ps in pts:
-					for i in range(len(ps)-1):
-						if ps[i][0] == ps[i+1][0]:
-							vsep.append((ps[i][0], ps[i][1], ps[i+1][1]))
-						else:
-							hsep.append((ps[i][1], ps[i][0], ps[i+1][0]))
+				if cmd == "strokePath":
+					for ps in pts:
+						for i in range(len(ps)-1):
+							if ps[i][0] == ps[i+1][0]:
+								if ps[i][0] not in vsep:
+									vsep[ps[i][0]] = CRanges()
+								vsep[ps[i][0]].add(ps[i][1], ps[i+1][1])
+							else:
+								if ps[i][1] not in hsep:
+									hsep[ps[i][1]] = CRanges()
+								hsep[ps[i][1]].add(ps[i][0], ps[i+1][0])
+				elif cmd == "fillPath":
+					for ps in pts:
+						xp = []
+						yp = []
+						if len(ps) != 5:
+							continue
+						for p in ps:
+							if p[0] not in xp:
+								xp.append(p[0])
+							if p[1] not in yp:
+								yp.append(p[1])
+						if len(xp)>2:
+							continue
+						if len(yp)>2:
+							continue
+						if len(xp)==1:
+							xp.append(xp[0])
+						if len(yp)==1:
+							yp.append(yp[1])
+						xp.sort()
+						yp.sort()
+						if xp[1] - xp[0] > yp[1] - yp[0]: #vertical
+							if xp[0] not in vsep:
+								vsep[xp[0]] = CRanges()
+							vsep[xp[0]].add(yp[0], yp[1])
+						else: #horizontal
+							if yp[0] not in hsep:
+								hsep[yp[0]] = CRanges()
+							hsep[yp[0]].add(xp[0], xp[1])
 		if end:
 			break
 
 	pdf.wait()
 
-	vsep.sort(key=lambda x:x[0])
-	hsep.sort(key=lambda x:x[0])
+	vsepPos = vsep.keys()
+	vsepPos.sort()
+	hsepPos = hsep.keys()
+	hsepPos.sort()
 
 	textmap = {}
 
@@ -364,12 +401,12 @@ def getTable(file, page, bx1, by1, bx2, by2):
 		row = -1
 		col = -1
 		c = text[rect]
-		for i in range(1, len(hsep)):
-			if y1 < hsep[i][0] and x1 >= hsep[i][1] and x1 < hsep[i][2]:
+		for i in range(1, len(hsepPos)):
+			if y1 < hsepPos[i] and hsep[hsepPos[i]].contains(x1) > 0:
 				row = i-1
 				break
-		for i in range(1, len(vsep)):
-			if x1 < vsep[i][0] and y1 >= vsep[i][1] and y1 < vsep[i][2]:
+		for i in range(1, len(vsepPos)):
+			if x1 < vsepPos[i] and vsep[vsepPos[i]].contains(y1) > 0:
 				col = i-1
 				break
 		pos = (row, col)
@@ -390,16 +427,9 @@ def getTable(file, page, bx1, by1, bx2, by2):
 	rs.sort()
 	cs.sort()
 
-	rmap = {}
-	cmap = {}
-	for i,r in enumerate(rs):
-		rmap[r]=i
-	for i,c in enumerate(cs):
-		cmap[c]=i
-
 	table = Table()
 
 	for pos in textmap:
-		table.set(rmap[pos[0]], cmap[pos[1]], charsToText(textmap[pos]))
+		table.set(pos[0], pos[1], charsToText(textmap[pos]))
 
 	return table
