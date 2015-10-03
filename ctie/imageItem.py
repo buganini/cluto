@@ -41,6 +41,10 @@ cache_pil_rgb = {}
 cache_pil_l = {}
 
 class ImageItem(Item):
+	@staticmethod
+	def probe(filename):
+		return os.path.splitext(filename.lower())[1] in (".jpg", ".png", ".jpeg", ".tiff", ".bmp")
+
 	def __init__(self, **args):
 		super(ImageItem, self).__init__(**args)
 		if self.x2==-1 or self.y2==-1:

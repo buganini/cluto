@@ -613,7 +613,7 @@ class CtieUI(object):
 		item.remove()
 
 	def add_item(self, *arg):
-		filec = Gtk.FileChooserDialog("Add", self.builder.get_object("main_window"), Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_ADD, Gtk.ResponseType.ACCEPT))
+		filec = Gtk.FileChooserDialog("Add", self.builder.get_object("main_window"), Gtk.FileChooserAction.OPEN | Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_ADD, Gtk.ResponseType.ACCEPT))
 		filec.set_select_multiple(True)
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
 			cs = filec.get_filenames()

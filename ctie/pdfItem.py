@@ -35,6 +35,10 @@ cache_pdf_page = {}
 lastRender = None
 
 class PdfItem(Item):
+	@staticmethod
+	def probe(filename):
+		return filename.lower().endswith(".pdf")
+
 	def __init__(self, pdf=None, page=None, **args):
 		global cache_pdf
 		super(PdfItem, self).__init__(**args)

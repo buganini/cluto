@@ -167,18 +167,18 @@ class Ctie(object):
 			for c in cs:
 				self.addItemByPath(os.path.join(path,c))
 		else:
-			if path.lower().endswith(".pdf"):
+			if PdfItem.probe(path):
 				pdf = Poppler.Document.new_from_file("file://"+path, None)
 				for i in range(pdf.get_n_pages()):
 					item = PdfItem(pdf = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
 					self.clips.append(item)
-			else:
+			elif ImageItem.probe(path):
 				item = ImageItem(path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
 				self.clips.append(item)
-			self._genItems()
-			self.ui.onItemListChanged()
-			if len(self.clips)==1:
-				self.selectItemByIndex(0)
+		self._genItems()
+		self.ui.onItemListChanged()
+		if len(self.clips)==1:
+			self.selectItemByIndex(0)
 
 	def removeItem(self, item):
 		focusedItem = self.getCurrentItem()
