@@ -85,12 +85,12 @@ class Line:
 
 def charsToText(charsMap):
 	s=[]
-	ks=sorted(charsMap.keys())
+	ks=sorted(charsMap.keys(), key = lambda x: (x[1], x[0], x[3], x[2]))
 	lastk = (-1, -1, -1, -1) # y1, x1, y2, x2
 	for k in ks:
-		if lastk[0]>=0 and lastk[0]!=k[0]:
+		if lastk[1]>=1 and lastk[1]!=k[1]:
 			s.append("\n")
-		elif k[1] - lastk[3] > 70:
+		elif k[0] - lastk[2] > 70:
 			s.append(" ")
 		lastk = k
 		s.append(charsMap[k])
@@ -313,7 +313,7 @@ def getTable(file, page, bx1, by1, bx2, by2):
 
 				c = l.readStr()
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
-					text[(y1,x1,y2,x2)]=c
+					text[(x1,y1,x2,y2)]=c
 			elif cmd in ("strokePath", "fillPath"):
 				if pagen!=page:
 					continue
@@ -367,7 +367,7 @@ def getTable(file, page, bx1, by1, bx2, by2):
 	textmap = {}
 
 	for rect in text:
-		y1,x1,y2,x2 = rect
+		x1,y1,x2,y2 = rect
 		row = -1
 		col = -1
 		c = text[rect]
@@ -382,7 +382,7 @@ def getTable(file, page, bx1, by1, bx2, by2):
 		pos = (row, col)
 		if pos not in textmap:
 			textmap[pos] = {}
-		textmap[pos][(y1,x1,y2,x2)] = c
+		textmap[pos][rect] = c
 
 	rs = []
 	cs = []
