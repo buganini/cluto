@@ -52,6 +52,7 @@ class Ctie(object):
 		self.clipboard = []
 		self.copy_tags = []
 		self.tempdir = get_tempdir()
+		self.bulkMode = True
 
 	def getLevel(self):
 		l = 0
@@ -143,6 +144,8 @@ class Ctie(object):
 		return None
 
 	def _genItems(self):
+		if self.bulkMode:
+			return
 		self.selections = []
 		s = self.clips
 		for i in range(0, self.currentLevel):

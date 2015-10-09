@@ -616,11 +616,13 @@ class CtieUI(object):
 		filec = Gtk.FileChooserDialog("Add", self.builder.get_object("main_window"), Gtk.FileChooserAction.OPEN | Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_ADD, Gtk.ResponseType.ACCEPT))
 		filec.set_select_multiple(True)
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
+			self.ctie.bulkMode = True
 			cs = filec.get_filenames()
 			cs.sort(natcmp)
 			for path in cs:
 				self.ctie.addItemByPath(path)
 			filec.destroy()
+			self.ctie.bulkMode = False
 			self.onItemTreeChanged()
 		else:
 			filec.destroy()
@@ -896,8 +898,9 @@ class CtieUI(object):
 			self.set_status('Area: %d Select: %s' % (len(item.children), ', '.join([str(i+1) for i in self.ctie.selections])))
 
 	def onItemTreeChanged(self):
+		if self.ctie.bulkMode:
+			return
 		self.level_sanitize()
-		self.redraw_items_list()
 
 	def onTagChanged(self):
 		self.tags_refresh()
