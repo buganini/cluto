@@ -52,7 +52,7 @@ class Ctie(object):
 		self.clipboard = []
 		self.copy_tags = []
 		self.tempdir = get_tempdir()
-		self.bulkMode = True
+		self.bulkMode = False
 
 	def getLevel(self):
 		l = 0
