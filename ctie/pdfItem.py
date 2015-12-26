@@ -58,9 +58,11 @@ class PdfItem(Item):
 
 	def addRowSep(self, pos):
 		self.rowSep.append(pos)
+		self.rowSep.sort()
 
 	def addColSep(self, pos):
 		self.colSep.append(pos)
+		self.colSep.sort()
 
 	def getTypes(self):
 		return ("Text", "Image", "Table")
