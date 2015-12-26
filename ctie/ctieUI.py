@@ -217,6 +217,18 @@ class CtieUI(object):
 		button.set_image(btn_img)
 		toolbar.pack_start(button, False, False, 0)
 
+		self.toggle_table_row_splitter = button = Gtk.ToggleButton()
+		btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_REFRESH, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("Table Row Splitter")
+		button.set_image(btn_img)
+		toolbar.pack_start(button, False, False, 0)
+
+		self.toggle_table_column_splitter = button = Gtk.ToggleButton()
+		btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_REFRESH, Gtk.IconSize.SMALL_TOOLBAR)
+		button.set_tooltip_text("Table Column Splitter")
+		button.set_image(btn_img)
+		toolbar.pack_start(button, False, False, 0)
+
 		toolbar.pack_start(Gtk.Separator(orientation = Gtk.Orientation.VERTICAL), False, False, 1)
 
 		button = Gtk.Button()
@@ -488,6 +500,29 @@ class CtieUI(object):
 			cr.line_to(float(item.x2-item.x1), self.selend[1])
 			cr.stroke()
 			return
+		if self.toggle_table_column_splitter.get_active() and self.selend[0]:
+			cr.set_source_rgba(0,255,0,255)
+			cr.move_to(self.selend[0],float(0))
+			cr.line_to(self.selend[0],float(item.y2-item.y1))
+			cr.stroke()
+			return
+		if self.toggle_table_row_splitter.get_active() and self.selend[0]:
+			cr.set_source_rgba(0,255,0,255)
+			cr.move_to(float(0), self.selend[1])
+			cr.line_to(float(item.x2-item.x1), self.selend[1])
+			cr.stroke()
+			return
+		if item.getType()=="Table":
+			for x in item.colSep:
+				cr.set_source_rgba(255,255,0,255)
+				cr.move_to(x,float(0))
+				cr.line_to(x,float(item.y2-item.y1))
+				cr.stroke()
+			for y in item.rowSep:
+				cr.set_source_rgba(255,255,0,255)
+				cr.move_to(float(0), y)
+				cr.line_to(float(item.x2-item.x1), y)
+				cr.stroke()
 		for i, child in enumerate(item.children):
 			x1 = (child.x1-item.x1)
 			y1 = (child.y1-item.y1)
@@ -976,6 +1011,12 @@ class CtieUI(object):
 					y = self.selend[1]
 					item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x2, y2 = item.y1+y)
 					item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x2, y2 = item.y2)
+				elif self.toggle_table_row_splitter.get_active() and self.selend[0] and item.getType()=="Table":
+					y = self.selend[1]
+					item.addRowSep(y)
+				elif self.toggle_table_column_splitter.get_active() and self.selend[0] and item.getType()=="Table":
+					x = self.selend[0]
+					item.addColSep(x)
 				else:
 					x1,y1 = self.selstart
 					if (x1,y1)==(None, None):

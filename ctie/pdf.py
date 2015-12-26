@@ -231,7 +231,7 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 
 	return (text, imgs)
 
-def getTable(file, page, bx1, by1, bx2, by2):
+def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 	pdf=subprocess.Popen(["./xpdfimport","-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
 	pdf.stdin.write("\n")
@@ -315,7 +315,7 @@ def getTable(file, page, bx1, by1, bx2, by2):
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
 					text[(x1,y1,x2,y2)]=c
 			elif cmd in ("strokePath", "fillPath"):
-				if pagen!=page:
+				if pagen!=page or (rSep and cSep):
 					continue
 				pts = []
 				while l:
@@ -359,10 +359,16 @@ def getTable(file, page, bx1, by1, bx2, by2):
 
 	pdf.wait()
 
-	vsepPos = vsep.keys()
-	vsepPos.sort()
-	hsepPos = hsep.keys()
-	hsepPos.sort()
+	if cSep and rSep:
+		cSep.insert(0, 0)
+		cSep.append(bx2)
+		rSep.insert(0, 0)
+		rSep.append(by2)
+	else:
+		vsepPos = vsep.keys()
+		vsepPos.sort()
+		hsepPos = hsep.keys()
+		hsepPos.sort()
 
 	textmap = {}
 
@@ -371,14 +377,24 @@ def getTable(file, page, bx1, by1, bx2, by2):
 		row = -1
 		col = -1
 		c = text[rect]
-		for i in range(len(hsepPos)):
-			if y1 < hsepPos[i] and hsep[hsepPos[i]].contains(x1) > 1:
-				row = i
-				break
-		for i in range(len(vsepPos)):
-			if x1 < vsepPos[i] and vsep[vsepPos[i]].contains(y1) > 1:
-				col = i
-				break
+		if cSep and rSep:
+			for i in range(len(rSep)):
+				if y1 < rSep[i]+by1:
+					row = i
+					break
+			for i in range(len(cSep)):
+				if x1 < cSep[i]+bx1:
+					col = i
+					break
+		else:
+			for i in range(len(hsepPos)):
+				if y1 < hsepPos[i] and hsep[hsepPos[i]].contains(x1) > 1:
+					row = i
+					break
+			for i in range(len(vsepPos)):
+				if x1 < vsepPos[i] and vsep[vsepPos[i]].contains(y1) > 1:
+					col = i
+					break
 		pos = (row, col)
 		if pos not in textmap:
 			textmap[pos] = {}

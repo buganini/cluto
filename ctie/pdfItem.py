@@ -52,6 +52,15 @@ class PdfItem(Item):
 		self.text = None
 		self.image = None
 		self.table = None
+		self.rowSep = []
+		self.colSep = []
+
+
+	def addRowSep(self, pos):
+		self.rowSep.append(pos)
+
+	def addColSep(self, pos):
+		self.colSep.append(pos)
 
 	def getTypes(self):
 		return ("Text", "Image", "Table")
@@ -86,7 +95,7 @@ class PdfItem(Item):
 			return self.image
 		elif self.getType()=="Table":
 			# if self.table is None:
-			self.table = pdf.getTable(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+			self.table = pdf.getTable(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100, rSep=[x*100 for x in self.rowSep], cSep=[x*100 for x in self.colSep])
 			return self.table
 		else:
 			return None
