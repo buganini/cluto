@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from ctieUI import *
+from GtkUI import *
 
 if __name__ == "__main__":
 	app = CtieUI()
