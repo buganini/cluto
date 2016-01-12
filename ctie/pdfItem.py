@@ -105,19 +105,7 @@ class PdfItem(Item):
 	def drawThumbnail(self, widget, cr):
 		cw = widget.get_allocated_width()
 		ch = widget.get_allocated_height()
-		w = self.x2-self.x1
-		h = self.y2-self.y1
-		wf = cw/w
-		hf = ch/h
-		if wf < hf:
-			sw = cw
-			sh = h*wf
-			factor = wf
-		else:
-			sw = w*hf
-			sh = ch
-			factor = hf
-
+		sw, sh, factor = self.getThumbnailSize(cw, ch)
 		pw, ph =self.getPdfPage().get_size()
 		pw = int(pw*factor)
 		ph = int(ph*factor)

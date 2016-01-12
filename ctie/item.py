@@ -23,6 +23,7 @@
  SUCH DAMAGE.
 """
 
+from __future__ import division
 import os
 import Image
 import weakref
@@ -70,6 +71,24 @@ class Item(object):
 
 	def getContent(self):
 		pass
+
+	def getSize(self):
+		return self.x2-self.x1, self.y2-self.y1
+
+	def getThumbnailSize(self, cw, ch):
+		w = self.x2-self.x1
+		h = self.y2-self.y1
+		wf = cw/w
+		hf = ch/h
+		if wf < hf:
+			sw = cw
+			sh = h*wf
+			factor = wf
+		else:
+			sw = w*hf
+			sh = ch
+			factor = hf
+		return sw, sh, factor
 
 	def drawThumbnail(self, widget, cr):
 		pass

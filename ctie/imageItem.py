@@ -125,12 +125,7 @@ class ImageItem(Item):
 	def drawThumbnail(self, widget, cr):
 		tfile = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
 		im = Image.open(self.get_cropped())
-		ow,oh = im.size
-		nw,nh = (widget.get_allocated_width(), widget.get_allocated_height())
-		if float(ow)/oh>float(nw)/nh:
-			self.thumbnail_size = (nw, int(math.ceil(float(nw)*oh/ow)))
-		else:
-			self.thumbnail_size = (int(math.ceil(float(nh)*ow/oh)), nh)
+		self.thumbnail_size = self.getThumbnailSize(widget.get_allocated_width(), widget.get_allocated_height())[:2]
 		if not os.path.exists(tfile):
 			if self.thumbnail_size[0]<im.size[0] and self.thumbnail_size[1]<im.size[1]:
 				im.thumbnail(self.thumbnail_size)
