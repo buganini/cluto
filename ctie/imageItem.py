@@ -24,6 +24,7 @@
 """
 
 from gi.repository import Gtk, Gdk
+from PySide import QtCore, QtGui
 import os
 import math
 import Image
@@ -122,20 +123,27 @@ class ImageItem(Item):
 	def getContent(self):
 		return self.get_pil_cropped()
 
-	def drawThumbnail(self, widget, cr):
-		tfile = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d-thumbnail.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
+	def getThumbnailPath(self, w, h):
+		path = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d-thumbnail.png" % (self.hash, self.x1, self.y1, self.x2, self.y2))
 		im = Image.open(self.get_cropped())
-		self.thumbnail_size = self.getThumbnailSize(widget.get_allocated_width(), widget.get_allocated_height())[:2]
-		if not os.path.exists(tfile):
+		self.thumbnail_size = self.getThumbnailSize(w, h)[:2]
+		if not os.path.exists(path):
 			if self.thumbnail_size[0]<im.size[0] and self.thumbnail_size[1]<im.size[1]:
 				im.thumbnail(self.thumbnail_size)
 			else:
 				im = im.resize(self.thumbnail_size)
-			im.save(tfile)
+			im.save(path)
 		del(im)
+		return path
+
+	def drawThumbnail(self, widget, cr):
+		tfile = self.getThumbnailPath(widget.get_allocated_width(), widget.get_allocated_height())
 		pb = Gtk.Image.new_from_file(tfile).get_pixbuf()
 		Gdk.cairo_set_source_pixbuf(cr, pb, (widget.get_allocated_width()-self.thumbnail_size[0])/2, (widget.get_allocated_height()-self.thumbnail_size[1])/2)
 		cr.paint()
+
+	def drawThumbnailQT(self, widget, w, h):
+		widget.setPixmap(QtGui.QPixmap(self.getThumbnailPath(w, h)))
 
 	def draw(self, widget, cr, factor):
 		cr.scale(factor, factor)

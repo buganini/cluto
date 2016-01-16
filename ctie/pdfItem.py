@@ -123,6 +123,9 @@ class PdfItem(Item):
 		Gdk.cairo_set_source_pixbuf(cr, pb, xo-self.x1*factor, yo-self.y1*factor)
 		cr.fill()
 
+	def drawThumbnailQT(self, widget, w, h):
+		pass
+
 	def draw(self, widget, cr, factor):
 		global lastRender
 		cr.set_source_rgba(255,255,255,255)

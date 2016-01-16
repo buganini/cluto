@@ -93,6 +93,9 @@ class Item(object):
 	def drawThumbnail(self, widget, cr):
 		pass
 
+	def drawThumbnailQT(self, widget, width, height):
+		pass
+
 	def draw(self, widget, cr):
 		pass
 
