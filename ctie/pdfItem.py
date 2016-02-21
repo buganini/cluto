@@ -24,6 +24,8 @@
 """
 
 from __future__ import division
+from PySide import QtGui
+from pyside_poppler import Poppler as QtPoppler
 from gi.repository import Gtk, Gdk, Poppler
 import cairo
 import pdf
@@ -32,6 +34,8 @@ from item import Item
 
 cache_pdf = {}
 cache_pdf_page = {}
+cache_pdf_qt = {}
+cache_pdf_page_qt = {}
 lastRender = None
 
 class PdfItem(Item):
@@ -124,7 +128,10 @@ class PdfItem(Item):
 		cr.fill()
 
 	def drawThumbnailQT(self, widget, w, h):
-		pass
+		sw, sh, factor = self.getThumbnailSize(w, h)
+		page = self.getPdfPageQT()
+		image = page.renderToImage(factor*72, factor*72)
+		widget.setPixmap(QtGui.QPixmap.fromImage(image))
 
 	def draw(self, widget, cr, factor):
 		global lastRender
@@ -155,3 +162,16 @@ class PdfItem(Item):
 		if self.page not in cache_pdf_page[self.path]:
 			cache_pdf_page[self.path][self.page] = cache_pdf[self.path].get_page(self.page)
 		return cache_pdf_page[self.path][self.page]
+
+	def getPdfPageQT(self):
+		global cache_pdf_qt, cache_pdf_page_qt
+		if self.path not in cache_pdf_qt:
+			doc = QtPoppler.Document.load(self.path)
+			doc.setRenderHint(QtPoppler.Document.Antialiasing)
+			doc.setRenderHint(QtPoppler.Document.TextAntialiasing)
+			cache_pdf_qt[self.path] = doc
+		if self.path not in cache_pdf_page_qt:
+			cache_pdf_page_qt[self.path]={}
+		if self.page not in cache_pdf_page_qt[self.path]:
+			cache_pdf_page_qt[self.path][self.page] = cache_pdf_qt[self.path].page(self.page)
+		return cache_pdf_page_qt[self.path][self.page]
