@@ -183,7 +183,7 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 
 				c = l.readStr()
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
-					text[(y1,x1,y2,x2)]=c
+					text[(x1,y1,x2,y2)]=c
 			elif cmd=="drawImage":
 				width = l.readInt()
 				height = l.readInt()
