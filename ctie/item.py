@@ -25,7 +25,7 @@
 
 from __future__ import division
 import os
-import Image
+from PIL import Image
 import weakref
 import uuid
 from gi.repository import Gtk

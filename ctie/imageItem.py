@@ -27,7 +27,7 @@ from gi.repository import Gtk, Gdk
 from PySide import QtCore, QtGui
 import os
 import math
-import Image
+from PIL import Image
 import subprocess
 import weakref
 

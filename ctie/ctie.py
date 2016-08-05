@@ -24,7 +24,7 @@
 """
 
 import os
-import Image
+from PIL import Image
 import pickle
 
 from gi.repository import Poppler
