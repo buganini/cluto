@@ -294,6 +294,8 @@ class CtieUI(object):
 		#launch
 		self.window.show()
 
+		Gtk.main()
+
 	def set_status(self, s):
 		status = self.builder.get_object('statusbar')
 		status.remove_all(0)
