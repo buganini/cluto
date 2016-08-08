@@ -19,6 +19,7 @@ class ItemList():
 	def reset(self):
 		for i in reversed(range(self.listView.count())):
 			self.listView.itemAt(i).widget().deleteLater()
+		currentItem = self.ui.ctie.getCurrentItem()
 		for item in self.ui.ctie.items:
 			layout = QtGui.QVBoxLayout()
 			layout.setSpacing(0)
@@ -41,6 +42,9 @@ class ItemList():
 			widget.clicked.connect(self.onItemSelected)
 
 			item.ui = widget
+
+			if item == currentItem:
+				item.ui.setStyleSheet("background-color:rgba(50,50,255,30);");
 
 			self.listView.addWidget(widget)
 

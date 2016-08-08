@@ -693,7 +693,7 @@ class CtieUI(object):
 			return
 		self.uiItemList.scrollTo(item.ui)
 		self.set_status("Item: %d/%d" % (self.ctie.getCurrentItemIndex()+1, len(self.ctie.items)))
-		if not item is None and hasattr(item, "ui"):
+		if hasattr(item, "ui"):
 			item.ui.setStyleSheet("background-color:rgba(50,50,255,30);");
 		# XXX
 		# if self.toggle_ocr.get_active():
