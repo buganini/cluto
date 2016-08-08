@@ -143,6 +143,9 @@ class Ctie(object):
 			return l[0]
 		return None
 
+	def getCurrentItemIndex(self):
+		return self.currentIndex
+
 	def _genItems(self):
 		if self.bulkMode:
 			return

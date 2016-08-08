@@ -30,7 +30,6 @@ class CtieUI(object):
 		self.mode = None
 
 		uiFile = "ctie.ui"
-		self.builder = Gtk.Builder()
 		for datadir in [os.path.dirname(__file__),'/usr/local/share/ctie']:
 			fullpath = os.path.join(datadir, uiFile)
 			if os.path.exists(fullpath):
@@ -46,15 +45,14 @@ class CtieUI(object):
 
 		#toolbar
 		self.uiToolBar = Toolbar(self, ui.findChild(QtGui.QToolBar, "toolBar"))
-		self.uiItemList = ItemList(self, ui.findChild(QtGui.QListView, "listView"))
+		self.uiItemList = ItemList(self, ui.findChild(QtGui.QVBoxLayout, "itemList"))
+		self.uiStatusBar = ui.findChild(QtGui.QStatusBar, "statusBar")
 
 		sys.exit(app.exec_())
 
 
 	def set_status(self, s):
-		status = self.builder.get_object('statusbar')
-		status.remove_all(0)
-		status.push(0, s)
+		self.uiStatusBar.showMessage(s)
 
 	def edit_regex(self, *arg):
 		self.builder.get_object("regex").get_buffer().set_text(self.ctie.getRegex())
@@ -660,22 +658,23 @@ class CtieUI(object):
 		self.uiItemList.reset()
 
 	def onItemChanged(self):
-		if not self.canvas:
-			self.canvas = Gtk.DrawingArea()
-			self.canvas.set_can_focus(True)
-			self.builder.get_object('workarea').add(self.canvas)
-			self.canvas.connect("draw", self.canvas_draw)
-			self.canvas.show()
-
-		if not self.preview_canvas:
-			self.preview_canvas = Gtk.DrawingArea()
-			self.builder.get_object('preview').add(self.preview_canvas)
-			self.preview_canvas.connect("draw", self.preview_draw)
-			self.preview_canvas.show()
-		self.canvas.queue_draw()
-		self.preview_canvas.queue_draw()
-		self.zoom_fit()
-		self.tags_refresh()
+		pass
+		# if not self.canvas:
+		# 	self.canvas = Gtk.DrawingArea()
+		# 	self.canvas.set_can_focus(True)
+		# 	self.builder.get_object('workarea').add(self.canvas)
+		# 	self.canvas.connect("draw", self.canvas_draw)
+		# 	self.canvas.show()
+		#
+		# if not self.preview_canvas:
+		# 	self.preview_canvas = Gtk.DrawingArea()
+		# 	self.builder.get_object('preview').add(self.preview_canvas)
+		# 	self.preview_canvas.connect("draw", self.preview_draw)
+		# 	self.preview_canvas.show()
+		# self.canvas.queue_draw()
+		# self.preview_canvas.queue_draw()
+		# self.zoom_fit()
+		# self.tags_refresh()
 
 	def onSelectionChanged(self):
 		self.child_tags_refresh()
@@ -703,23 +702,21 @@ class CtieUI(object):
 
 	def onItemFocused(self):
 		item = self.ctie.getCurrentItem()
-		self.set_status("Item: %d/%d" % (item.ui.index+1, len(self.ctie.items)))
+		self.set_status("Item: %d/%d" % (self.ctie.getCurrentItemIndex()+1, len(self.ctie.items)))
 		if not item is None and hasattr(item, "ui"):
-			item.ui.get_style_context().add_class("darkback")
-			item.ui.queue_draw()
-			GObject.idle_add(self.autoscroll)
-		if self.toggle_ocr.get_active():
-			if self.toggle_collation.get_active():
-				for child in item.children:
-					child.ocr()
-				self.ctie.selectChildByIndex(0)
-			else:
-				item.ocr()
+			item.ui.setStyleSheet("background-color:rgba(50,50,255,30);");
+		# XXX
+		# if self.toggle_ocr.get_active():
+		# 	if self.toggle_collation.get_active():
+		# 		for child in item.children:
+		# 			child.ocr()
+		# 		self.ctie.selectChildByIndex(0)
+		# 	else:
+		# 		item.ocr()
 
 	def onItemBlurred(self, item):
 		if not item is None and hasattr(item, "ui"):
-			item.ui.get_style_context().remove_class("darkback")
-			item.ui.queue_draw()
+			item.ui.setStyleSheet("background-color:auto;");
 
 	def autoscroll(self):
 		items_list = self.builder.get_object("items_list")
