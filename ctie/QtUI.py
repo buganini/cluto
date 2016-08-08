@@ -45,7 +45,7 @@ class CtieUI(object):
 
 		#toolbar
 		self.uiToolBar = Toolbar(self, ui.findChild(QtGui.QToolBar, "toolBar"))
-		self.uiItemList = ItemList(self, ui.findChild(QtGui.QVBoxLayout, "itemList"))
+		self.uiItemList = ItemList(self, ui.findChild(QtGui.QVBoxLayout, "itemList"), ui.findChild(QtGui.QScrollArea, "itemListScroller"))
 		self.uiStatusBar = ui.findChild(QtGui.QStatusBar, "statusBar")
 
 		sys.exit(app.exec_())
@@ -658,20 +658,7 @@ class CtieUI(object):
 		self.uiItemList.reset()
 
 	def onItemChanged(self):
-		pass
-		# if not self.canvas:
-		# 	self.canvas = Gtk.DrawingArea()
-		# 	self.canvas.set_can_focus(True)
-		# 	self.builder.get_object('workarea').add(self.canvas)
-		# 	self.canvas.connect("draw", self.canvas_draw)
-		# 	self.canvas.show()
-		#
-		# if not self.preview_canvas:
-		# 	self.preview_canvas = Gtk.DrawingArea()
-		# 	self.builder.get_object('preview').add(self.preview_canvas)
-		# 	self.preview_canvas.connect("draw", self.preview_draw)
-		# 	self.preview_canvas.show()
-		# self.canvas.queue_draw()
+		self.uiWorkArea.onItemChanged()
 		# self.preview_canvas.queue_draw()
 		# self.zoom_fit()
 		# self.tags_refresh()
@@ -702,6 +689,9 @@ class CtieUI(object):
 
 	def onItemFocused(self):
 		item = self.ctie.getCurrentItem()
+		if not item:
+			return
+		self.uiItemList.scrollTo(item.ui)
 		self.set_status("Item: %d/%d" % (self.ctie.getCurrentItemIndex()+1, len(self.ctie.items)))
 		if not item is None and hasattr(item, "ui"):
 			item.ui.setStyleSheet("background-color:rgba(50,50,255,30);");
@@ -717,18 +707,6 @@ class CtieUI(object):
 	def onItemBlurred(self, item):
 		if not item is None and hasattr(item, "ui"):
 			item.ui.setStyleSheet("background-color:auto;");
-
-	def autoscroll(self):
-		items_list = self.builder.get_object("items_list")
-		focus_widget = self.ctie.getCurrentItem().ui
-		alloc = items_list.get_allocation()
-		x,y = focus_widget.translate_coordinates(items_list, 0, 0)
-		scr = self.builder.get_object("scroll_items_list")
-		vadj = scr.get_vadjustment()
-		vadj.set_lower(0)
-		vadj.set_upper(alloc.height)
-		alloc = scr.get_allocation()
-		vadj.set_value(y-alloc.height*0.3)
 
 	def workarea_mouse(self, obj, evt):
 		item = self.ctie.getCurrentItem()

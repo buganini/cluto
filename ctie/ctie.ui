@@ -28,7 +28,7 @@
            <widget class="QComboBox" name="comboBox"/>
           </item>
           <item>
-           <widget class="QScrollArea" name="scrollArea">
+           <widget class="QScrollArea" name="itemListScroller">
             <property name="widgetResizable">
              <bool>true</bool>
             </property>

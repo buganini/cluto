@@ -8,10 +8,13 @@ class ItemList():
 		def mouseReleaseEvent(self, *args):
 			self.clicked.emit(self)
 
-	def __init__(self, ui, listView):
-		this = self
+	def __init__(self, ui, listView, scroller):
 		self.ui = ui
 		self.listView = listView
+		self.scroller = scroller
+
+	def scrollTo(self, widget):
+		self.scroller.ensureWidgetVisible(widget, 0, 50)
 
 	def reset(self):
 		for i in reversed(range(self.listView.count())):
