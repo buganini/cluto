@@ -23,7 +23,7 @@
  SUCH DAMAGE.
 """
 
-from gi.repository import Gtk, Gdk
+# from gi.repository import Gtk, Gdk
 from PySide import QtCore, QtGui
 import os
 import math

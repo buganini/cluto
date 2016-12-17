@@ -28,7 +28,7 @@ import os
 from PIL import Image
 import weakref
 import uuid
-from gi.repository import Gtk
+# from gi.repository import Gtk
 
 import ctie
 from cql import *

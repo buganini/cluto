@@ -26,7 +26,7 @@
 from __future__ import division
 from PySide import QtGui
 from pyside_poppler import Poppler as QtPoppler
-from gi.repository import Gtk, Gdk, Poppler
+#from gi.repository import Gtk, Gdk, Poppler
 import cairo
 import pdf
 

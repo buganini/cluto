@@ -27,7 +27,7 @@ import os
 from PIL import Image
 import pickle
 
-from gi.repository import Poppler
+#from gi.repository import Poppler
 
 from imageItem import *
 from pdfItem import *
