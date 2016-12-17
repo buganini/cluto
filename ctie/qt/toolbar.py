@@ -49,6 +49,6 @@ class Toolbar():
 
 	def add(self):
 		dialog = QFileDirDialog()
-		dialog.exec_()
-		for path in  dialog.selectedFiles():
+		dialog.run()
+		for path in dialog.selectedFiles():
 			self.ui.ctie.addItemByPath(path)
