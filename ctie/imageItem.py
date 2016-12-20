@@ -151,6 +151,11 @@ class ImageItem(Item):
 		cr.paint()
 		cr.scale(1/factor, 1/factor)
 
+	def drawQT(self, painter):
+		pixmap = QtGui.QPixmap(self.get_cropped())
+		w, h = self.getSize()
+		painter.drawPixmap(0, 0, w, h, pixmap)
+
 	def ocr(self):
 		if 'text' in self.tags:
 			return

@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>659</width>
     <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>CTIE</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -37,7 +37,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>246</width>
+               <width>200</width>
                <height>436</height>
               </rect>
              </property>
@@ -71,16 +71,19 @@
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
-       <widget class="QScrollArea" name="scrollArea_2">
-        <property name="widgetResizable">
-         <bool>true</bool>
+       <widget class="QScrollArea" name="workAreaScroller">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
         </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents_6">
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <widget class="QWidget" name="widget">
          <property name="geometry">
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>266</width>
+           <width>217</width>
            <height>76</height>
           </rect>
          </property>
@@ -88,9 +91,12 @@
        </widget>
        <widget class="QWidget" name="verticalLayoutWidget">
         <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinimumSize</enum>
+         </property>
          <item>
           <widget class="QScrollArea" name="scrollArea_3">
-           <property name="widgetResizable">
+           <property name="enabled">
             <bool>true</bool>
            </property>
            <widget class="QWidget" name="scrollAreaWidgetContents_7">
@@ -98,7 +104,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>264</width>
+              <width>215</width>
               <height>210</height>
              </rect>
             </property>
@@ -151,7 +157,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>659</width>
      <height>28</height>
     </rect>
    </property>

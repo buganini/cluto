@@ -47,7 +47,7 @@ class CtieUI(object):
 		self.uiToolBar = Toolbar(self, ui.findChild(QtGui.QToolBar, "toolBar"))
 		self.uiItemList = ItemList(self, ui.findChild(QtGui.QVBoxLayout, "itemList"), ui.findChild(QtGui.QScrollArea, "itemListScroller"))
 		self.uiStatusBar = ui.findChild(QtGui.QStatusBar, "statusBar")
-
+		self.uiWorkArea = WorkArea(self, ui.findChild(QtGui.QScrollArea, "workAreaScroller"))
 		sys.exit(app.exec_())
 
 
@@ -214,138 +214,6 @@ class CtieUI(object):
 		r = self.ctie.addTag(tag)
 		if not r:
 			self.set_status("Tag %s already exists" % tag)
-
-	def canvas_draw(self, widget, cr):
-		item = self.ctie.getCurrentItem()
-		if item is None:
-			return
-		factor = self.zoom*0.01
-		width = item.x2-item.x1
-		height = item.y2-item.y1
-
-		self.canvas.set_size_request(int(width*factor), int(height*factor))
-		self.canvas.set_halign(Gtk.Align.CENTER)
-		self.canvas.set_valign(Gtk.Align.CENTER)
-
-		item.draw(self.canvas, cr, factor)
-
-		cr.scale(factor, factor)
-		sx1, sy1 = self.selstart
-		sx, sy = self.selend
-		if sx1>sx:
-			sx1,sx = sx,sx1
-		if sy1>sy:
-			sy1,sy = sy,sy1
-		if self.selstart!=(None, None) and self.selend!=(None, None):
-			xoff = self.selend[0]-self.selstart[0]
-			yoff = self.selend[1]-self.selstart[1]
-		else:
-			xoff = 0
-			yoff = 0
-
-		if self.toggle_horizontal_splitter.get_active() and self.selend[0]:
-			cr.set_source_rgba(0,255,0,255)
-			cr.move_to(self.selend[0],float(0))
-			cr.line_to(self.selend[0],float(item.y2-item.y1))
-			cr.stroke()
-			return
-		if self.toggle_vertical_splitter.get_active() and self.selend[0]:
-			cr.set_source_rgba(0,255,0,255)
-			cr.move_to(float(0), self.selend[1])
-			cr.line_to(float(item.x2-item.x1), self.selend[1])
-			cr.stroke()
-			return
-		if self.toggle_table_column_splitter.get_active() and self.selend[0]:
-			cr.set_source_rgba(0,255,0,255)
-			cr.move_to(self.selend[0],float(0))
-			cr.line_to(self.selend[0],float(item.y2-item.y1))
-			cr.stroke()
-			return
-		if self.toggle_table_row_splitter.get_active() and self.selend[0]:
-			cr.set_source_rgba(0,255,0,255)
-			cr.move_to(float(0), self.selend[1])
-			cr.line_to(float(item.x2-item.x1), self.selend[1])
-			cr.stroke()
-			return
-		if item.getType()=="Table":
-			for x in item.colSep:
-				cr.set_source_rgba(255,255,0,255)
-				cr.move_to(x,float(0))
-				cr.line_to(x,float(item.y2-item.y1))
-				cr.stroke()
-			for y in item.rowSep:
-				cr.set_source_rgba(255,255,0,255)
-				cr.move_to(float(0), y)
-				cr.line_to(float(item.x2-item.x1), y)
-				cr.stroke()
-		for i, child in enumerate(item.children):
-			x1 = (child.x1-item.x1)
-			y1 = (child.y1-item.y1)
-			x2 = (child.x2-item.x1)
-			y2 = (child.y2-item.y1)
-			if i in self.ctie.selections:
-				cr.set_source_rgba(0,0,255,255)
-				if self.mode=='move':
-					cr.rectangle(x1+xoff, y1+yoff, x2-x1, y2-y1)
-				elif self.mode=='resize':
-					xoff2 = max(xoff,x1-x2)
-					yoff2 = max(yoff,y1-y2)
-					cr.rectangle(x1, y1, x2-x1+xoff2, y2-y1+yoff2)
-				else:
-					cr.rectangle(x1, y1, x2-x1, y2-y1)
-			else:
-				cr.set_source_rgba(255,0,0,255)
-				cr.rectangle(x1, y1, x2-x1, y2-y1)
-			cr.stroke()
-		if self.toggle_childrenpath.get_active():
-			cr.set_source_rgba(0,255,0,255)
-			for i,child in enumerate(item.children):
-				xa = (child.x1+child.x2)/2-item.x1
-				ya = (child.y1+child.y2)/2-item.y1
-				if i in self.ctie.selections:
-					if self.mode=='move':
-						xa += xoff
-						ya += yoff
-					elif self.mode=='resize':
-						xoff2 = max(xoff,x1-x2)
-						yoff2 = max(yoff,y1-y2)
-						xa += xoff2/2
-						ya += yoff2/2
-				if i==0:
-					cr.move_to(xa,ya)
-				else:
-					cr.line_to(xa,ya)
-			cr.stroke()
-			if self.ctie.selections:
-				cr.set_line_width(3)
-				cr.set_source_rgba(0,0,0,255)
-				for i,child in enumerate(item.reordered_children()):
-					xa = (child.x1+child.x2)/2-item.x1
-					ya = (child.y1+child.y2)/2-item.y1
-					if i in self.ctie.selections:
-						if self.mode=='move':
-							xa += xoff
-							ya += yoff
-						elif self.mode=='resize':
-							xoff2 = max(xoff,x1-x2)
-							yoff2 = max(yoff,y1-y2)
-							xa += xoff2/2
-							ya += yoff2/2
-					if i==0:
-						cr.move_to(xa,ya)
-					else:
-						cr.line_to(xa,ya)
-				cr.stroke()
-				cr.set_line_width(1)
-		if self.selstart!=(None, None) and self.selend!=(None, None) and len(self.ctie.selections)==0:
-			cr.set_source_rgba(255,0,255,255)
-			cr.rectangle(sx1, sy1, sx-sx1, sy-sy1)
-			cr.stroke()
-			self.set_status('Box (%d,%d) -> (%d, %d)' % (sx1, sy1, sx, sy))
-		elif self.mode=='resize':
-			self.set_status('Resize (%d,%d)' % (xoff, yoff))
-		elif self.mode=='move':
-			self.set_status('Move (%d,%d)' % (xoff, yoff))
 
 	def preview_draw(self, widget, cr):
 		item = self.ctie.getCurrentItem()
@@ -664,11 +532,11 @@ class CtieUI(object):
 		# self.tags_refresh()
 
 	def onSelectionChanged(self):
-		self.child_tags_refresh()
-		if self.preview_canvas:
-			self.preview_canvas.queue_draw()
-		if self.canvas:
-			self.canvas.queue_draw()
+		# self.child_tags_refresh()
+		# if self.preview_canvas:
+		# 	self.preview_canvas.queue_draw()
+		# if self.canvas:
+		# 	self.canvas.queue_draw()
 		item = self.ctie.getCurrentItem()
 		if item:
 			self.set_status('Area: %d Select: %s' % (len(item.children), ', '.join([str(i+1) for i in self.ctie.selections])))
@@ -676,7 +544,7 @@ class CtieUI(object):
 	def onItemTreeChanged(self):
 		if self.ctie.bulkMode:
 			return
-		self.level_sanitize()
+		# self.level_sanitize()
 
 	def onTagChanged(self):
 		self.tags_refresh()
@@ -707,90 +575,3 @@ class CtieUI(object):
 	def onItemBlurred(self, item):
 		if not item is None and hasattr(item, "ui"):
 			item.ui.setStyleSheet("background-color:auto;");
-
-	def workarea_mouse(self, obj, evt):
-		item = self.ctie.getCurrentItem()
-		if item is None or not self.canvas:
-			return
-		self.focus_field = (None, None)
-		self.canvas.grab_focus()
-		factor = self.zoom*0.01
-		evtx,evty = self.builder.get_object('workarea').translate_coordinates(self.canvas, evt.x, evt.y)
-		x = evtx/factor
-		y = evty/factor
-		if str(type(evt))==repr(Gdk.EventButton):
-			if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
-				self.selstart = (x, y)
-				self.selend = (x, y)
-				if not len(self.ctie.selections):
-					self.mode = 'rectangle'
-				else:
-					for i in self.ctie.selections:
-						child = item.children[i]
-						if child.contains(x+item.x1, y+item.y1):
-							self.mode = 'move'
-							break
-					else:
-						self.mode = 'resize'
-			elif evt.button==1 and evt.type==Gdk.EventType.BUTTON_RELEASE:
-				if self.toggle_horizontal_splitter.get_active() and self.selend[0]:
-					x = self.selend[0]
-					item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x1+x, y2 = item.y2)
-					item.addChild(x1 = item.x1+x, y1 = item.y1, x2 = item.x2, y2 = item.y2)
-				elif self.toggle_vertical_splitter.get_active() and self.selend[0]:
-					y = self.selend[1]
-					item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x2, y2 = item.y1+y)
-					item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x2, y2 = item.y2)
-				elif self.toggle_table_row_splitter.get_active() and self.selend[0] and item.getType()=="Table":
-					y = self.selend[1]
-					item.addRowSep(y)
-				elif self.toggle_table_column_splitter.get_active() and self.selend[0] and item.getType()=="Table":
-					x = self.selend[0]
-					item.addColSep(x)
-				else:
-					x1,y1 = self.selstart
-					if (x1,y1)==(None, None):
-						return
-					if x1==x and y1==y:
-						for i, child in enumerate(item.children):
-							if child.contains(x+item.x1, y+item.y1):
-								if i in self.ctie.selections:
-									self.ctie.deselectChildByIndex(i)
-								else:
-									self.ctie.selectChildByIndex(i)
-					elif self.mode=='rectangle':
-						if x1>x:
-							x1, x = x, x1
-						if y1>y:
-							y1, y = y, y1
-						x1 = max(x1, 0)
-						y1 = max(y1, 0)
-						x = min(x, item.x2-item.x1)
-						y = min(y, item.y2-item.y1)
-						if x-x1>5 and y-y1>5:
-							item.addChild(x1 = x1+item.x1, y1 = y1+item.y1, x2 = x+item.x1, y2 = y+item.y1)
-					elif self.mode=='move':
-						xoff = self.selend[0]-self.selstart[0]
-						yoff = self.selend[1]-self.selstart[1]
-						self.ctie.move(xoff, yoff)
-					elif self.mode=='resize':
-						xoff = self.selend[0]-self.selstart[0]
-						yoff = self.selend[1]-self.selstart[1]
-						self.ctie.resize(xoff, yoff)
-				self.selstart = (None, None)
-				self.selend = (None, None)
-				self.mode = None
-				self.canvas.queue_draw()
-				self.preview_canvas.queue_draw()
-			elif evt.button==3:
-				self.selstart = (None, None)
-		elif isinstance(evt, Gdk.EventMotion):
-			self.selend = (x,y)
-			self.canvas.queue_draw()
-		elif isinstance(evt, Gdk.EventScroll) and evt.state & Gdk.ModifierType.CONTROL_MASK:
-			if evt.direction==Gdk.ScrollDirection.UP:
-				self.zoom += 5
-			elif evt.direction==Gdk.ScrollDirection.DOWN:
-				self.zoom -= 5
-			self.canvas.queue_draw()
-			return False
