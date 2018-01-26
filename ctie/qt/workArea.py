@@ -1,5 +1,6 @@
 from __future__ import division
 import math
+from utils import *
 from PySide import QtGui, QtCore
 
 class WorkArea():
@@ -16,7 +17,7 @@ class WorkArea():
 			self.selstart = (x, y)
 			self.selend = (x, y)
 			if not len(self.ui.ctie.selections):
-				self.mode = 'rectangle'
+				self.mode = 'rect'
 			else:
 				for i in self.ui.ctie.selections:
 					child = self.item.children[i]
@@ -26,7 +27,6 @@ class WorkArea():
 				else:
 					self.mode = 'resize'
 			self.update()
-
 
 		def mouseMoveEvent(self, event):
 			self.selend = (event.x()/self.scale, event.y()/self.scale)
@@ -53,11 +53,9 @@ class WorkArea():
 								self.ui.ctie.deselectChildByIndex(i)
 							else:
 								self.ui.ctie.selectChildByIndex(i)
-				elif self.mode=='rectangle':
-					if x1>x2:
-						x1, x2 = x2, x1
-					if y1>y2:
-						y1, y2 = y2, y1
+				elif self.mode=='rect':
+					x1, x2 = asc(x1, x2)
+					y1, y2 = asc(y1, y2)
 					x1 = max(x1, 0)
 					y1 = max(y1, 0)
 					x2 = min(x2, self.item.x2-self.item.x1)
@@ -95,14 +93,12 @@ class WorkArea():
 
 			sx0, sy0 = self.selstart
 			sx1, sy1 = self.selend
-			if sx0>sx1:
-				sx0,sx1 = sx1,sx0
-			if sy0>sy1:
-				sy0,sy1 = sy1,sy0
+			sx0, sx1 = asc(sx0, sx1)
+			sy0, sy1 = asc(sy0, sy1)
 
 			if self.selstart!=(None, None) and self.selend!=(None, None):
-				xoff = self.selend[0]-self.selstart[0]
-				yoff = self.selend[1]-self.selstart[1]
+				xoff = sx1 - sx0
+				yoff = sy1 - sy0
 			else:
 				xoff = 0
 				yoff = 0
