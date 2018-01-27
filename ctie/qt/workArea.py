@@ -16,10 +16,10 @@ class WorkArea():
 			y = event.y()/self.scale
 			self.selstart = (x, y)
 			self.selend = (x, y)
-			if not len(self.ui.ctie.selections):
+			if not len(self.ui.core.selections):
 				self.mode = 'rect'
 			else:
-				for i in self.ui.ctie.selections:
+				for i in self.ui.core.selections:
 					child = self.item.children[i]
 					if child.contains(x+self.item.x1, y+self.item.y1):
 						self.mode = 'move'
@@ -49,10 +49,10 @@ class WorkArea():
 				if r<5:
 					for i, child in enumerate(self.item.children):
 						if child.contains(x2+self.item.x1, y2+self.item.y1):
-							if i in self.ui.ctie.selections:
-								self.ui.ctie.deselectChildByIndex(i)
+							if i in self.ui.core.selections:
+								self.ui.core.deselectChildByIndex(i)
 							else:
-								self.ui.ctie.selectChildByIndex(i)
+								self.ui.core.selectChildByIndex(i)
 				elif self.mode=='rect':
 					x1, x2 = asc(x1, x2)
 					y1, y2 = asc(y1, y2)
@@ -65,11 +65,11 @@ class WorkArea():
 				elif self.mode=='move':
 					xoff = self.selend[0]-self.selstart[0]
 					yoff = self.selend[1]-self.selstart[1]
-					self.ui.ctie.move(xoff, yoff)
+					self.ui.core.move(xoff, yoff)
 				elif self.mode=='resize':
 					xoff = self.selend[0]-self.selstart[0]
 					yoff = self.selend[1]-self.selstart[1]
-					self.ui.ctie.resize(xoff, yoff)
+					self.ui.core.resize(xoff, yoff)
 			self.selstart = (None, None)
 			self.selend = (None, None)
 			self.mode = None
@@ -97,7 +97,7 @@ class WorkArea():
 				xoff = sx1 - sx0
 				yoff = sy1 - sy0
 
-				if len(self.ui.ctie.selections)==0: # new rect
+				if len(self.ui.core.selections)==0: # new rect
 					painter.setPen(QtGui.QPen(QtCore.Qt.blue, 1/self.scale, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap))
 					painter.drawRect(sx0,sy0,xoff,yoff)
 			else:
@@ -111,7 +111,7 @@ class WorkArea():
 				y1 = (child.y1-item.y1)
 				x2 = (child.x2-item.x1)
 				y2 = (child.y2-item.y1)
-				if i in self.ui.ctie.selections:
+				if i in self.ui.core.selections:
 					pen.setColor(QtCore.Qt.blue)
 					painter.setPen(pen)
 					if self.mode=='move':
@@ -131,7 +131,7 @@ class WorkArea():
 			print event
 
 		def onItemChanged(self):
-			self.item = self.ui.ctie.getCurrentItem()
+			self.item = self.ui.core.getCurrentItem()
 			if not self.item:
 				return
 			self.w, self.h = self.item.getSize()

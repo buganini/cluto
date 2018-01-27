@@ -19,8 +19,8 @@ class ItemList():
 	def reset(self):
 		for i in reversed(range(self.listView.count())):
 			self.listView.itemAt(i).widget().deleteLater()
-		currentItem = self.ui.ctie.getCurrentItem()
-		for item in self.ui.ctie.items:
+		currentItem = self.ui.core.getCurrentItem()
+		for item in self.ui.core.items:
 			layout = QtGui.QVBoxLayout()
 			layout.setSpacing(0)
 
@@ -51,4 +51,4 @@ class ItemList():
 
 	@QtCore.Slot(QtGui.QWidget)
 	def onItemSelected(self, widget):
-		self.ui.ctie.selectItemByIndex(widget.item.getIndex())
+		self.ui.core.selectItemByIndex(widget.item.getIndex())
