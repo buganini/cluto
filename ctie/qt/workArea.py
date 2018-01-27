@@ -97,7 +97,7 @@ class WorkArea():
 				xoff = sx1 - sx0
 				yoff = sy1 - sy0
 
-				if len(self.ui.ctie.selections)==0:
+				if len(self.ui.ctie.selections)==0: # new rect
 					painter.setPen(QtGui.QPen(QtCore.Qt.blue, 1/self.scale, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap))
 					painter.drawRect(sx0,sy0,xoff,yoff)
 			else:
@@ -124,6 +124,7 @@ class WorkArea():
 						painter.drawRect(x1, y1, x2-x1, y2-y1)
 				else:
 					pen.setColor(QtCore.Qt.red)
+					painter.setPen(pen)
 					painter.drawRect(x1, y1, x2-x1, y2-y1)
 
 		def resizeEvent(self, event):
