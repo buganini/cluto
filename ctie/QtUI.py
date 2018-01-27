@@ -18,7 +18,7 @@ clear_tempdir = True
 
 class CtieUI(object):
 	def __init__(self):
-		self.ctie = Ctie(self)
+		self.core = Ctie(self)
 		self.signal_mask = False
 		self.focus_field = (None, None)
 		self.focus_entry = None
@@ -55,7 +55,7 @@ class CtieUI(object):
 		self.uiStatusBar.showMessage(s)
 
 	def edit_regex(self, *arg):
-		self.builder.get_object("regex").get_buffer().set_text(self.ctie.getRegex())
+		self.builder.get_object("regex").get_buffer().set_text(self.core.getRegex())
 		self.builder.get_object("regex_window").show()
 
 	def regex_apply(self, *arg):
@@ -65,20 +65,20 @@ class CtieUI(object):
 			text = text.decode("utf-8")
 		except:
 			pass
-		self.ctie.setRegex(text)
+		self.core.setRegex(text)
 		self.builder.get_object("regex_window").hide()
 
 	def selectPreviousItem(self, *arg):
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if item is None:
 			return
-		self.ctie.selectPrevItem()
+		self.core.selectPrevItem()
 
 	def selectNextItem(self, *arg):
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if item is None:
 			return
-		self.ctie.selectNextItem()
+		self.core.selectNextItem()
 
 	def key_press(self, obj, evt):
 		collation_mode = self.toggle_collation.get_active()
@@ -86,28 +86,28 @@ class CtieUI(object):
 			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
 				self.selectNextItem()
 			else:
-				self.ctie.selectNextChild()
+				self.core.selectNextChild()
 		elif evt.keyval==Gdk.KEY_Page_Up:
 			if not collation_mode or evt.state & Gdk.ModifierType.CONTROL_MASK:
 				self.selectPreviousItem()
 			else:
-				self.ctie.selectPrevChild()
+				self.core.selectPrevChild()
 		elif evt.keyval==Gdk.KEY_Delete and self.canvas.has_focus():
 			self.delete()
 		elif (evt.keyval==Gdk.KEY_A or evt.keyval==Gdk.KEY_a) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
-			self.ctie.deselectAllChildren()
+			self.core.deselectAllChildren()
 			if not evt.state & Gdk.ModifierType.SHIFT_MASK:
-				self.ctie.selectAllChildren()
+				self.core.selectAllChildren()
 		elif (evt.keyval==Gdk.KEY_C or evt.keyval==Gdk.KEY_c) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
 			self.copy()
 		elif (evt.keyval==Gdk.KEY_V or evt.keyval==Gdk.KEY_v) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
 			self.paste()
 
 	def ltrim(self, *arg):
-		self.ctie.leftTopTrim();
+		self.core.leftTopTrim();
 
 	def rtrim(self, *arg):
-		self.ctie.rightBottomTrim();
+		self.core.rightBottomTrim();
 
 	def set_value(self, *arg):
 		self.builder.get_object('set_value_window').show()
@@ -118,7 +118,7 @@ class CtieUI(object):
 		isFormula = self.builder.get_object('set_value_value_is_formula').get_active()
 		if not key:
 			return
-		self.ctie.batchSetTag(key, value, isFormula)
+		self.core.batchSetTag(key, value, isFormula)
 
 	def open_project(self, *arg):
 		global tempdir, clear_tempdir
@@ -126,7 +126,7 @@ class CtieUI(object):
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
 			filename = filec.get_filename()
 			filec.destroy()
-			if self.ctie.load(filename):
+			if self.core.load(filename):
 				clear_tempdir = False
 			else:
 				self.set_status('Failed loading %s' % filename)
@@ -137,11 +137,11 @@ class CtieUI(object):
 
 	def save_project(self, *arg):
 		global clear_tempdir
-		if not self.ctie.clips:
+		if not self.core.clips:
 			return
 		filec = Gtk.FileChooserDialog("Save", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
-			self.ctie.save(filec.get_filename())
+			self.core.save(filec.get_filename())
 			clear_tempdir = False
 		filec.destroy()
 
@@ -152,9 +152,9 @@ class CtieUI(object):
 			tagsbox.remove(c)
 		tags_table = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
 		tagsbox.add(tags_table)
-		for i,key in enumerate(self.ctie.tags):
+		for i,key in enumerate(self.core.tags):
 			toggle = Gtk.CheckButton.new_with_label(key)
-			if key in self.ctie.copy_tags:
+			if key in self.core.copy_tags:
 				toggle.set_active(True)
 			else:
 				toggle.set_active(False)
@@ -164,25 +164,25 @@ class CtieUI(object):
 
 	def copy_setting_toggle(self, obj, key):
 		if obj.get_active():
-			self.ctie.enableCopyTag(key)
+			self.core.enableCopyTag(key)
 		else:
-			self.ctie.disableCopyTag(key)
+			self.core.disableCopyTag(key)
 
 	def copy(self, *arg):
-		if not self.ctie.selections:
+		if not self.core.selections:
 			self.set_status('Nothing to copy, select something!')
-		self.ctie.copy()
+		self.core.copy()
 
 	def paste(self, *arg):
-		self.ctie.paste()
+		self.core.paste()
 		self.canvas.queue_draw()
 
 	def autopaste(self, *arg):
-		self.ctie.autoPaste()
+		self.core.autoPaste()
 		self.canvas.queue_draw()
 
 	def delete(self, *arg):
-		self.ctie.deleteSelectedChildren()
+		self.core.deleteSelectedChildren()
 
 	def do_export(self, *arg):
 		outputdir = self.builder.get_object('output_dir').get_filename()
@@ -198,7 +198,7 @@ class CtieUI(object):
 		if not export_path:
 			print "Invalid path"
 			return
-		self.ctie.export(export_filter, export_content, export_path, outputdir)
+		self.core.export(export_filter, export_content, export_path, outputdir)
 
 	def append_tag(self, *arg):
 		b = self.builder.get_object('path_pattern')
@@ -211,17 +211,17 @@ class CtieUI(object):
 		tag = self.builder.get_object('new_tag').get_text()
 		if not tag:
 			return
-		r = self.ctie.addTag(tag)
+		r = self.core.addTag(tag)
 		if not r:
 			self.set_status("Tag %s already exists" % tag)
 
 	def preview_draw(self, widget, cr):
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if item is None:
 			return
-		if len(self.ctie.selections)!=1:
+		if len(self.core.selections)!=1:
 			return
-		child = item.children[self.ctie.selections[0]]
+		child = item.children[self.core.selections[0]]
 		width = child.x2-child.x1
 		height = child.y2-child.y1
 
@@ -230,7 +230,7 @@ class CtieUI(object):
 		child.draw(self.preview_canvas, cr, 1)
 
 	def zoom_fit(self, *arg):
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if item is None or not self.canvas:
 			return
 		workarea_window = self.builder.get_object('workarea_window')
@@ -265,7 +265,7 @@ class CtieUI(object):
 		self.canvas.queue_draw()
 
 	def remove_item(self, *arg):
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if item is None:
 			return
 		item.remove()
@@ -274,13 +274,13 @@ class CtieUI(object):
 		filec = Gtk.FileChooserDialog("Add", self.builder.get_object("main_window"), Gtk.FileChooserAction.OPEN | Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_ADD, Gtk.ResponseType.ACCEPT))
 		filec.set_select_multiple(True)
 		if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
-			self.ctie.bulkMode = True
+			self.core.bulkMode = True
 			cs = filec.get_filenames()
 			cs.sort(natcmp)
 			for path in cs:
-				self.ctie.addItemByPath(path)
+				self.core.addItemByPath(path)
 			filec.destroy()
-			self.ctie.bulkMode = False
+			self.core.bulkMode = False
 			self.onItemTreeChanged()
 		else:
 			filec.destroy()
@@ -291,11 +291,11 @@ class CtieUI(object):
 		if level is None:
 			return
 		level = int(level)
-		if self.ctie.setLevel(level):
+		if self.core.setLevel(level):
 			self.focus_field = (None, None)
 
 	def items_filter_apply(self, *arg):
-		r = self.ctie.setFilter(self.builder.get_object("items_filter").get_text())
+		r = self.core.setFilter(self.builder.get_object("items_filter").get_text())
 		if not r:
 			self.set_status('Failed parsing filter')
 
@@ -303,7 +303,7 @@ class CtieUI(object):
 		items_list = self.builder.get_object("items_list")
 		for c in items_list.get_children():
 			items_list.remove(c)
-		for idx, item in enumerate(self.ctie.items):
+		for idx, item in enumerate(self.core.items):
 			if hasattr(item, "ui"):
 				evtbox = item.ui
 			else:
@@ -328,11 +328,11 @@ class CtieUI(object):
 		if not self.toggle_childrenpath:
 			self.set_status("Please enable areas path display")
 			return
-		self.ctie.reorder_children()
+		self.core.reorder_children()
 
 	def level_sanitize(self):
 		level = self.builder.get_object("level")
-		l = self.ctie.getLevel()
+		l = self.core.getLevel()
 		try:
 			active = int(level.get_active_text())
 		except:
@@ -342,17 +342,17 @@ class CtieUI(object):
 			level.append_text(str(i))
 		if active<l:
 			level.set_active(active)
-			self.ctie.setLevel(active)
+			self.core.setLevel(active)
 		else:
 			level.set_active(l-1)
-			self.ctie.setLevel(l-1)
+			self.core.setLevel(l-1)
 
 	def item_button_press(self, obj, evt):
 		if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
-			self.ctie.selectItemByIndex(obj.index)
+			self.core.selectItemByIndex(obj.index)
 
 	def tags_refresh(self, *arg):
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if item is None:
 			return
 		self.builder.get_object('tags_pane').show_all()
@@ -383,8 +383,8 @@ class CtieUI(object):
 				tags_table.attach(radio,0,grid_i,3,1)
 				grid_i += 1
 
-		tags = self.ctie.getTags(item)
-		for tag in self.ctie.tags:
+		tags = self.core.getTags(item)
+		for tag in self.core.tags:
 			text = Gtk.Entry()
 			text.set_text(tags[tag])
 			text.connect('changed', self.set_tag, (item, tag))
@@ -410,7 +410,7 @@ class CtieUI(object):
 			item.setType(t)
 
 	def child_tags_refresh(self, *arg):
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if item is None:
 			return
 
@@ -419,11 +419,11 @@ class CtieUI(object):
 		if c:
 			tagsbox.remove(c)
 
-		if len(self.ctie.selections)!=1:
+		if len(self.core.selections)!=1:
 			return
 
-		child = item.children[self.ctie.selections[0]]
-		tags = self.ctie.getTags(child)
+		child = item.children[self.core.selections[0]]
+		tags = self.core.getTags(child)
 
 		grid_i = 0
 		tags_table = Gtk.Grid()
@@ -443,7 +443,7 @@ class CtieUI(object):
 				tags_table.attach(radio,0,grid_i,3,1)
 				grid_i += 1
 
-		for key in self.ctie.tags:
+		for key in self.core.tags:
 			text = Gtk.Entry()
 			text.set_text(tags[key])
 			text.connect('changed', self.set_tag, (child, key))
@@ -537,12 +537,12 @@ class CtieUI(object):
 		# 	self.preview_canvas.queue_draw()
 		# if self.canvas:
 		# 	self.canvas.queue_draw()
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if item:
-			self.set_status('Area: %d Select: %s' % (len(item.children), ', '.join([str(i+1) for i in self.ctie.selections])))
+			self.set_status('Area: %d Select: %s' % (len(item.children), ', '.join([str(i+1) for i in self.core.selections])))
 
 	def onItemTreeChanged(self):
-		if self.ctie.bulkMode:
+		if self.core.bulkMode:
 			return
 		# self.level_sanitize()
 
@@ -556,11 +556,11 @@ class CtieUI(object):
 		del item.ui
 
 	def onItemFocused(self):
-		item = self.ctie.getCurrentItem()
+		item = self.core.getCurrentItem()
 		if not item:
 			return
 		self.uiItemList.scrollTo(item.ui)
-		self.set_status("Item: %d/%d" % (self.ctie.getCurrentItemIndex()+1, len(self.ctie.items)))
+		self.set_status("Item: %d/%d" % (self.core.getCurrentItemIndex()+1, len(self.core.items)))
 		if hasattr(item, "ui"):
 			item.ui.setStyleSheet("background-color:rgba(50,50,255,30);");
 		# XXX
@@ -568,7 +568,7 @@ class CtieUI(object):
 		# 	if self.toggle_collation.get_active():
 		# 		for child in item.children:
 		# 			child.ocr()
-		# 		self.ctie.selectChildByIndex(0)
+		# 		self.core.selectChildByIndex(0)
 		# 	else:
 		# 		item.ocr()
 
