@@ -91,14 +91,15 @@ class WorkArea():
 			painter.scale(self.scale, self.scale)
 			item.drawQT(painter)
 
-			sx0, sy0 = self.selstart
-			sx1, sy1 = self.selend
-			sx0, sx1 = asc(sx0, sx1)
-			sy0, sy1 = asc(sy0, sy1)
-
 			if self.selstart!=(None, None) and self.selend!=(None, None):
+				sx0, sy0 = self.selstart
+				sx1, sy1 = self.selend
 				xoff = sx1 - sx0
 				yoff = sy1 - sy0
+
+				if len(self.ui.ctie.selections)==0:
+					painter.setPen(QtGui.QPen(QtCore.Qt.blue, 1/self.scale, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap))
+					painter.drawRect(sx0,sy0,xoff,yoff)
 			else:
 				xoff = 0
 				yoff = 0
@@ -116,18 +117,14 @@ class WorkArea():
 					if self.mode=='move':
 						painter.drawRect(x1+xoff, y1+yoff, x2-x1, y2-y1)
 					elif self.mode=='resize':
-						xoff2 = max(xoff,x1-x2)
-						yoff2 = max(yoff,y1-y2)
-						painter.drawRect(x1, y1, x2-x1+xoff2, y2-y1+yoff2)
+						ex1, ex2 = asc(x1, x2+xoff)
+						ey1, ey2 = asc(y1, y2+yoff)
+						painter.drawRect(ex1, ey1, ex2-ex1, ey2-ey1)
 					else:
 						painter.drawRect(x1, y1, x2-x1, y2-y1)
 				else:
 					pen.setColor(QtCore.Qt.red)
 					painter.drawRect(x1, y1, x2-x1, y2-y1)
-
-			if self.selstart!=(None, None) and self.selend!=(None, None) and len(self.ui.ctie.selections)==0:
-				painter.setPen(QtGui.QPen(QtCore.Qt.blue, 1/self.scale, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap))
-				painter.drawRect(sx0,sy0,xoff,yoff)
 
 		def resizeEvent(self, event):
 			print event
