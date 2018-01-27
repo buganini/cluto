@@ -48,6 +48,14 @@ class CtieUI(object):
 		self.uiItemList = ItemList(self, ui.findChild(QtGui.QVBoxLayout, "itemList"), ui.findChild(QtGui.QScrollArea, "itemListScroller"))
 		self.uiStatusBar = ui.findChild(QtGui.QStatusBar, "statusBar")
 		self.uiWorkArea = WorkArea(self, ui.findChild(QtGui.QScrollArea, "workAreaScroller"))
+		self.uiTagManager = TagManager(
+			self,
+			ui.findChild(QtGui.QLineEdit, "edit_new_tag"),
+			ui.findChild(QtGui.QPushButton, "btn_new_tag"),
+			ui.findChild(QtGui.QLayout, "panel_child_tags"),
+			ui.findChild(QtGui.QGridLayout, "item_tags"),
+			ui.findChild(QtGui.QGridLayout, "child_tags"),
+		)
 		sys.exit(app.exec_())
 
 
@@ -527,6 +535,7 @@ class CtieUI(object):
 
 	def onItemChanged(self):
 		self.uiWorkArea.onItemChanged()
+		self.uiTagManager.onItemChanged()
 		# self.preview_canvas.queue_draw()
 		# self.zoom_fit()
 		# self.tags_refresh()
@@ -547,7 +556,8 @@ class CtieUI(object):
 		# self.level_sanitize()
 
 	def onTagChanged(self):
-		self.tags_refresh()
+		self.uiTagManager.onTagChanged()
+		# self.tags_refresh()
 
 	def onItemRemoved(self, item):
 		items_list = self.builder.get_object("items_list")
