@@ -58,6 +58,9 @@ class CtieUI(object):
 		)
 		sys.exit(app.exec_())
 
+	def onProjectChanged(self):
+		self.uiToolBar.onProjectChanged()
+
 
 	def set_status(self, s):
 		self.uiStatusBar.showMessage(s)
