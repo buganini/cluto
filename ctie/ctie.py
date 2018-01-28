@@ -292,7 +292,7 @@ class Ctie(object):
                     if not os.path.exists(pdir):
                         os.makedirs(pdir)
                     if os.path.exists(path):
-                        print "Exists:", path
+                        print("Exists:", path)
                     cnt = export_content.eval(item)
                     if hasattr(cnt, "save"):
                         cnt.save(path)
