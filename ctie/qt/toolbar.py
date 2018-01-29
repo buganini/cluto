@@ -1,5 +1,6 @@
-from PySide import QtGui
-from QChrootFileDirDialog import *
+from PyQt5.QtWidgets import *
+from PyQt5 import QtGui
+from .QChrootFileDirDialog import *
 
 class Toolbar():
     def __init__(self, ui, toolBar):
@@ -34,8 +35,8 @@ class Toolbar():
         self.tbVerticalSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-flip-vertical-16.png")), "Vertical Splitter")
         self.tbTableRowSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-gravity-west-16.png")), "Table Row Splitter")
         self.tbTableColumnSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-gravity-south-16.png")), "Table Column Splitter")
-        spacer = QtGui.QWidget()
-        spacer.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         toolBar.addWidget(spacer)
         self.tbExport = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-revert-to-saved-ltr.png")), "Export")
         self.tbDisplayAreaPath = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-vchain-16.png")), "Display Area(s) Path")
@@ -59,7 +60,7 @@ class Toolbar():
         self.tbAddFolder.setEnabled(True)
 
     def openProject(self):
-        project = QtGui.QFileDialog.getExistingDirectory(None, u"Select Project Folder")
+        project = QFileDialog.getExistingDirectory(None, u"Select Project Folder")
         self.ui.core.openProject(project)
 
     def open(self):

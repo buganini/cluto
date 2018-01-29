@@ -1,4 +1,4 @@
-from PySide import QtGui, QtCore
+from PyQt5.QtWidgets import *
 from functools import partial
 
 class TagManager():
@@ -40,11 +40,12 @@ class TagManager():
 
         r = 0
         for tag in self.ui.core.getTags():
-            label = QtGui.QLabel()
+            label = QLabel()
             label.setText(tag)
 
-            edit = QtGui.QLineEdit()
+            edit = QLineEdit()
             edit.textChanged.connect(partial(self.set_tag, item, tag))
+            edit.setText(item.getTag(tag))
 
             self.item_tags.addWidget(label, r, 0)
             self.item_tags.addWidget(edit, r, 1)

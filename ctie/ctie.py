@@ -67,6 +67,7 @@ class Ctie(object):
             os.makedirs(self.tempdir)
 
         os.chdir(self.workspace)
+        print("Open project at {}".format(self.workspace))
         self.ui.onProjectChanged()
 
     def getLevel(self):

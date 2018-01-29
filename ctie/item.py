@@ -115,6 +115,9 @@ class Item(object):
         else:
             self.tags[key] = value
 
+    def getTag(self, key):
+        return self.tags.get(key)
+
     def unsetTag(self, key):
         del(self.tags[key])
         ctie.ui.onTagChanged()

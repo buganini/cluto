@@ -1,16 +1,16 @@
 import os
-from PySide import QtGui
+from PyQt5.QtWidgets import QFileDialog
 
-class QChrootFileDirDialog(QtGui.QFileDialog):
+class QChrootFileDirDialog(QFileDialog):
     def __init__(self, root, filesMode=True, *args, **kwargs):
-        QtGui.QFileDialog.__init__(self, *args, **kwargs)
+        QFileDialog.__init__(self, *args, **kwargs)
         self.root = root
         self.directoryEntered.connect(self.onDirectoryEntered)
-        self.setOption(QtGui.QFileDialog.DontUseNativeDialog)
+        self.setOption(QFileDialog.DontUseNativeDialog)
         if filesMode:
-            self.setFileMode(QtGui.QFileDialog.ExistingFiles)
+            self.setFileMode(QFileDialog.ExistingFiles)
         else:
-            self.setFileMode(QtGui.QFileDialog.Directory)
+            self.setFileMode(QFileDialog.Directory)
         self.setDirectory(root)
 
     def accept(self):

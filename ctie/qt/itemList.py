@@ -1,14 +1,17 @@
 import os
-from PySide import QtGui, QtCore
+from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import *
 
-class ItemList():
-	class QClickableWidget(QtGui.QWidget):
-		clicked = QtCore.Signal(QtGui.QWidget)
+class ItemList(QObject):
+	class QClickableWidget(QWidget):
+		clicked = pyqtSignal(QWidget)
 
 		def mouseReleaseEvent(self, *args):
 			self.clicked.emit(self)
 
 	def __init__(self, ui, listView, scroller):
+		QObject.__init__(self)
 		self.ui = ui
 		self.listView = listView
 		self.scroller = scroller
@@ -21,16 +24,16 @@ class ItemList():
 			self.listView.itemAt(i).widget().deleteLater()
 		currentItem = self.ui.core.getCurrentItem()
 		for item in self.ui.core.items:
-			layout = QtGui.QVBoxLayout()
+			layout = QVBoxLayout()
 			layout.setSpacing(0)
 
-			img = QtGui.QLabel()
+			img = QLabel()
 			img.setStyleSheet("padding: 10px;")
 			img.setAlignment(QtCore.Qt.AlignCenter)
 			item.drawThumbnailQT(img, 300, 200)
 			layout.addWidget(img)
 
-			label = QtGui.QLabel()
+			label = QLabel()
 			label.setStyleSheet("padding: 10px;")
 			label.setAlignment(QtCore.Qt.AlignCenter)
 			label.setText(os.path.basename(item.path))
@@ -49,6 +52,6 @@ class ItemList():
 			self.listView.addWidget(widget)
 
 
-	@QtCore.Slot(QtGui.QWidget)
+	@pyqtSlot(QWidget)
 	def onItemSelected(self, widget):
 		self.ui.core.selectItemByIndex(widget.item.getIndex())

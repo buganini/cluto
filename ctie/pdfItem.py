@@ -23,9 +23,8 @@
  SUCH DAMAGE.
 """
 
-from __future__ import division
-from PySide import QtGui
-from pyside_poppler import Poppler as QtPoppler
+from PyQt5 import QtGui
+# from popplerqt5 import Poppler as QtPoppler
 #from gi.repository import Gtk, Gdk, Poppler
 import cairo
 import pdf

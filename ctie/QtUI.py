@@ -1,6 +1,7 @@
 import os
 import sys
-from PySide import QtCore, QtGui, QtUiTools
+from PyQt5.QtWidgets import *
+from PyQt5 import uic
 from helpers import *
 from ctie import *
 from qt import *
@@ -38,23 +39,22 @@ class CtieUI(object):
 			sys.stderr.write('Unable to find {0}\n'.format(uiFile))
 			sys.exit(1)
 
-		app = QtGui.QApplication(sys.argv)
-		loader = QtUiTools.QUiLoader()
-		ui = loader.load(os.path.join(os.path.dirname(__file__), uiFile), None)
+		app = QApplication(sys.argv)
+		ui = uic.loadUi(os.path.join(os.path.dirname(__file__), uiFile))
 		ui.show()
 
 		#toolbar
-		self.uiToolBar = Toolbar(self, ui.findChild(QtGui.QToolBar, "toolBar"))
-		self.uiItemList = ItemList(self, ui.findChild(QtGui.QVBoxLayout, "itemList"), ui.findChild(QtGui.QScrollArea, "itemListScroller"))
-		self.uiStatusBar = ui.findChild(QtGui.QStatusBar, "statusBar")
-		self.uiWorkArea = WorkArea(self, ui.findChild(QtGui.QScrollArea, "workAreaScroller"))
+		self.uiToolBar = Toolbar(self, ui.findChild(QToolBar, "toolBar"))
+		self.uiItemList = ItemList(self, ui.findChild(QVBoxLayout, "itemList"), ui.findChild(QScrollArea, "itemListScroller"))
+		self.uiStatusBar = ui.findChild(QStatusBar, "statusBar")
+		self.uiWorkArea = WorkArea(self, ui.findChild(QScrollArea, "workAreaScroller"))
 		self.uiTagManager = TagManager(
 			self,
-			ui.findChild(QtGui.QLineEdit, "edit_new_tag"),
-			ui.findChild(QtGui.QPushButton, "btn_new_tag"),
-			ui.findChild(QtGui.QLayout, "panel_child_tags"),
-			ui.findChild(QtGui.QGridLayout, "item_tags"),
-			ui.findChild(QtGui.QGridLayout, "child_tags"),
+			ui.findChild(QLineEdit, "edit_new_tag"),
+			ui.findChild(QPushButton, "btn_new_tag"),
+			ui.findChild(QLayout, "panel_child_tags"),
+			ui.findChild(QGridLayout, "item_tags"),
+			ui.findChild(QGridLayout, "child_tags"),
 		)
 		sys.exit(app.exec_())
 

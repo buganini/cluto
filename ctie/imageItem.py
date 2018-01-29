@@ -24,7 +24,7 @@
 """
 
 # from gi.repository import Gtk, Gdk
-from PySide import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 import os
 import math
 from PIL import Image
