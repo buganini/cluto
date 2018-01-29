@@ -46,6 +46,7 @@ class ItemList(QObject):
             layout.addWidget(label)
 
             widget = self.QClickableWidget()
+            widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
             widget.setLayout(layout)
             widget.item = item
             widget.clicked.connect(self.onItemSelected)
