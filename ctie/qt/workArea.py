@@ -76,10 +76,9 @@ class WorkArea():
 			self.update()
 
 		def wheelEvent(self, event):
-			self.scale += event.delta()/512
+			self.scale += event.angleDelta().y()/4096
 			self.scale = min(self.scale, 10)
 			self.scale = max(self.scale, 0.03)
-			print("Scale to", self.scale)
 			self.setGeometry(0, 0, self.w*self.scale, self.h*self.scale)
 			self.update()
 
@@ -128,7 +127,7 @@ class WorkArea():
 					painter.drawRect(x1, y1, x2-x1, y2-y1)
 
 		def resizeEvent(self, event):
-			print(event)
+			pass
 
 		def onItemChanged(self):
 			self.item = self.ui.core.getCurrentItem()
