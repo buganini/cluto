@@ -56,6 +56,9 @@ class CtieUI(object):
 			ui.findChild(QGridLayout, "item_tags"),
 			ui.findChild(QGridLayout, "child_tags"),
 		)
+		self.uiCollcationSplitter = ui.findChild(QSplitter, "collationSplitter")
+		self.uiCollcationSplitter.setSizes([1, 0])
+		self.uiCollcationSplitter.handle(1).setEnabled(False)
 		sys.exit(app.exec_())
 
 	def onProjectChanged(self):

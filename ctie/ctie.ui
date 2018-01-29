@@ -67,7 +67,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QSplitter" name="splitter">
+      <widget class="QSplitter" name="collationSplitter">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
          <horstretch>1</horstretch>
@@ -102,9 +102,9 @@
         </widget>
        </widget>
        <widget class="QWidget" name="verticalLayoutWidget">
-        <layout class="QVBoxLayout" name="verticalLayout">
+        <layout class="QVBoxLayout" name="collationView">
          <item>
-          <widget class="QScrollArea" name="scrollArea_3">
+          <widget class="QScrollArea" name="collationViewAreaScroller">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -127,7 +127,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QTextEdit" name="textEdit">
+          <widget class="QTextEdit" name="collationEditor">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
