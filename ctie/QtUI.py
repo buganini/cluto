@@ -44,6 +44,7 @@ class CtieUI(object):
 		ui.show()
 
 		#toolbar
+		self.uiMenuBar = Menubar(self, ui.findChild(QMenuBar, "menubar"))
 		self.uiToolBar = Toolbar(self, ui.findChild(QToolBar, "toolBar"))
 		self.uiItemList = ItemList(self, ui.findChild(QVBoxLayout, "itemList"), ui.findChild(QScrollArea, "itemListScroller"))
 		self.uiStatusBar = ui.findChild(QStatusBar, "statusBar")
@@ -120,12 +121,6 @@ class CtieUI(object):
 			self.copy()
 		elif (evt.keyval==Gdk.KEY_V or evt.keyval==Gdk.KEY_v) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
 			self.paste()
-
-	def ltrim(self, *arg):
-		self.core.leftTopTrim();
-
-	def rtrim(self, *arg):
-		self.core.rightBottomTrim();
 
 	def set_value(self, *arg):
 		self.builder.get_object('set_value_window').show()

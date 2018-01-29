@@ -27,9 +27,9 @@ default_padding = 5
 
 def leftTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_padding):
 	stop=False
-	for a in xrange(x1,x2):
+	for a in range(x1,x2):
 		last=im.getpixel((a,y1))
-		for i in xrange(y1,y2):
+		for i in range(y1,y2):
 			c=im.getpixel((a,i))
 			if abs(c-last)>threshold:
 				stop=True
@@ -42,9 +42,9 @@ def leftTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_pa
 
 def rightTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_padding):
 	stop=False
-	for a in xrange(x2,x1,-1):
+	for a in range(x2,x1,-1):
 		last=im.getpixel((a-1,y1))
-		for i in xrange(y1,y2):
+		for i in range(y1,y2):
 			c=im.getpixel((a-1,i))
 			if abs(c-last)>threshold:
 				stop=True
@@ -57,9 +57,9 @@ def rightTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_p
 
 def topTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_padding):
 	stop=False
-	for a in xrange(y1,y2):
+	for a in range(y1,y2):
 		last=im.getpixel((x1,a))
-		for i in xrange(x1,x2):
+		for i in range(x1,x2):
 			c=im.getpixel((i,a))
 			if abs(c-last)>threshold:
 				stop=True
@@ -72,9 +72,9 @@ def topTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_pad
 
 def bottomTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_padding):
 	stop=False
-	for a in xrange(y2,y1,-1):
+	for a in range(y2,y1,-1):
 		last=im.getpixel((x1,a-1))
-		for i in xrange(x1,x2):
+		for i in range(x1,x2):
 			c=im.getpixel((i,a-1))
 			if abs(c-last)>threshold:
 				stop=True

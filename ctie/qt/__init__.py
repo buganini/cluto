@@ -1,3 +1,4 @@
+from .menubar import *
 from .toolbar import *
 from .itemList import *
 from .itemFilter import *

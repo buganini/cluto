@@ -240,15 +240,6 @@
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuBatch">
-    <property name="title">
-     <string>Batch</string>
-    </property>
-    <addaction name="actionTrim_Left_Top"/>
-    <addaction name="actionTrim_Right_Bottom"/>
-    <addaction name="actionSet_Value"/>
-   </widget>
-   <addaction name="menuBatch"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
