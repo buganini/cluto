@@ -23,7 +23,6 @@
  SUCH DAMAGE.
 """
 
-from __future__ import division
 import os
 from PIL import Image
 import weakref
@@ -88,7 +87,7 @@ class Item(object):
             sw = w*hf
             sh = ch
             factor = hf
-        return sw, sh, factor
+        return int(sw), int(sh), factor
 
     def drawThumbnail(self, widget, cr):
         pass

@@ -89,6 +89,7 @@ class Ctie(object):
             self.currentLevel = level
             self._genItems()
             self.currentIndex = 0
+            self.ui.onLevelChanged()
             self.ui.onItemListChanged()
         item = self.getCurrentItem()
         if orig != item:
@@ -177,9 +178,6 @@ class Ctie(object):
             if self.filter and not self.filter.eval(p):
                 continue
             items.append(p)
-        for item in self.items:
-            if item not in items and hasattr(self, "ui"):
-                self.ui.onItemRemoved(item)
         self.items = items
 
     def addItemByPath(self, path):
@@ -190,7 +188,7 @@ class Ctie(object):
                 self.addItemByPath(os.path.join(path,c))
         else:
             path = os.path.relpath(path, self.workspace)
-            print(path)
+            print("Add item from", path)
             if PdfItem.probe(path):
                 pdf = Poppler.Document.new_from_file("file://"+path, None)
                 for i in range(pdf.get_n_pages()):
@@ -201,6 +199,7 @@ class Ctie(object):
                 self.clips.append(item)
         self._genItems()
         self.ui.onItemListChanged()
+        self.ui.onItemTreeChanged()
         if len(self.clips)==1:
             self.selectItemByIndex(0)
 

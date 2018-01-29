@@ -25,7 +25,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="QComboBox" name="comboBox"/>
+           <widget class="QComboBox" name="level"/>
           </item>
           <item>
            <widget class="QScrollArea" name="itemListScroller">

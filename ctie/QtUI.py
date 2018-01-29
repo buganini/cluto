@@ -48,6 +48,7 @@ class CtieUI(object):
 		self.uiItemList = ItemList(self, ui.findChild(QVBoxLayout, "itemList"), ui.findChild(QScrollArea, "itemListScroller"))
 		self.uiStatusBar = ui.findChild(QStatusBar, "statusBar")
 		self.uiWorkArea = WorkArea(self, ui.findChild(QScrollArea, "workAreaScroller"))
+		self.uiLevelSelector = LevelSelector(self, ui.findChild(QComboBox, "level"))
 		self.uiTagManager = TagManager(
 			self,
 			ui.findChild(QLineEdit, "edit_new_tag"),
@@ -64,6 +65,8 @@ class CtieUI(object):
 	def onProjectChanged(self):
 		self.uiToolBar.onProjectChanged()
 
+	def onLevelChanged(self):
+		self.uiItemList.onLevelChanged()
 
 	def set_status(self, s):
 		self.uiStatusBar.showMessage(s)
@@ -537,7 +540,7 @@ class CtieUI(object):
 		item, key = data
 
 	def onItemListChanged(self):
-		self.uiItemList.reset()
+		self.uiItemList.onItemListChanged()
 
 	def onItemChanged(self):
 		self.uiWorkArea.onItemChanged()
@@ -557,6 +560,7 @@ class CtieUI(object):
 			self.set_status('Area: %d Select: %s' % (len(item.children), ', '.join([str(i+1) for i in self.core.selections])))
 
 	def onItemTreeChanged(self):
+		self.uiLevelSelector.onItemTreeChanged()
 		if self.core.bulkMode:
 			return
 		# self.level_sanitize()
