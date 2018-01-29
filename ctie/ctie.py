@@ -95,6 +95,7 @@ class Ctie(object):
         if orig != item:
             self.ui.onItemBlurred(orig)
             self.ui.onItemFocused()
+            self.ui.onItemChanged()
         return r
 
     def selectAllChildren(self):
