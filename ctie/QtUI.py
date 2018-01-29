@@ -49,6 +49,7 @@ class CtieUI(object):
 		self.uiStatusBar = ui.findChild(QStatusBar, "statusBar")
 		self.uiWorkArea = WorkArea(self, ui.findChild(QScrollArea, "workAreaScroller"))
 		self.uiLevelSelector = LevelSelector(self, ui.findChild(QComboBox, "level"))
+		self.uiItemFilter = ItemFilter(self, ui.findChild(QLineEdit, "edit_filter"), ui.findChild(QPushButton, "btn_filter"))
 		self.uiTagManager = TagManager(
 			self,
 			ui.findChild(QLineEdit, "edit_new_tag"),
