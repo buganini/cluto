@@ -46,6 +46,9 @@ class CtieUI(object):
         #toolbar
         self.uiMenuBar = Menubar(self, ui.findChild(QMenuBar, "menubar"))
         self.uiToolBar = Toolbar(self, ui.findChild(QToolBar, "toolBar"))
+        self.uiMainSplitter = ui.findChild(QSplitter, "main_splitter")
+        self.uiMainSplitter.setSizes([360, 1, 320])
+        self.uiMainSplitter.setStretchFactor(1, 1)
         self.uiItemList = ItemList(self, ui.findChild(QVBoxLayout, "itemList"), ui.findChild(QScrollArea, "itemListScroller"))
         self.uiStatusBar = ui.findChild(QStatusBar, "statusBar")
         self.uiWorkArea = WorkArea(self, ui.findChild(QScrollArea, "workAreaScroller"))
