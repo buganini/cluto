@@ -56,9 +56,14 @@ class Ctie(object):
         self.tempdir = None
         self.bulkMode = False
 
-    def openProject(self, path):
-        self.workspace = os.path.abspath(path)
-        self.storage = os.path.join(self.workspace, ".ctie")
+    def openProject(self, path, confirm=False):
+        workspace = os.path.abspath(path)
+        storage = os.path.join(workspace, ".ctie")
+        if not os.path.exists(storage) and not confirm:
+            self.ui.onProjectInitConfirm(path)
+            return
+        self.workspace = workspace
+        self.storage = storage
         if not os.path.exists(self.storage):
             os.makedirs(self.storage)
 

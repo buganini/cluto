@@ -29,19 +29,13 @@ class CtieUI(object):
         self.selstart = (None, None)
         self.selend = (None, None)
         self.mode = None
+        self.app_path = os.path.abspath(os.path.dirname(__file__))
 
         uiFile = "ctie.ui"
-        for datadir in [os.path.dirname(__file__),'/usr/local/share/ctie']:
-            fullpath = os.path.join(datadir, uiFile)
-            if os.path.exists(fullpath):
-                break
-        else:
-            sys.stderr.write('Unable to find {0}\n'.format(uiFile))
-            sys.exit(1)
 
         app = QApplication(sys.argv)
-        ui = uic.loadUi(os.path.join(os.path.dirname(__file__), uiFile))
-        ui.show()
+        self.main_ui = ui = uic.loadUi(os.path.join(self.app_path, uiFile))
+        self.main_ui.show()
 
         #toolbar
         self.uiMenuBar = Menubar(self, ui.findChild(QMenuBar, "menubar"))
@@ -66,6 +60,11 @@ class CtieUI(object):
         self.uiCollcationSplitter.setSizes([1, 0])
         self.uiCollcationSplitter.handle(1).setEnabled(False)
         sys.exit(app.exec_())
+
+    def onProjectInitConfirm(self, path):
+        ret = QMessageBox.question(self.main_ui, 'New Project', "Selected folder is not a ctie project folder, configure it as a project?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ret == QMessageBox.Yes:
+            self.core.openProject(path, True)
 
     def onProjectChanged(self):
         self.uiToolBar.onProjectChanged()
