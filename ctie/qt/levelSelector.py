@@ -8,8 +8,10 @@ class LevelSelector(QObject):
         self.ui = ui
         self.selector = selector
         self.selector.currentIndexChanged.connect(self.onCurrentIndexChanged)
+        self.blocked = False
 
     def onItemTreeChanged(self):
+        self.blocked = True
         current = self.selector.currentIndex()
         self.selector.clear()
         level = self.ui.core.getLevel()
@@ -17,7 +19,9 @@ class LevelSelector(QObject):
             self.selector.addItem("{}".format(i))
         if current >= 0 and current < level:
             self.selector.setCurrentIndex(current)
+        self.blocked = False
 
     @pyqtSlot(int)
     def onCurrentIndexChanged(self, index):
-        self.ui.core.setLevel(index)
+        if not self.blocked:
+            self.ui.core.setLevel(index)

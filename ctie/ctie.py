@@ -341,6 +341,7 @@ class Ctie(object):
                 if (x1,y1,x2,y2) in cs:
                     continue
                 item.addChild(x1 = x1+item.x1, y1 = y1+item.y1, x2 = x2+item.x1, y2 = y2+item.y1, tags = p['tags'])
+        self.ui.onContentChanged()
 
     def autoPaste(self):
         threshold = 30
@@ -411,6 +412,7 @@ class Ctie(object):
             for p in clipboard:
                 if x2-x1>1 and y2-y1>1:
                     item.addChild(x1 = p['x1']+item.x1, y1 = p['y1']+item.y1, x2 = p['x2']+item.x1, y2 = p['y2']+item.y1, tags = p['tags'])
+        self.ui.onContentChanged()
 
     def deleteSelectedChildren(self):
         item = self.getCurrentItem()

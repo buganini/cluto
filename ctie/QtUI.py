@@ -564,6 +564,9 @@ class CtieUI(object):
             return
         # self.level_sanitize()
 
+    def onContentChanged(self):
+        self.uiWorkArea.onContentChanged()
+
     def onTagChanged(self):
         self.uiTagManager.onTagChanged()
         # self.tags_refresh()

@@ -48,6 +48,10 @@ class Toolbar():
         self.tbAddFiles.triggered.connect(self.addFiles)
         self.tbAddFolder.triggered.connect(self.addFolder)
 
+        self.tbCopy.triggered.connect(self.copy)
+        self.tbPaste.triggered.connect(self.paste)
+        self.tbAutoPaste.triggered.connect(self.autoPaste)
+
         self.tbOpen.setEnabled(False)
         self.tbSave.setEnabled(False)
         self.tbAddFiles.setEnabled(False)
@@ -78,3 +82,12 @@ class Toolbar():
         if dialog.exec_():
             for path in dialog.selectedFiles():
                 self.ui.core.addItemByPath(path)
+
+    def copy(self):
+        self.ui.core.copy()
+
+    def paste(self):
+        self.ui.core.paste()
+
+    def autoPaste(self):
+        self.ui.core.autoPaste()
