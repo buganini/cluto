@@ -1,7 +1,7 @@
 import math
 from utils import *
 from PyQt5 import QtGui, QtCore
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import *
 
 class WorkArea():
 	class QWorkArea(QWidget):
@@ -76,11 +76,14 @@ class WorkArea():
 			self.update()
 
 		def wheelEvent(self, event):
-			self.scale += event.angleDelta().y()/4096
-			self.scale = min(self.scale, 10)
-			self.scale = max(self.scale, 0.03)
-			self.setGeometry(0, 0, self.w*self.scale, self.h*self.scale)
-			self.update()
+			scale = self.scale
+			scale += event.angleDelta().y()/4096
+			scale = min(scale, 10)
+			scale = max(scale, 0.03)
+			if scale != self.scale:
+				self.scale = scale
+				self.setGeometry(0, 0, self.w*self.scale, self.h*self.scale)
+				self.update()
 
 		def paintEvent(self, event):
 			if not self.item:
@@ -140,7 +143,6 @@ class WorkArea():
 		self.ui = ui
 		self.workAreaScroller = workAreaScroller
 		self.workArea = self.QWorkArea()
-		# self.workArea.setSizePolicy(QtGui.QSizePolicy.Policy.Ignored, QtGui.QSizePolicy.Policy.Ignored)
 		self.workArea.ui = ui
 		self.workAreaScroller.setWidget(self.workArea)
 
