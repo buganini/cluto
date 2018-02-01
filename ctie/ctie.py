@@ -53,6 +53,7 @@ class Ctie(object):
         self.copy_tags = []
         self.workspace = None
         self.storage = None
+        self.savedir = None
         self.tempdir = None
         self.bulkMode = False
 
@@ -66,6 +67,10 @@ class Ctie(object):
         self.storage = storage
         if not os.path.exists(self.storage):
             os.makedirs(self.storage)
+
+        self.savedir = os.path.join(self.storage, "save")
+        if not os.path.exists(self.savedir):
+            os.makedirs(self.savedir)
 
         self.tempdir = os.path.join(self.storage, "tmp")
         if not os.path.exists(self.tempdir):
@@ -253,7 +258,7 @@ class Ctie(object):
         return r
 
     def load(self, path):
-        fp = open(path,'r')
+        fp = open(path,'rb')
         try:
             data = pickle.load(fp)
             fp.close()
@@ -271,7 +276,7 @@ class Ctie(object):
         for item in self.items:
             self.ui.onItemRemoved(item)
         data = {'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tags, 'regex':self.regex}
-        fp = open(path,'w')
+        fp = open(path, 'wb')
         pickle.dump(data, fp)
         fp.close()
 

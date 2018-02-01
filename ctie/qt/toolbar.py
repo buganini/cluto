@@ -45,6 +45,7 @@ class Toolbar():
 
         self.tbProject.triggered.connect(self.openProject)
         self.tbOpen.triggered.connect(self.open)
+        self.tbSave.triggered.connect(self.save)
         self.tbAddFiles.triggered.connect(self.addFiles)
         self.tbAddFolder.triggered.connect(self.addFolder)
 
@@ -68,8 +69,10 @@ class Toolbar():
         self.ui.core.openProject(project)
 
     def open(self):
-        dialog = QtGui.QFileDialog()
-        dialog.exec_()
+        self.ui.open()
+
+    def save(self):
+        self.ui.save()
 
     def addFolder(self):
         dialog = QChrootFileDirDialog(self.ui.core.workspace, False)

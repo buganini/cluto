@@ -29,13 +29,15 @@ class CtieUI(object):
         self.selstart = (None, None)
         self.selend = (None, None)
         self.mode = None
+        self.uiref = {}
         self.app_path = os.path.abspath(os.path.dirname(__file__))
 
         uiFile = "ctie.ui"
 
         app = QApplication(sys.argv)
-        self.main_ui = ui = uic.loadUi(os.path.join(self.app_path, uiFile))
-        self.main_ui.show()
+        ui = uic.loadUi(os.path.join(self.app_path, uiFile))
+        ui.show()
+        self.uiref["main"] = ui
 
         #toolbar
         self.uiMenuBar = Menubar(self, ui.findChild(QMenuBar, "menubar"))
@@ -135,30 +137,11 @@ class CtieUI(object):
             return
         self.core.batchSetTag(key, value, isFormula)
 
-    def open_project(self, *arg):
-        global tempdir, clear_tempdir
-        filec = Gtk.FileChooserDialog("Open", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
-        if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
-            filename = filec.get_filename()
-            filec.destroy()
-            if self.core.load(filename):
-                clear_tempdir = False
-            else:
-                self.set_status('Failed loading %s' % filename)
-                return
-        else:
-            filec.destroy()
-            return
+    def open(self):
+        LoadDialog(self)
 
-    def save_project(self, *arg):
-        global clear_tempdir
-        if not self.core.clips:
-            return
-        filec = Gtk.FileChooserDialog("Save", self.builder.get_object("main_window"), Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
-        if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
-            self.core.save(filec.get_filename())
-            clear_tempdir = False
-        filec.destroy()
+    def save(self):
+        SaveDialog(self)
 
     def copy_setting(self, obj, *arg):
         tagsbox = self.builder.get_object("copy_setting_tags")
