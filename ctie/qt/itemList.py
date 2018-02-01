@@ -29,7 +29,7 @@ class ItemList(QObject):
         widget.setStyleSheet("background-color:rgba(50,50,255,30);")
 
     def onItemBlurred(self, item):
-        widget = self.uiMap[item]
+        widget = self.uiMap.get(item)
         if widget: # could be None when level changed
             widget.setStyleSheet("background-color:auto;")
 
@@ -39,7 +39,7 @@ class ItemList(QObject):
         self.uiMap = {}
 
         currentItem = self.ui.core.getCurrentItem()
-        for item in self.ui.core.items:
+        for index, item in enumerate(self.ui.core.items):
             layout = QVBoxLayout()
             layout.setSpacing(0)
 
@@ -59,6 +59,7 @@ class ItemList(QObject):
             widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
             widget.setLayout(layout)
             widget.item = item
+            widget.index = index
             widget.clicked.connect(self.onItemSelected)
 
             self.uiMap[item] = widget
@@ -71,4 +72,4 @@ class ItemList(QObject):
 
     @pyqtSlot(QWidget)
     def onItemSelected(self, widget):
-        self.ui.core.selectItemByIndex(widget.item.getIndex())
+        self.ui.core.selectItemByIndex(widget.index)
