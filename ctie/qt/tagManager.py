@@ -17,6 +17,9 @@ class TagManager():
     def onTagChanged(self):
         self.refresh_tags()
 
+    def onSelectionChanged(self):
+        self.refresh_tags()
+
     def refresh_tags(self):
         for r in range(self.item_tags.rowCount()):
             for c in range(self.item_tags.columnCount()):
@@ -50,6 +53,27 @@ class TagManager():
             self.item_tags.addWidget(label, r, 0)
             self.item_tags.addWidget(edit, r, 1)
             r += 1
+
+        if len(self.ui.core.selections)==1:
+            self.panel_child_tags.setVisible(True)
+
+            child = item.children[self.ui.core.selections[0]]
+
+            r = 0
+            for tag in self.ui.core.getTags():
+                label = QLabel()
+                label.setText(tag)
+
+                edit = QLineEdit()
+                edit.textChanged.connect(partial(self.set_tag, child, tag))
+                edit.setText(child.getTag(tag))
+
+                self.child_tags.addWidget(label, r, 0)
+                self.child_tags.addWidget(edit, r, 1)
+                r += 1
+        else:
+            self.panel_child_tags.setVisible(False)
+
 
     def set_tag(self, item, tag, value):
         item.setTag(tag, value)

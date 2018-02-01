@@ -55,7 +55,7 @@ class CtieUI(object):
             self,
             ui.findChild(QLineEdit, "edit_new_tag"),
             ui.findChild(QPushButton, "btn_new_tag"),
-            ui.findChild(QLayout, "panel_child_tags"),
+            ui.findChild(QWidget, "panel_child_tags"),
             ui.findChild(QGridLayout, "item_tags"),
             ui.findChild(QGridLayout, "child_tags"),
         )
@@ -537,6 +537,7 @@ class CtieUI(object):
         # self.tags_refresh()
 
     def onSelectionChanged(self):
+        self.uiTagManager.onSelectionChanged()
         # self.child_tags_refresh()
         # if self.preview_canvas:
         #     self.preview_canvas.queue_draw()
