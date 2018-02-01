@@ -104,7 +104,7 @@ class Ctie(object):
         item = self.getCurrentItem()
         if orig != item:
             self.ui.onItemBlurred(orig)
-            self.ui.onItemFocused()
+            self.onItemFocused()
             self.ui.onItemChanged()
         return r
 
@@ -113,11 +113,11 @@ class Ctie(object):
         if item is None:
             return
         self.selections = range(0, len(item.children))
-        self.ui.onSelectionChanged()
+        self.onSelectionChanged()
 
     def deselectAllChildren(self):
         self.selections = []
-        self.ui.onSelectionChanged()
+        self.onSelectionChanged()
 
     def selectChildByIndex(self, index):
         item = self.getCurrentItem()
@@ -125,12 +125,22 @@ class Ctie(object):
             return
         if index not in self.selections and index < len(item.children):
             self.selections.append(index)
-        self.ui.onSelectionChanged()
+        self.onSelectionChanged()
 
     def deselectChildByIndex(self, index):
         if index in self.selections:
             self.selections.remove(index)
+        self.onSelectionChanged()
+
+    def onItemFocused(self):
+        self.ui.onItemFocused()
+        self.ui.set_status("Item: %d/%d" % (self.getCurrentItemIndex()+1, len(self.items)))
+
+    def onSelectionChanged(self):
         self.ui.onSelectionChanged()
+        item = self.getCurrentItem()
+        if item:
+            self.ui.set_status('Area: %d Select: %s' % (len(item.children), ', '.join([str(i+1) for i in self.selections])))
 
     def selectItemByIndex(self, index):
         orig = self.getCurrentItem()
@@ -139,7 +149,7 @@ class Ctie(object):
         if orig != item:
             self.selections = []
             self.ui.onItemBlurred(orig)
-            self.ui.onItemFocused()
+            self.onItemFocused()
         self.selections = []
         self.ui.onItemChanged()
 
@@ -150,7 +160,7 @@ class Ctie(object):
         if orig != item:
             self.selections = []
             self.ui.onItemBlurred(orig)
-            self.ui.onItemFocused()
+            self.onItemFocused()
         self.ui.onItemChanged()
 
     def selectPrevItem(self):
@@ -160,7 +170,7 @@ class Ctie(object):
         if orig != item:
             self.selections = []
             self.ui.onItemBlurred(orig)
-            self.ui.onItemFocused()
+            self.onItemFocused()
         self.ui.onItemChanged()
 
     def getCurrentItem(self):
@@ -255,7 +265,8 @@ class Ctie(object):
             r = True
             self._genItems()
             self.ui.onItemListChanged()
-        return r
+        if not r:
+            self.ui.set_status('Failed parsing filter')
 
     def load(self, path):
         fp = open(path,'rb')
@@ -320,6 +331,8 @@ class Ctie(object):
             todo = newtodo
 
     def copy(self):
+        if not self.selections:
+            self.ui.set_status('Nothing to copy, select something!')
         item = self.getCurrentItem()
         if item is None:
             return
@@ -454,6 +467,8 @@ class Ctie(object):
             return
         if not key in self.tags:
             self.tags.append(key)
+        else:
+            self.set_status('Tag "{}" already exists'.format(tag))
         self.ui.onTagChanged()
 
     def getTags(self, item = None):
@@ -483,7 +498,7 @@ class Ctie(object):
         else:
             self.selections[0] += len(item.children)-1
             self.selections[0] %= len(item.children)
-        self.ui.onSelectionChanged()
+        self.onSelectionChanged()
 
 
     def selectNextChild(self):
@@ -497,7 +512,7 @@ class Ctie(object):
         else:
             self.selections[0] += 1
             self.selections[0] %= len(item.children)
-        self.ui.onSelectionChanged()
+        self.onSelectionChanged()
 
     def move(self, xoff, yoff):
         item = self.getCurrentItem()
@@ -522,7 +537,7 @@ class Ctie(object):
             return
         item.reorder_children(self.selections)
         self.selections = range(0,len(item.children))
-        self.ui.onSelectionChanged()
+        self.onSelectionChanged()
 
     def batchTrimLeftTop(self):
         for item in self.items:

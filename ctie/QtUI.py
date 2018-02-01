@@ -173,8 +173,6 @@ class CtieUI(object):
             self.core.disableCopyTag(key)
 
     def copy(self, *arg):
-        if not self.core.selections:
-            self.set_status('Nothing to copy, select something!')
         self.core.copy()
 
     def paste(self, *arg):
@@ -215,9 +213,7 @@ class CtieUI(object):
         tag = self.builder.get_object('new_tag').get_text()
         if not tag:
             return
-        r = self.core.addTag(tag)
-        if not r:
-            self.set_status("Tag %s already exists" % tag)
+        self.core.addTag(tag)
 
     def preview_draw(self, widget, cr):
         item = self.core.getCurrentItem()
@@ -297,11 +293,6 @@ class CtieUI(object):
         level = int(level)
         if self.core.setLevel(level):
             self.focus_field = (None, None)
-
-    def items_filter_apply(self, *arg):
-        r = self.core.setFilter(self.builder.get_object("items_filter").get_text())
-        if not r:
-            self.set_status('Failed parsing filter')
 
     def redraw_items_list(self, *arg):
         items_list = self.builder.get_object("items_list")
@@ -538,14 +529,6 @@ class CtieUI(object):
 
     def onSelectionChanged(self):
         self.uiTagManager.onSelectionChanged()
-        # self.child_tags_refresh()
-        # if self.preview_canvas:
-        #     self.preview_canvas.queue_draw()
-        # if self.canvas:
-        #     self.canvas.queue_draw()
-        item = self.core.getCurrentItem()
-        if item:
-            self.set_status('Area: %d Select: %s' % (len(item.children), ', '.join([str(i+1) for i in self.core.selections])))
 
     def onItemTreeChanged(self):
         self.uiLevelSelector.onItemTreeChanged()
@@ -557,14 +540,12 @@ class CtieUI(object):
 
     def onTagChanged(self):
         self.uiTagManager.onTagChanged()
-        # self.tags_refresh()
 
     def onItemFocused(self):
         item = self.core.getCurrentItem()
         if not item:
             return
         self.uiItemList.onItemFocused(item)
-        self.set_status("Item: %d/%d" % (self.core.getCurrentItemIndex()+1, len(self.core.items)))
         # XXX
         # if self.toggle_ocr.get_active():
         #     if self.toggle_collation.get_active():
