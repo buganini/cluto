@@ -79,6 +79,7 @@ class Ctie(object):
         os.chdir(self.workspace)
         print("Open project at {}".format(self.workspace))
         self.ui.onProjectChanged()
+        self.ui.load()
 
     def getLevel(self):
         l = 0
