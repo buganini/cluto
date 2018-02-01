@@ -270,15 +270,20 @@ class Ctie(object):
         self.regex = data['regex']
         self.ui.onItemTreeChanged()
         self.ui.onItemChanged()
+        print("Load from {}".format(path))
         return True
 
-    def save(self, path):
+    def save(self, path, confirm=False):
+        if os.path.exists(path) and not confirm:
+            self.ui.onSaveOverwriteConfirm(path)
+            return
         for item in self.items:
             self.ui.onItemRemoved(item)
         data = {'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tags, 'regex':self.regex}
         fp = open(path, 'wb')
         pickle.dump(data, fp)
         fp.close()
+        print("Save to {}".format(path))
 
     def export(self, export_filter, export_content, export_path, outputdir):
         todo = self.clips

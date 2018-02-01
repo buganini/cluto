@@ -37,6 +37,7 @@ class CtieUI(object):
         app = QApplication(sys.argv)
         ui = uic.loadUi(os.path.join(self.app_path, uiFile))
         ui.show()
+        self.ui = ui
         self.uiref["main"] = ui
 
         #toolbar
@@ -64,7 +65,7 @@ class CtieUI(object):
         sys.exit(app.exec_())
 
     def onProjectInitConfirm(self, path):
-        ret = QMessageBox.question(self.main_ui, 'New Project', "Selected folder is not a ctie project folder, configure it as a project?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        ret = QMessageBox.question(self.ui, 'New Project', "Selected folder is not a ctie project folder, configure it as a project?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ret == QMessageBox.Yes:
             self.core.openProject(path, True)
 
@@ -142,6 +143,11 @@ class CtieUI(object):
 
     def save(self):
         SaveDialog(self)
+
+    def onSaveOverwriteConfirm(self, path):
+        ret = QMessageBox.question(self.ui, 'Save', "Target already exists, overwrite?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ret == QMessageBox.Yes:
+            self.core.save(path, True)
 
     def copy_setting(self, obj, *arg):
         tagsbox = self.builder.get_object("copy_setting_tags")
