@@ -277,8 +277,6 @@ class Ctie(object):
         if os.path.exists(path) and not confirm:
             self.ui.onSaveOverwriteConfirm(path)
             return
-        for item in self.items:
-            self.ui.onItemRemoved(item)
         data = {'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tags, 'regex':self.regex}
         fp = open(path, 'wb')
         pickle.dump(data, fp)

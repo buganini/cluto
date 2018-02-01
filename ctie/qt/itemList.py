@@ -15,6 +15,7 @@ class ItemList(QObject):
         self.ui = ui
         self.listView = listView
         self.scroller = scroller
+        self.uiMap = {}
 
     def onLevelChanged(self):
         self.reset()
@@ -22,12 +23,16 @@ class ItemList(QObject):
     def onItemListChanged(self):
         self.reset()
 
-    def scrollTo(self, widget):
+    def onItemFocused(self, item):
+        widget = self.uiMap[item]
         self.scroller.ensureWidgetVisible(widget, 0, 50)
+        widget.setStyleSheet("background-color:rgba(50,50,255,30);")
 
     def reset(self):
         for i in reversed(range(self.listView.count())):
             self.listView.itemAt(i).widget().deleteLater()
+        self.uiMap = {}
+
         currentItem = self.ui.core.getCurrentItem()
         for item in self.ui.core.items:
             layout = QVBoxLayout()
@@ -51,12 +56,13 @@ class ItemList(QObject):
             widget.item = item
             widget.clicked.connect(self.onItemSelected)
 
-            item.ui = widget
-
-            if item == currentItem:
-                item.ui.setStyleSheet("background-color:rgba(50,50,255,30);");
+            self.uiMap[item] = widget
 
             self.listView.addWidget(widget)
+
+            if item == currentItem:
+                self.onItemFocused(item)
+
 
     @pyqtSlot(QWidget)
     def onItemSelected(self, widget):

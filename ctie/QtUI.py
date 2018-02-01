@@ -138,7 +138,7 @@ class CtieUI(object):
             return
         self.core.batchSetTag(key, value, isFormula)
 
-    def open(self):
+    def load(self):
         LoadDialog(self)
 
     def save(self):
@@ -559,20 +559,12 @@ class CtieUI(object):
         self.uiTagManager.onTagChanged()
         # self.tags_refresh()
 
-    def onItemRemoved(self, item):
-        items_list = self.builder.get_object("items_list")
-        items_list.remove(item.ui)
-        item.ui.destroy()
-        del item.ui
-
     def onItemFocused(self):
         item = self.core.getCurrentItem()
         if not item:
             return
-        self.uiItemList.scrollTo(item.ui)
+        self.uiItemList.onItemFocused(item)
         self.set_status("Item: %d/%d" % (self.core.getCurrentItemIndex()+1, len(self.core.items)))
-        if hasattr(item, "ui"):
-            item.ui.setStyleSheet("background-color:rgba(50,50,255,30);");
         # XXX
         # if self.toggle_ocr.get_active():
         #     if self.toggle_collation.get_active():

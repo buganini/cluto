@@ -10,7 +10,7 @@ class Toolbar():
         resourcePath = os.path.join(os.path.dirname(__file__), "..", "icons")
 
         self.tbProject = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-open.png")), "&Project")
-        self.tbOpen = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-open.png")), "&Open")
+        self.tbLoad = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-open.png")), "&Load")
         self.tbSave = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-save.png")), "&Save")
         toolBar.addSeparator()
         self.tbAddFiles = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-add.png")), "&Add Files")
@@ -44,7 +44,7 @@ class Toolbar():
         self.tbCollationMode = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-edit.png")), "Collation Mode")
 
         self.tbProject.triggered.connect(self.openProject)
-        self.tbOpen.triggered.connect(self.open)
+        self.tbLoad.triggered.connect(self.load)
         self.tbSave.triggered.connect(self.save)
         self.tbAddFiles.triggered.connect(self.addFiles)
         self.tbAddFolder.triggered.connect(self.addFolder)
@@ -53,23 +53,24 @@ class Toolbar():
         self.tbPaste.triggered.connect(self.paste)
         self.tbAutoPaste.triggered.connect(self.autoPaste)
 
-        self.tbOpen.setEnabled(False)
+        self.tbLoad.setEnabled(False)
         self.tbSave.setEnabled(False)
         self.tbAddFiles.setEnabled(False)
         self.tbAddFolder.setEnabled(False)
 
     def onProjectChanged(self):
-        self.tbOpen.setEnabled(True)
+        self.tbLoad.setEnabled(True)
         self.tbSave.setEnabled(True)
         self.tbAddFiles.setEnabled(True)
         self.tbAddFolder.setEnabled(True)
 
     def openProject(self):
         project = QFileDialog.getExistingDirectory(None, u"Select Project Folder")
-        self.ui.core.openProject(project)
+        if project:
+            self.ui.core.openProject(project)
 
-    def open(self):
-        self.ui.open()
+    def load(self):
+        self.ui.load()
 
     def save(self):
         self.ui.save()
