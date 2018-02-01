@@ -1,3 +1,4 @@
+from .keyBinding import *
 from .loadDialog import *
 from .saveDialog import *
 from .menubar import *

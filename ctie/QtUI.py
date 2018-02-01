@@ -40,6 +40,8 @@ class CtieUI(object):
         self.ui = ui
         self.uiref["main"] = ui
 
+        self.key_binding = KeyBinding(self)
+
         #toolbar
         self.uiMenuBar = Menubar(self, ui.findChild(QMenuBar, "menubar"))
         self.uiToolBar = Toolbar(self, ui.findChild(QToolBar, "toolBar"))

@@ -156,6 +156,8 @@ class Ctie(object):
 
     def selectNextItem(self):
         orig = self.getCurrentItem()
+        if not orig:
+            return
         self.currentIndex = (self.currentIndex + 1) % len(self.items)
         item = self.getCurrentItem()
         if orig != item:
@@ -166,6 +168,8 @@ class Ctie(object):
 
     def selectPrevItem(self):
         orig = self.getCurrentItem()
+        if not orig:
+            return
         self.currentIndex = (self.currentIndex + len(self.items) - 1) % len(self.items)
         item = self.getCurrentItem()
         if orig != item:
