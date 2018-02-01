@@ -79,7 +79,8 @@ class Ctie(object):
         os.chdir(self.workspace)
         print("Open project at {}".format(self.workspace))
         self.ui.onProjectChanged()
-        self.ui.load()
+        if self.hasSavedData():
+            self.ui.load()
 
     def getLevel(self):
         l = 0
@@ -273,6 +274,9 @@ class Ctie(object):
             self.onItemFocused()
         if not r:
             self.ui.set_status('Failed parsing filter')
+
+    def hasSavedData(self):
+        return bool(os.listdir(self.savedir))
 
     def load(self, path):
         fp = open(path,'rb')
