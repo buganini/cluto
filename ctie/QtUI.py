@@ -550,7 +550,6 @@ class CtieUI(object):
         self.uiLevelSelector.onItemTreeChanged()
         if self.core.bulkMode:
             return
-        # self.level_sanitize()
 
     def onContentChanged(self):
         self.uiWorkArea.onContentChanged()

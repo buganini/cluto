@@ -268,6 +268,8 @@ class Ctie(object):
         self.tags = data['tags']
         self.copy_tags = data['tags']
         self.regex = data['regex']
+        self._genItems()
+        self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
         self.ui.onItemChanged()
         print("Load from {}".format(path))
