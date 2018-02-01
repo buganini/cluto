@@ -12,24 +12,44 @@ class Toolbar():
         self.tbProject = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-open.png")), "&Project")
         self.tbLoad = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-open.png")), "&Load")
         self.tbSave = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-save.png")), "&Save")
+
+        self.tbProject.triggered.connect(self.openProject)
+        self.tbLoad.triggered.connect(self.load)
+        self.tbSave.triggered.connect(self.save)
+
         toolBar.addSeparator()
         self.tbAddFiles = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-add.png")), "&Add Files")
         self.tbAddFolder = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-add.png")), "&Add Folder")
         self.tbDelete = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-remove.png")), "&Delete")
+
+        self.tbAddFiles.triggered.connect(self.addFiles)
+        self.tbAddFolder.triggered.connect(self.addFolder)
+
         toolBar.addSeparator()
+
         self.tbZoomIn = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-zoom-in.png")), "Zoom In")
         self.tbZoomOut = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-zoom-out.png")), "Zoom Out")
         self.tbZoomActual = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-zoom-100.png")), "Zoom 100%")
         self.tbZoomFit = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-zoom-fit.png")), "Zoom Fit")
+
         toolBar.addSeparator()
         self.tbRegex = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-tool-flip-16.png")), "Regex")
         self.tbCopy = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-duplicate-16.png")), "Copy")
         self.tbCopySetting = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-preferences.png")), "Copy Setting")
         self.tbPaste = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-paste.png")), "Paste")
         self.tbAutoPaste = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-plugin-16.png")), "Auto Paste")
+
+        self.tbCopy.triggered.connect(self.copy)
+        self.tbPaste.triggered.connect(self.paste)
+        self.tbAutoPaste.triggered.connect(self.autoPaste)
+
         toolBar.addSeparator()
+
         self.tbDeleteSelection = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-delete.png")), "Delete Selection Area(s)")
         self.tbResetChildrenOrder = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-reset-16.png")), "Reset Children Order")
+
+        self.tbDeleteSelection.triggered.connect(self.deleteSelectedChildren)
+
         toolBar.addSeparator()
         self.tbHorizontalSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-flip-horizontal-16.png")), "Horizontal Splitter")
         self.tbVerticalSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-flip-vertical-16.png")), "Vertical Splitter")
@@ -43,15 +63,6 @@ class Toolbar():
         self.tbOcrMode = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-bold.png")), "OCR Mode")
         self.tbCollationMode = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-edit.png")), "Collation Mode")
 
-        self.tbProject.triggered.connect(self.openProject)
-        self.tbLoad.triggered.connect(self.load)
-        self.tbSave.triggered.connect(self.save)
-        self.tbAddFiles.triggered.connect(self.addFiles)
-        self.tbAddFolder.triggered.connect(self.addFolder)
-
-        self.tbCopy.triggered.connect(self.copy)
-        self.tbPaste.triggered.connect(self.paste)
-        self.tbAutoPaste.triggered.connect(self.autoPaste)
 
         self.tbLoad.setEnabled(False)
         self.tbSave.setEnabled(False)
@@ -95,3 +106,6 @@ class Toolbar():
 
     def autoPaste(self):
         self.ui.core.autoPaste()
+
+    def deleteSelectedChildren(self):
+        self.ui.core.deleteSelectedChildren()

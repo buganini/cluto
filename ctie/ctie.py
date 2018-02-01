@@ -439,6 +439,7 @@ class Ctie(object):
             del(item.children[i])
         self.selections = []
         self.ui.onItemTreeChanged()
+        self.ui.onContentChanged()
 
     def enableCopyTag(self, key):
         if key in self.tags and key not in self.copy_tags:
