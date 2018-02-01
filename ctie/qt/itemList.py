@@ -30,7 +30,8 @@ class ItemList(QObject):
 
     def onItemBlurred(self, item):
         widget = self.uiMap[item]
-        widget.setStyleSheet("background-color:auto;")
+        if widget: # could be None when level changed
+            widget.setStyleSheet("background-color:auto;")
 
     def reset(self):
         for i in reversed(range(self.listView.count())):
