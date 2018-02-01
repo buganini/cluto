@@ -80,4 +80,4 @@ class TagManager():
 
     def add_tag(self):
         tag = self.edit_new_tag.text()
-        self.ui.core.addTag(tag)
+        self.ui.core.addTag(tag, byUser=True)

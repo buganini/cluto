@@ -548,14 +548,6 @@ class CtieUI(object):
         if not item:
             return
         self.uiItemList.onItemFocused(item)
-        # XXX
-        # if self.toggle_ocr.get_active():
-        #     if self.toggle_collation.get_active():
-        #         for child in item.children:
-        #             child.ocr()
-        #         self.core.selectChildByIndex(0)
-        #     else:
-        #         item.ocr()
 
     def onItemBlurred(self, item):
         if not item:

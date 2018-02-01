@@ -30,6 +30,7 @@ import math
 from PIL import Image
 import subprocess
 import weakref
+import xml.dom.minidom
 
 import ctie
 from helpers import *
@@ -102,7 +103,7 @@ class ImageItem(Item):
         return o
 
     def get_pil_cropped(self):
-        return Image.open(self.path).convert('RGB').crop((self.x1, self.y1, self.x2, self.y2))
+        return Image.open(os.path.join(ctie.instance.workspace, self.path)).convert('RGB').crop((self.x1, self.y1, self.x2, self.y2))
 
     def get_cropped(self):
         bfile = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
@@ -114,7 +115,6 @@ class ImageItem(Item):
 
     def get_ocr_tempdir(self):
         rpath = "%s-%dx%dx%dx%d" % (self.hash, self.x1, self.y1, self.x2, self.y2)
-        os.chdir(ctie.instance.tempdir)
         return rpath
 
     def getExtension(self):
@@ -156,21 +156,52 @@ class ImageItem(Item):
         w, h = self.getSize()
         painter.drawPixmap(0, 0, w, h, pixmap)
 
+    def _prepare_ocr(self):
+        return tmpfile
+
     def ocr(self):
         if 'text' in self.tags:
             return
-        tempdir = self.get_ocr_tempdir()
+        tempdir = os.path.join(ctie.instance.tempdir, self.get_ocr_tempdir())
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         im = self.get_pil_cropped()
-        im.save(os.path.join(tempdir, "clip.png"))
+        tmpfile = os.path.join(tempdir, "clip.bmp")
+        im.save(tmpfile)
         del(im)
         os.chdir(tempdir)
-        subprocess.call(["tesseract", "clip.png", "out"])
-        text = open("out.txt").read().rstrip().decode("utf-8")
+
+        text = self.abbyy_ocr(tmpfile)
+
         text = ctie.instance.evalRegex(text)
         self.tags['text'] = text
         ctie.instance.addTag('text')
+
+    def tesseract_ocr(self, tmpfile):
+        subprocess.call(["tesseract", tmpfile, "out"])
+        text = open("out.txt").read().rstrip()
+        return text
+
+    def abbyy_ocr(self, tmpfile):
+        import time
+        import requests
+        from requests.auth import HTTPBasicAuth
+
+        auth = HTTPBasicAuth('xxxx', 'xxxxx')
+        xmlResponse = requests.post("https://cloud.ocrsdk.com/processImage", {"exportFormat":"txtUnstructured"}, auth=auth, files={"file":open(tmpfile, "rb")}).text
+        dom = xml.dom.minidom.parseString(xmlResponse)
+        taskNode = dom.getElementsByTagName("task")[0]
+        taskId = taskNode.getAttribute("id")
+        while True:
+            time.sleep(0.5)
+            xmlResponse = requests.get("https://cloud.ocrsdk.com/getTaskStatus", {"taskId":taskId}, auth=auth).text
+            dom = xml.dom.minidom.parseString(xmlResponse)
+            taskNode = dom.getElementsByTagName("task")[0]
+            status = taskNode.getAttribute("status")
+            if status=="Completed":
+                url = taskNode.getAttribute("resultUrl")
+                break
+        return requests.get(url).text
 
     def leftTopTrim(self):
         x1 = self.x1

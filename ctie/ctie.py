@@ -56,6 +56,8 @@ class Ctie(object):
         self.savedir = None
         self.tempdir = None
         self.bulkMode = False
+        self.ocrMode = False
+        self.collationMode = False
 
     def openProject(self, path, confirm=False):
         workspace = os.path.abspath(path)
@@ -76,7 +78,6 @@ class Ctie(object):
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
 
-        os.chdir(self.workspace)
         print("Open project at {}".format(self.workspace))
         self.ui.onProjectChanged()
         if self.hasSavedData():
@@ -137,6 +138,16 @@ class Ctie(object):
     def onItemFocused(self):
         self.ui.onItemFocused()
         self.ui.set_status("Item: %d/%d" % (self.getCurrentItemIndex()+1, len(self.items)))
+        item = self.getCurrentItem()
+        if item:
+            if self.ocrMode:
+                if self.collationMode:
+                    for child in item.children:
+                        child.ocr()
+                    self.selectChildByIndex(0)
+                else:
+                    item.ocr()
+
 
     def onSelectionChanged(self):
         self.ui.onSelectionChanged()
@@ -472,13 +483,14 @@ class Ctie(object):
         if key in self.copy_tags:
             self.copy_tags.remove(key)
 
-    def addTag(self, key):
+    def addTag(self, key, byUser=False):
         if key.startswith("_"):
             return
         if not key in self.tags:
             self.tags.append(key)
         else:
-            self.set_status('Tag "{}" already exists'.format(tag))
+            if byUser:
+                self.ui.set_status('Tag "{}" already exists'.format(key))
         self.ui.onTagChanged()
 
     def getTags(self, item = None):
@@ -591,3 +603,13 @@ class Ctie(object):
                     item.parent.children.remove(item)
                 else:
                     self.clips.remove(item)
+
+    def setOcrMode(self, enabled):
+        self.ocrMode = enabled
+        print("OcrMode:", enabled)
+        if enabled:
+            self.onItemFocused()
+
+    def setCollationMode(self, enabled):
+        self.collationMode = enabled
+        print("CollationMode:", enabled)

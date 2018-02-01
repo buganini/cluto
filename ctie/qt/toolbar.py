@@ -63,17 +63,25 @@ class Toolbar():
         self.tbOcrMode = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-bold.png")), "OCR Mode")
         self.tbCollationMode = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-edit.png")), "Collation Mode")
 
+        self.tbDisplayAreaPath.setCheckable(True)
+        self.tbOcrMode.setCheckable(True)
+        self.tbCollationMode.setCheckable(True)
+
+        self.tbOcrMode.toggled.connect(self.toggleOcrMode)
+        self.tbCollationMode.toggled.connect(self.toggleCollationMode)
 
         self.tbLoad.setEnabled(False)
         self.tbSave.setEnabled(False)
         self.tbAddFiles.setEnabled(False)
         self.tbAddFolder.setEnabled(False)
+        self.tbDelete.setEnabled(False)
 
     def onProjectChanged(self):
         self.tbLoad.setEnabled(True)
         self.tbSave.setEnabled(True)
         self.tbAddFiles.setEnabled(True)
         self.tbAddFolder.setEnabled(True)
+        self.tbDelete.setEnabled(True)
 
     def openProject(self):
         project = QFileDialog.getExistingDirectory(None, u"Select Project Folder")
@@ -109,3 +117,9 @@ class Toolbar():
 
     def deleteSelectedChildren(self):
         self.ui.core.deleteSelectedChildren()
+
+    def toggleOcrMode(self, enabled):
+        self.ui.core.setOcrMode(enabled)
+
+    def toggleCollationMode(self, enabled):
+        self.ui.core.setCollationMode(enabled)
