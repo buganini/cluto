@@ -28,6 +28,10 @@ class ItemList(QObject):
         self.scroller.ensureWidgetVisible(widget, 0, 50)
         widget.setStyleSheet("background-color:rgba(50,50,255,30);")
 
+    def onItemBlurred(self, item):
+        widget = self.uiMap[item]
+        widget.setStyleSheet("background-color:auto;")
+
     def reset(self):
         for i in reversed(range(self.listView.count())):
             self.listView.itemAt(i).widget().deleteLater()

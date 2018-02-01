@@ -574,5 +574,6 @@ class CtieUI(object):
         #         item.ocr()
 
     def onItemBlurred(self, item):
-        if not item is None and hasattr(item, "ui"):
-            item.ui.setStyleSheet("background-color:auto;");
+        if not item:
+            return
+        self.uiItemList.onItemBlurred(item)
