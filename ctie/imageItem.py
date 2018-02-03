@@ -173,8 +173,10 @@ class ImageItem(Item):
 
         text = self.tesseract_ocr(tmpfile)
 
+        self.tags['ocr_raw'] = text
         text = ctie.instance.evalRegex(text)
         self.tags['text'] = text
+        ctie.instance.addTag('ocr_raw')
         ctie.instance.addTag('text')
 
     def tesseract_ocr(self, tmpfile):
