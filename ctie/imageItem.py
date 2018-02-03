@@ -50,7 +50,7 @@ class ImageItem(Item):
     def __init__(self, **args):
         super(ImageItem, self).__init__(**args)
         if self.x2==-1 or self.y2==-1:
-            im = Image.open(self.path)
+            im = Image.open(os.path.join(ctie.instance.workspace, self.path))
             self.x2, self.y2 = im.size
             del(im)
 
@@ -86,7 +86,7 @@ class ImageItem(Item):
         except:
             o = None
         if not o:
-            o = Image.open(self.path).convert('RGB')
+            o = Image.open(os.path.join(ctie.instance.workspace, self.path)).convert('RGB')
             cache_pil_rgb[oid] = weakref.ref(o)
         return o
 
@@ -98,7 +98,7 @@ class ImageItem(Item):
         except:
             o = None
         if not o:
-            o = Image.open(self.path).convert('L')
+            o = Image.open(os.path.join(ctie.instance.workspace, self.path)).convert('L')
             cache_pil_l[oid] = weakref.ref(o)
         return o
 

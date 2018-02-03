@@ -402,7 +402,7 @@ class Ctie(object):
         for item in self.items:
             if item.children:
                 continue
-            im = Image.open(item.path).convert('L')
+            im = Image.open(os.path.join(self.workspace, item.path)).convert('L')
             paste = True
             clipboard = []
             for p in self.clipboard:
