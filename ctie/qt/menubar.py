@@ -15,6 +15,10 @@ class Menubar():
         trim.triggered.connect(self.onTrim)
         menuBatch.addAction(trim)
 
+        shrink = QAction('Shrink', self.menubar)
+        shrink.triggered.connect(self.onShrink)
+        menuBatch.addAction(shrink)
+
         autopaste = QAction('Auto Paste', self.menubar)
         autopaste.triggered.connect(self.onAutoPaste)
         menuBatch.addAction(autopaste)
@@ -29,6 +33,12 @@ class Menubar():
 
     def doTrim(self, left, top, right, bottom, margin):
         self.ui.core.batchTrim(left, top, right, bottom, margin)
+
+    def onShrink(self):
+        EdgeDialog(self.ui, "Batch Shrink", "Amount", 1, self.doShrink)
+
+    def doShrink(self, left, top, right, bottom, amount):
+        self.ui.core.batchShrink(left, top, right, bottom, amount)
 
     def onAutoPaste(self):
         self.ui.core.autoPaste()

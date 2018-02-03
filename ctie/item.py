@@ -206,5 +206,29 @@ class Item(object):
     def ocr(self):
         pass
 
-    def trim(self):
+    def trim(self, *args):
         pass
+
+    def shrink(self, left, top, right, bottom, amount=0):
+        x1 = self.x1
+        y1 = self.y1
+        x2 = self.x2
+        y2 = self.y2
+
+        if left:
+            nx1 = x1 + amount
+            x1 = min(x2-1, nx1)
+        if top:
+            ny1 = y1 + amount
+            y1 = min(y2-1, ny1)
+        if right:
+            nx2 = x2 - amount
+            x2 = max(x1, nx2)
+        if bottom:
+            ny2 = y2 - amount
+            y2 = max(y1, ny2)
+
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2

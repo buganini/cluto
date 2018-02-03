@@ -590,6 +590,13 @@ class Ctie(object):
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
+    def batchShrink(self, left, top, right, bottom, amount):
+        for item in self.items:
+            item.shrink(left, top, right, bottom, amount)
+        self.edge_limiter(self.items)
+        self.ui.onItemChanged()
+        self.ui.onItemListChanged()
+
     def edge_limiter(self, todo):
         while todo:
             delete = []

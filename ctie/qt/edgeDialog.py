@@ -12,6 +12,8 @@ class EdgeDialog(QtCore.QObject):
         self.ui.uiref["edge_dialog"] = self
         self.edgeui = uic.loadUi(os.path.join(ui.app_path, "edgeDialog.ui"))
 
+        self.edgeui.setWindowTitle(title)
+
         self.label_value_name = self.edgeui.findChild(QLabel, "label_value_name")
         self.label_value_name.setText(value_name)
 
