@@ -44,6 +44,7 @@ class Ctie(object):
         self.regex = []
         self.clips = []
         self.tags = []
+        self.filter_text = ""
         self.filter = None
         self.items = []
         self.currentLevel = -1
@@ -292,17 +293,19 @@ class Ctie(object):
             text = text2
         return text
 
-    def setFilter(self, filter):
+    def setFilter(self, filter, notify=True):
         f = CQL(filter)
         r = False
         if f or filter=="":
+            self.filter_text = filter
             self.filter = f
             r = True
-            self._genItems()
-            self.currentIndex = 0
-            self.ui.onItemListChanged()
-            self.onItemFocused()
-            self.ui.onItemChanged()
+            if notify:
+                self._genItems()
+                self.currentIndex = 0
+                self.ui.onItemListChanged()
+                self.onItemFocused()
+                self.ui.onItemChanged()
         if not r:
             self.ui.set_status('Failed parsing filter')
 
@@ -321,6 +324,9 @@ class Ctie(object):
         self.clips = data['clips']
         self.tags = data['tags']
         self.copy_tags = data['tags']
+        self.currentLevel = data.get("currentLevel", 0)
+        self.currentIndex = data.get("currentIndex", 0)
+        self.setFilter(data.get("filter", ""), notify=False)
         self._genItems()
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
@@ -333,7 +339,14 @@ class Ctie(object):
         if os.path.exists(path) and not confirm:
             self.ui.onSaveOverwriteConfirm(path)
             return
-        data = {'clips':self.clips, 'tags':self.tags, 'copy_tags':self.copy_tags, 'regex':self.regex}
+        data = {
+            'clips':self.clips,
+            'tags':self.tags,
+            'copy_tags':self.copy_tags,
+            'currentLevel':self.currentLevel,
+            'currentIndex':self.currentIndex,
+            'filter': self.filter_text
+        }
         fp = open(path, 'wb')
         pickle.dump(data, fp)
         fp.close()

@@ -536,6 +536,7 @@ class CtieUI(object):
 
     def onItemTreeChanged(self):
         self.uiLevelSelector.onItemTreeChanged()
+        self.uiItemFilter.onItemTreeChanged()
         if self.core.bulkMode:
             return
 

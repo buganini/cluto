@@ -12,7 +12,7 @@ class LevelSelector(QObject):
 
     def onItemTreeChanged(self):
         self.blocked = True
-        current = self.selector.currentIndex()
+        current = self.ui.core.currentLevel
         self.selector.clear()
         level = self.ui.core.getLevel()
         for i in range(level):

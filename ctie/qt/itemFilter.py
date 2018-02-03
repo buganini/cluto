@@ -11,13 +11,7 @@ class ItemFilter(QObject):
         self.btn_filter.clicked.connect(self.onApply)
 
     def onItemTreeChanged(self):
-        current = self.selector.currentIndex()
-        self.selector.clear()
-        level = self.ui.core.getLevel()
-        for i in range(level):
-            self.selector.addItem("{}".format(i))
-        if current >= 0 and current < level:
-            self.selector.setCurrentIndex(current)
+        self.edit_filter.setText(self.ui.core.filter_text)
 
     @pyqtSlot(bool)
     def onApply(self, checked):
