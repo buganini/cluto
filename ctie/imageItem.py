@@ -106,16 +106,12 @@ class ImageItem(Item):
         return Image.open(os.path.join(ctie.instance.workspace, self.path)).convert('RGB').crop((self.x1, self.y1, self.x2, self.y2))
 
     def get_cropped(self):
-        bfile = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d.jpg" % (self.hash, self.x1, self.y1, self.x2, self.y2))
+        bfile = os.path.join(self.getWorkdir(), "cropped-%dx%dx%dx%d.jpg" % (self.x1, self.y1, self.x2, self.y2))
         if not os.path.exists(bfile):
             im = self.get_pil_rgb().crop((self.x1, self.y1, self.x2, self.y2))
             im.save(bfile)
             del(im)
         return bfile
-
-    def get_ocr_tempdir(self):
-        rpath = "%s-%dx%dx%dx%d" % (self.hash, self.x1, self.y1, self.x2, self.y2)
-        return rpath
 
     def getExtension(self):
         return "png"
@@ -124,7 +120,7 @@ class ImageItem(Item):
         return self.get_pil_cropped()
 
     def getThumbnailPath(self, w, h):
-        path = os.path.join(ctie.instance.tempdir, "%s-%dx%dx%dx%d-thumbnail.png" % (self.hash, self.x1, self.y1, self.x2, self.y2))
+        path = os.path.join(self.getWorkdir(), "thumbnail-%dx%dx%dx%d.jpg" % (self.x1, self.y1, self.x2, self.y2))
         im = Image.open(self.get_cropped())
         self.thumbnail_size = self.getThumbnailSize(w, h)[:2]
         if not os.path.exists(path):
@@ -162,7 +158,7 @@ class ImageItem(Item):
     def ocr(self):
         if 'text' in self.tags:
             return
-        tempdir = os.path.join(ctie.instance.tempdir, self.get_ocr_tempdir())
+        tempdir = os.path.join(self.getWorkdir(), "ocr")
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         im = self.get_pil_cropped()
