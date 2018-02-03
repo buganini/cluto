@@ -151,5 +151,8 @@ class WorkArea():
     def onItemChanged(self):
         self.workArea.onItemChanged()
 
+    def onSelectionChanged(self):
+        self.workArea.update()
+
     def onContentChanged(self):
         self.workArea.update()

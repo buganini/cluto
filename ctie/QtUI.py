@@ -533,6 +533,7 @@ class CtieUI(object):
 
     def onSelectionChanged(self):
         self.uiTagManager.onSelectionChanged()
+        self.uiWorkArea.onSelectionChanged()
 
     def onItemTreeChanged(self):
         self.uiLevelSelector.onItemTreeChanged()
