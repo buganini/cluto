@@ -21,21 +21,27 @@ class TagManager():
         self.refresh_tags()
 
     def refresh_tags(self):
+        tbd = []
         for r in range(self.item_tags.rowCount()):
             for c in range(self.item_tags.columnCount()):
                 item = self.item_tags.itemAtPosition(r, c)
                 if item:
                     widget = item.widget()
                     if widget:
-                        widget.deleteLater()
+                        tbd.append(widget)
+        for widget in tbd:
+            widget.setParent(None)
 
+        tbd = []
         for r in range(self.child_tags.rowCount()):
             for c in range(self.child_tags.columnCount()):
                 item = self.child_tags.itemAtPosition(r, c)
                 if item:
                     widget = item.widget()
                     if widget:
-                        widget.deleteLater()
+                        tbd.append(widget)
+        for widget in tbd:
+            widget.setParent(None)
 
         item = self.ui.core.getCurrentItem()
         if item is None:
