@@ -299,8 +299,10 @@ class Ctie(object):
             self.filter = f
             r = True
             self._genItems()
+            self.currentIndex = 0
             self.ui.onItemListChanged()
             self.onItemFocused()
+            self.ui.onItemChanged()
         if not r:
             self.ui.set_status('Failed parsing filter')
 
