@@ -188,9 +188,6 @@ class RegexManager(QtCore.QObject):
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
 
-        header = self.regular_expression.verticalHeader()
-        header.setSectionsMovable(True)
-
         self.btn_remove_regex = self.regexui.findChild(QToolButton, "btn_remove_regex")
         self.btn_remove_regex.clicked.connect(self.onBtnRemoveRegex)
         self.btn_add_regex = self.regexui.findChild(QToolButton, "btn_add_regex")
