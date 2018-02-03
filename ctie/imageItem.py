@@ -171,7 +171,7 @@ class ImageItem(Item):
         del(im)
         os.chdir(tempdir)
 
-        text = self.abbyy_ocr(tmpfile)
+        text = self.tesseract_ocr(tmpfile)
 
         text = ctie.instance.evalRegex(text)
         self.tags['text'] = text
