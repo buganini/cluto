@@ -24,6 +24,7 @@ class Toolbar():
 
         self.tbAddFiles.triggered.connect(self.addFiles)
         self.tbAddFolder.triggered.connect(self.addFolder)
+        self.tbDelete.triggered.connect(self.deleteItem)
 
         toolBar.addSeparator()
 
@@ -112,6 +113,13 @@ class Toolbar():
         if dialog.exec_():
             for path in dialog.selectedFiles():
                 self.ui.core.addItemByPath(path)
+
+    def deleteItem(self):
+        ret = QMessageBox.question(self.ui.ui, 'Delete Item', "Are you sure to delete this item?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ret == QMessageBox.Yes:
+            item = self.ui.core.getCurrentItem()
+            if item:
+                item.remove()
 
     def copy(self):
         self.ui.core.copy()

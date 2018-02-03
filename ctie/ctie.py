@@ -263,7 +263,10 @@ class Ctie(object):
             self.clips.remove(item)
         if item in self.items:
             self.items.remove(item)
+        self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
+        self.onItemFocused()
+        self.ui.onItemChanged()
 
     def updateRegex(self, regex, tests):
         self.regex = list(regex)
