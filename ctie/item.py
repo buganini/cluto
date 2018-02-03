@@ -199,8 +199,5 @@ class Item(object):
     def ocr(self):
         pass
 
-    def leftTopTrim(self):
-        pass
-
-    def rightBottomTrim(self):
+    def trim(self):
         pass

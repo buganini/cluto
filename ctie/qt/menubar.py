@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 from .QChrootFileDirDialog import *
+from .regexManager import *
+from .edgeDialog import *
 
 class Menubar():
     def __init__(self, ui, menubar):
@@ -9,16 +11,12 @@ class Menubar():
 
         menuBatch = menubar.addMenu('&Batch')
 
-        trim_left_top = QAction('Trim Left-Top', self.menubar)
-        trim_left_top.triggered.connect(self.onTrimLeftTop)
-        menuBatch.addAction(trim_left_top)
+        trim = QAction('Trim', self.menubar)
+        trim.triggered.connect(self.onTrim)
+        menuBatch.addAction(trim)
 
-        trim_right_bottom = QAction('Trim Right-Bottom', self.menubar)
-        trim_right_bottom.triggered.connect(self.onTrimRightBottom)
-        menuBatch.addAction(trim_right_bottom)
+    def onTrim(self):
+        EdgeDialog(self.ui, "Batch Trim", self.doTrim)
 
-    def onTrimLeftTop(self):
-        self.ui.core.batchTrimLeftTop()
-
-    def onTrimRightBottom(self):
-        self.ui.core.batchTrimRightBottom()
+    def doTrim(self, left, top, right, bottom):
+        self.ui.core.batchTrim(left, top, right, bottom)
