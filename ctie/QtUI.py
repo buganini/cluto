@@ -5,6 +5,7 @@ from PyQt5 import uic
 from helpers import *
 from ctie import *
 from qt import *
+import utils
 
 class Clicked(QtCore.QObject):
     def __init__(self, action):
@@ -19,6 +20,7 @@ clear_tempdir = True
 
 class CtieUI(object):
     def __init__(self):
+        self.utils = utils
         self.core = Ctie(self)
         self.signal_mask = False
         self.focus_field = (None, None)

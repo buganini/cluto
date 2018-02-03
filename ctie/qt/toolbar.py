@@ -49,10 +49,17 @@ class Toolbar():
         self.tbDeleteSelection.triggered.connect(self.deleteSelectedChildren)
 
         toolBar.addSeparator()
+
         self.tbHorizontalSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-flip-horizontal-16.png")), "Horizontal Splitter")
         self.tbVerticalSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-flip-vertical-16.png")), "Vertical Splitter")
         self.tbTableRowSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-gravity-west-16.png")), "Table Row Splitter")
         self.tbTableColumnSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-gravity-south-16.png")), "Table Column Splitter")
+
+        toolBar.addSeparator()
+
+        self.tbItemFolder = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-cursor-c16.png")), "Open working folder of current item")
+
+        self.tbItemFolder.triggered.connect(self.itemFolder)
 
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -114,6 +121,12 @@ class Toolbar():
 
     def deleteSelectedChildren(self):
         self.ui.core.deleteSelectedChildren()
+
+    def itemFolder(self):
+        item = self.ui.core.getCurrentItem()
+        if item is None:
+            return
+        self.ui.utils.open_path(item.getWorkdir())
 
     def toggleOcrMode(self, enabled):
         self.ui.core.setOcrMode(enabled)
