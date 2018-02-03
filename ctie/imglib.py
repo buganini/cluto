@@ -23,9 +23,9 @@
  SUCH DAMAGE.
 """
 default_threshold = 30
-default_padding = 5
+default_margin = 5
 
-def leftTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_padding):
+def leftTrim(im, x1, y1, x2, y2, margin=default_margin, threshold=default_threshold):
 	stop=False
 	for a in range(x1,x2):
 		last=im.getpixel((a,y1))
@@ -37,10 +37,10 @@ def leftTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_pa
 			last=c
 		if stop:
 			break
-	nx1=a-padding
+	nx1=a-margin
 	return max(nx1,x1)
 
-def rightTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_padding):
+def rightTrim(im, x1, y1, x2, y2, margin=default_margin, threshold=default_threshold):
 	stop=False
 	for a in range(x2,x1,-1):
 		last=im.getpixel((a-1,y1))
@@ -52,10 +52,10 @@ def rightTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_p
 			last=c
 		if stop:
 			break
-	nx2=a+padding
+	nx2=a+margin
 	return min(nx2, x2)
 
-def topTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_padding):
+def topTrim(im, x1, y1, x2, y2, margin=default_margin, threshold=default_threshold):
 	stop=False
 	for a in range(y1,y2):
 		last=im.getpixel((x1,a))
@@ -67,10 +67,10 @@ def topTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_pad
 			last=c
 		if stop:
 			break
-	ny1=a-padding
+	ny1=a-margin
 	return max(ny1,y1)
 
-def bottomTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_padding):
+def bottomTrim(im, x1, y1, x2, y2, margin=default_margin, threshold=default_threshold):
 	stop=False
 	for a in range(y2,y1,-1):
 		last=im.getpixel((x1,a-1))
@@ -82,5 +82,5 @@ def bottomTrim(im, x1, y1, x2, y2, threshold=default_threshold, padding=default_
 			last=c
 		if stop:
 			break
-	ny2=a+padding
+	ny2=a+margin
 	return min(ny2, y2)

@@ -561,9 +561,9 @@ class Ctie(object):
         self.selections = range(0,len(item.children))
         self.onSelectionChanged()
 
-    def batchTrim(self, left, top, right, bottom):
+    def batchTrim(self, left, top, right, bottom, margin):
         for item in self.items:
-            item.trim(left, top, right, bottom)
+            item.trim(left, top, right, bottom, margin)
         self.edge_limiter(self.items)
         self.ui.onItemChanged()
         self.ui.onItemListChanged()

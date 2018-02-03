@@ -203,7 +203,7 @@ class ImageItem(Item):
                 break
         return requests.get(url).text
 
-    def trim(self, left, top, right, bottom):
+    def trim(self, left, top, right, bottom, margin=0):
         x1 = self.x1
         y1 = self.y1
         x2 = self.x2
@@ -211,13 +211,13 @@ class ImageItem(Item):
         im = self.get_pil_l()
 
         if left:
-            x1 = imglib.leftTrim(im, x1, y1, x2, y2)
+            x1 = imglib.leftTrim(im, x1, y1, x2, y2, margin)
         if top:
-            y1 = imglib.topTrim(im, x1, y1, x2, y2)
+            y1 = imglib.topTrim(im, x1, y1, x2, y2, margin)
         if right:
-            x2 = imglib.rightTrim(im, x1, y1, x2, y2)
+            x2 = imglib.rightTrim(im, x1, y1, x2, y2, margin)
         if bottom:
-            y2 = imglib.bottomTrim(im, x1, y1, x2, y2)
+            y2 = imglib.bottomTrim(im, x1, y1, x2, y2, margin)
 
         self.x1 = x1
         self.y1 = y1

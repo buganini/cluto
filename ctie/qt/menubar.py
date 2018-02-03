@@ -16,7 +16,7 @@ class Menubar():
         menuBatch.addAction(trim)
 
     def onTrim(self):
-        EdgeDialog(self.ui, "Batch Trim", self.doTrim)
+        EdgeDialog(self.ui, "Batch Trim", "Margin", 5, self.doTrim)
 
-    def doTrim(self, left, top, right, bottom):
-        self.ui.core.batchTrim(left, top, right, bottom)
+    def doTrim(self, left, top, right, bottom, margin):
+        self.ui.core.batchTrim(left, top, right, bottom, margin)
