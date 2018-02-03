@@ -136,10 +136,10 @@ class Ctie(object):
         self.onSelectionChanged()
 
     def onItemFocused(self):
-        self.ui.onItemFocused()
-        self.ui.set_status("Item: %d/%d" % (self.getCurrentItemIndex()+1, len(self.items)))
         item = self.getCurrentItem()
         if item:
+            self.ui.onItemFocused()
+            self.ui.set_status("Item: %d/%d" % (self.getCurrentItemIndex()+1, len(self.items)))
             if self.ocrMode:
                 if self.collationMode:
                     for child in item.children:
