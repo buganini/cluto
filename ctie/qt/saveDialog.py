@@ -80,7 +80,7 @@ class SaveDialog(QtCore.QObject):
     @QtCore.pyqtSlot()
     def onAccepted(self):
         fn = self.edit_save.text()
-        self.ui.core.save(os.path.join(self.ui.core.savedir, fn))
+        self.ui.core.save(fn)
         self.close()
 
     @QtCore.pyqtSlot()

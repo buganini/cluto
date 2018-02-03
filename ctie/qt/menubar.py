@@ -19,6 +19,11 @@ class Menubar():
         autopaste.triggered.connect(self.onAutoPaste)
         menuBatch.addAction(autopaste)
 
+        menuOCR = menubar.addMenu('&OCR')
+        regex = QAction('Regular Expression', self.menubar)
+        regex.triggered.connect(self.onRegex)
+        menuOCR.addAction(regex)
+
     def onTrim(self):
         EdgeDialog(self.ui, "Batch Trim", "Margin", 5, self.doTrim)
 
@@ -27,3 +32,6 @@ class Menubar():
 
     def onAutoPaste(self):
         self.ui.core.autoPaste()
+
+    def onRegex(self):
+        RegexManager(self.ui)

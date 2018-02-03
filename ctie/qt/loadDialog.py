@@ -68,7 +68,7 @@ class LoadDialog(QtCore.QObject):
     @QtCore.pyqtSlot()
     def accepted(self):
         fn = self.model.data[self.table.selectionModel().selectedRows()[0].row()]
-        self.ui.core.load(os.path.join(self.ui.core.savedir, fn))
+        self.ui.core.load(fn)
         self.close()
 
     @QtCore.pyqtSlot()

@@ -1,6 +1,7 @@
 from .keyBinding import *
 from .loadDialog import *
 from .saveDialog import *
+from .regexManager import *
 from .menubar import *
 from .toolbar import *
 from .itemList import *

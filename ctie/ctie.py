@@ -70,6 +70,8 @@ class Ctie(object):
         if not os.path.exists(self.storage):
             os.makedirs(self.storage)
 
+        self.regex_path = os.path.join(self.storage, "regex")
+
         self.savedir = os.path.join(self.storage, "save")
         if not os.path.exists(self.savedir):
             os.makedirs(self.savedir)
@@ -77,6 +79,15 @@ class Ctie(object):
         self.tempdir = os.path.join(self.storage, "tmp")
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
+
+        try:
+            with open(self.regex_path,'rb') as fp:
+                data = pickle.load(fp)
+                self.regex = data["regex"]
+                self.tests = data["tests"]
+        except:
+            self.regex = []
+            self.tests = []
 
         print("Open project at {}".format(self.workspace))
         self.ui.onProjectChanged()
@@ -253,6 +264,13 @@ class Ctie(object):
             self.items.remove(item)
         self.ui.onItemTreeChanged()
 
+    def updateRegex(self, regex, tests):
+        self.regex = list(regex)
+        self.tests = list(tests)
+        with open(self.regex_path, 'wb') as fp:
+            pickle.dump({"regex": self.regex, "tests":self.tests}, fp)
+        print("Save regex to {}".format(self.regex_path))
+
     def getRegex(self):
         l = []
         for r in self.regex:
@@ -290,16 +308,17 @@ class Ctie(object):
         return bool(os.listdir(self.savedir))
 
     def load(self, path):
+        path = os.path.join(self.savedir, path)
         fp = open(path,'rb')
         try:
             data = pickle.load(fp)
-            fp.close()
         except:
             return False
+        finally:
+            fp.close()
         self.clips = data['clips']
         self.tags = data['tags']
         self.copy_tags = data['tags']
-        self.regex = data['regex']
         self._genItems()
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
@@ -308,6 +327,7 @@ class Ctie(object):
         return True
 
     def save(self, path, confirm=False):
+        path = os.path.join(self.savedir, path)
         if os.path.exists(path) and not confirm:
             self.ui.onSaveOverwriteConfirm(path)
             return
