@@ -3,6 +3,7 @@ from PyQt5 import QtGui
 from .QChrootFileDirDialog import *
 from .regexManager import *
 from .edgeDialog import *
+from .setTagDialog import *
 
 class Menubar():
     def __init__(self, ui, menubar):
@@ -23,6 +24,10 @@ class Menubar():
         autopaste.triggered.connect(self.onAutoPaste)
         menuBatch.addAction(autopaste)
 
+        settag = QAction('Set Tag', self.menubar)
+        settag.triggered.connect(self.onSetTag)
+        menuBatch.addAction(settag)
+
         menuOCR = menubar.addMenu('&OCR')
         regex = QAction('Regular Expression', self.menubar)
         regex.triggered.connect(self.onRegex)
@@ -42,6 +47,9 @@ class Menubar():
 
     def onAutoPaste(self):
         self.ui.core.autoPaste()
+
+    def onSetTag(self):
+        SetTagDialog(self.ui)
 
     def onRegex(self):
         RegexManager(self.ui)
