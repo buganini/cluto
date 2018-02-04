@@ -31,6 +31,7 @@ class TagManager():
                         tbd.append(widget)
         for widget in tbd:
             widget.setParent(None)
+            widget.deleteLater()
 
         tbd = []
         for r in range(self.child_tags.rowCount()):
@@ -42,6 +43,7 @@ class TagManager():
                         tbd.append(widget)
         for widget in tbd:
             widget.setParent(None)
+            widget.deleteLater()
 
         item = self.ui.core.getCurrentItem()
         if item is None:
@@ -52,9 +54,9 @@ class TagManager():
             label = QLabel()
             label.setText(tag)
 
-            edit = QLineEdit()
-            edit.textChanged.connect(partial(self.set_tag, item, tag))
-            edit.setText(item.getTag(tag))
+            edit = QPlainTextEdit()
+            edit.setPlainText(item.getTag(tag))
+            edit.textChanged.connect(partial(self.set_tag, item, tag, edit))
 
             self.item_tags.addWidget(label, r, 0)
             self.item_tags.addWidget(edit, r, 1)
@@ -70,9 +72,9 @@ class TagManager():
                 label = QLabel()
                 label.setText(tag)
 
-                edit = QLineEdit()
-                edit.textChanged.connect(partial(self.set_tag, child, tag))
-                edit.setText(child.getTag(tag))
+                edit = QPlainTextEdit()
+                edit.setPlainText(child.getTag(tag))
+                edit.textChanged.connect(partial(self.set_tag, child, edit))
 
                 self.child_tags.addWidget(label, r, 0)
                 self.child_tags.addWidget(edit, r, 1)
@@ -81,7 +83,8 @@ class TagManager():
             self.panel_child_tags.setVisible(False)
 
 
-    def set_tag(self, item, tag, value):
+    def set_tag(self, item, tag, edit):
+        value = edit.toPlainText()
         item.setTag(tag, value)
 
     def add_tag(self):

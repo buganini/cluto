@@ -127,14 +127,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QTextEdit" name="collationEditor">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
+          <widget class="QPlainTextEdit" name="plainTextEdit"/>
          </item>
         </layout>
        </widget>
@@ -185,7 +178,7 @@
              <x>0</x>
              <y>0</y>
              <width>237</width>
-             <height>96</height>
+             <height>112</height>
             </rect>
            </property>
            <property name="sizePolicy">
