@@ -252,6 +252,11 @@ class CQL(object):
 					s = rval[0]
 				a = [x.encode("utf-8") if type(x)==unicode else x for x in rval[1]]
 				return s.join(a)
+			elif t=='COALESCE':
+				for i in rval:
+					if i:
+						return i
+				return ""
 			elif t=='BASENAME':
 				return os.path.basename(rval)
 			elif t=='DIRNAME':
