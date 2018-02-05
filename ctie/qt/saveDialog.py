@@ -51,7 +51,6 @@ class SaveDialog(QtCore.QObject):
         self.table.selectionModel().clearSelection()
         self.table.selectionModel().selectionChanged.connect(self.onSelectionChanged)
 
-
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)

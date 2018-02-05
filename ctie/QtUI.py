@@ -73,7 +73,7 @@ class CtieUI():
         sys.exit(app.exec_())
 
     def openProject(self):
-        project = QFileDialog.getExistingDirectory(None, u"Select Project Folder")
+        project = QFileDialog.getExistingDirectory(self.ui, u"Select Project Folder")
         if project:
             self.core.openProject(project)
 

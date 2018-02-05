@@ -62,7 +62,6 @@ class LoadDialog(QtCore.QObject):
         self.buttons.accepted.connect(self.accepted)
         self.buttons.rejected.connect(self.rejected)
 
-
         self.loadui.show()
 
     @QtCore.pyqtSlot()
