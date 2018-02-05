@@ -92,9 +92,7 @@ class Toolbar():
         self.tbDelete.setEnabled(True)
 
     def openProject(self):
-        project = QFileDialog.getExistingDirectory(None, u"Select Project Folder")
-        if project:
-            self.ui.core.openProject(project)
+        self.ui.openProject()
 
     def load(self):
         self.ui.load()

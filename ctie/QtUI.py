@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt5.QtWidgets import *
-from PyQt5 import uic
+from PyQt5 import uic, QtCore
 from helpers import *
 from ctie import *
 from qt import *
@@ -18,7 +18,7 @@ class Clicked(QtCore.QObject):
 
 clear_tempdir = True
 
-class CtieUI(object):
+class CtieUI():
     def __init__(self):
         self.utils = utils
         self.core = Ctie(self)
@@ -66,7 +66,17 @@ class CtieUI(object):
         self.uiCollcationSplitter = ui.findChild(QSplitter, "collationSplitter")
         self.uiCollcationSplitter.setSizes([1, 0])
         self.uiCollcationSplitter.handle(1).setEnabled(False)
+
+        timer = QtCore.QTimer(app)
+        timer.singleShot(1, self.openProject)
+
         sys.exit(app.exec_())
+
+    def openProject(self):
+        project = QFileDialog.getExistingDirectory(None, u"Select Project Folder")
+        if project:
+            self.core.openProject(project)
+
 
     def onProjectInitConfirm(self, path):
         ret = QMessageBox.question(self.ui, 'New Project', "Selected folder is not a ctie project folder, configure it as a project?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
