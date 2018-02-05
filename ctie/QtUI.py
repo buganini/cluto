@@ -77,7 +77,6 @@ class CtieUI():
         if project:
             self.core.openProject(project)
 
-
     def onProjectInitConfirm(self, path):
         ret = QMessageBox.question(self.ui, 'New Project', "Selected folder is not a ctie project folder, configure it as a project?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ret == QMessageBox.Yes:

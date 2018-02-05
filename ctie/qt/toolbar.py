@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 from .QChrootFileDirDialog import *
+from .exportDialog import *
 
 class Toolbar():
     def __init__(self, ui, toolBar):
@@ -58,8 +59,10 @@ class Toolbar():
 
         toolBar.addSeparator()
 
+        self.tbExport = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-color-triangle-16.png")), "Export")
         self.tbItemFolder = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-cursor-c16.png")), "Open working folder of current item")
 
+        self.tbExport.triggered.connect(self.export)
         self.tbItemFolder.triggered.connect(self.itemFolder)
 
         spacer = QWidget()
@@ -127,6 +130,9 @@ class Toolbar():
 
     def deleteSelectedChildren(self):
         self.ui.core.deleteSelectedChildren()
+
+    def export(self):
+        ExportDialog(self.ui)
 
     def itemFolder(self):
         item = self.ui.core.getCurrentItem()

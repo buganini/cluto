@@ -41,6 +41,7 @@ class Ctie(object):
         global instance
         instance = self
         self.ui = ui
+        self.exports = []
         self.regex = []
         self.clips = []
         self.tags = []
@@ -72,6 +73,7 @@ class Ctie(object):
             os.makedirs(self.storage)
 
         self.regex_path = os.path.join(self.storage, "regex")
+        self.exports_path = os.path.join(self.storage, "export")
 
         self.savedir = os.path.join(self.storage, "save")
         if not os.path.exists(self.savedir):
@@ -89,6 +91,12 @@ class Ctie(object):
         except:
             self.regex = []
             self.tests = []
+
+        try:
+            with open(self.exports_path,'rb') as fp:
+                self.exports = pickle.load(fp)
+        except:
+            self.exports = []
 
         print("Open project at {}".format(self.workspace))
         self.ui.onProjectChanged()
@@ -268,6 +276,12 @@ class Ctie(object):
         self.onItemFocused()
         self.ui.onItemChanged()
 
+    def updateExports(self, exports):
+        self.exports = list(exports)
+        with open(self.exports_path, 'wb') as fp:
+            pickle.dump(self.exports, fp)
+        print("Save exports to {}".format(self.exports_path))
+
     def updateRegex(self, regex, tests):
         self.regex = list(regex)
         self.tests = list(tests)
@@ -355,12 +369,15 @@ class Ctie(object):
         fp.close()
         print("Save to {}".format(path))
 
-    def export(self, export_filter, export_content, export_path, outputdir):
+    def export(self, filter, outputdir, filename, content):
+        filter = CQL(filter)
+        filename = CQL(filename)
+        content = CQL(content)
         todo = self.clips
         while todo:
             newtodo = []
             for item in todo:
-                if export_filter.eval(item):
+                if filter.eval(item):
                     t = item
                     tags = {}
                     while t:
@@ -372,14 +389,14 @@ class Ctie(object):
                         if key not in tags:
                             tags[key] = ""
 
-                    path = export_path.eval(item)
+                    path = filename.eval(item)
                     path = os.path.join(outputdir, path)
                     pdir = os.path.dirname(path)
                     if not os.path.exists(pdir):
                         os.makedirs(pdir)
                     if os.path.exists(path):
                         print("Exists:", path)
-                    cnt = export_content.eval(item)
+                    cnt = content.eval(item)
                     if hasattr(cnt, "save"):
                         cnt.save(path)
                     else:
