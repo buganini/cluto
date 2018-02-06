@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 from .QChrootFileDirDialog import *
+from .copySettingsDialog import *
 from .exportDialog import *
 
 class Toolbar():
@@ -38,10 +39,11 @@ class Toolbar():
         toolBar.addSeparator()
 
         self.tbCopy = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-duplicate-16.png")), "Copy")
-        self.tbCopySetting = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-preferences.png")), "Copy Setting")
+        self.tbCopySettings = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-preferences.png")), "Copy Settings")
         self.tbPaste = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-paste.png")), "Paste")
 
         self.tbCopy.triggered.connect(self.copy)
+        self.tbCopySettings.triggered.connect(self.copy_settings)
         self.tbPaste.triggered.connect(self.paste)
 
         toolBar.addSeparator()
@@ -131,6 +133,9 @@ class Toolbar():
 
     def copy(self):
         self.ui.core.copy()
+
+    def copy_settings(self):
+        CopySettingsDialog(self.ui)
 
     def paste(self):
         self.ui.core.paste()

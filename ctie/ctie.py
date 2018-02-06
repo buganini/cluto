@@ -530,6 +530,9 @@ class Ctie(object):
         self.ui.onItemTreeChanged()
         self.ui.onContentChanged()
 
+    def updateCopyTags(self, tags):
+        self.copy_tags = tags
+
     def enableCopyTag(self, key):
         if key in self.tags and key not in self.copy_tags:
             self.copy_tags.append(key)
