@@ -152,6 +152,25 @@ class ImageItem(Item):
         w, h = self.getSize()
         painter.drawPixmap(0, 0, w, h, pixmap)
 
+    def autoPaste(self, clipboard):
+        im = self.get_pil_l()
+        todo = []
+        for p in clipboard:
+            x1 = p['x1']
+            y1 = p['y1']
+            x2 = p['x2']
+            y2 = p['y2']
+            x1 = max(x1, 0)
+            y1 = max(y1, 0)
+            x2 = min(x2, self.x2-self.x1)
+            y2 = min(y2, self.y2-self.y1)
+
+            if imglib.autoPasteCheck(im, self.x1, self.y1, self.x2, self.y2, x1, y1, x2, y2):
+                todo.append({'x1':x1, 'y1':y1, 'x2':x2, 'y2':y2, 'tags':p['tags']})
+        for p in todo:
+            if x2-x1>1 and y2-y1>1:
+                self.addChild(x1 = p['x1']+self.x1, y1 = p['y1']+self.y1, x2 = p['x2']+self.x1, y2 = p['y2']+self.y1, tags = p['tags'])
+
     def _prepare_ocr(self):
         return tmpfile
 

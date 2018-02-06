@@ -448,7 +448,6 @@ class Ctie(object):
         self.ui.onContentChanged()
 
     def autoPaste(self):
-        threshold = 30
         if not self.clipboard:
             return
         item = self.getCurrentItem()
@@ -457,65 +456,7 @@ class Ctie(object):
         for item in self.items:
             if item.children:
                 continue
-            im = Image.open(os.path.join(self.workspace, item.path)).convert('L')
-            paste = True
-            clipboard = []
-            for p in self.clipboard:
-                x1 = p['x1']
-                y1 = p['y1']
-                x2 = p['x2']
-                y2 = p['y2']
-                x1 = max(x1, 0)
-                y1 = max(y1, 0)
-                x2 = min(x2, item.x2-item.x1)
-                y2 = min(y2, item.y2-item.y1)
-
-                lastpixel = im.getpixel((x1+item.x1, y1+item.y1))
-                if y1!=0:
-                    y = y1+item.y1
-                    for x in range(x1+item.x1+1, x2+item.x1-1):
-                        pixel = im.getpixel((x,y))
-                        if abs(pixel-lastpixel)>threshold:
-                            paste = False
-                            break
-                        lastpixel = pixel
-                    if not paste:
-                        break
-                if x2!=item.x2-item.x1:
-                    x = x2+item.x1-1
-                    for y in range(y1+item.y1+1,y2+item.y1-1):
-                        pixel = im.getpixel((x,y))
-                        if abs(pixel-lastpixel)>threshold:
-                            paste = False
-                            break
-                        lastpixel = pixel
-                    if not paste:
-                        break
-                if y2!=item.y2-item.y1:
-                    y = y2+item.y1-1
-                    for x in range(x1+item.x1+1,x2+item.x1):
-                        pixel = im.getpixel((x,y))
-                        if abs(pixel-lastpixel)>threshold:
-                            paste = False
-                            break
-                        lastpixel = pixel
-                    if not paste:
-                        break
-                if x1!=0:
-                    x = x1+item.x1
-                    for y in range(y1+item.y1+1,y2+item.y1):
-                        pixel = im.getpixel((x,y))
-                        if abs(pixel-lastpixel)>threshold:
-                            paste = False
-                            break
-                        lastpixel = pixel
-                    if not paste:
-                        break
-                clipboard.append({'x1':x1, 'y1':y1, 'x2':x2, 'y2':y2, 'tags':p['tags']})
-            del(im)
-            for p in clipboard:
-                if x2-x1>1 and y2-y1>1:
-                    item.addChild(x1 = p['x1']+item.x1, y1 = p['y1']+item.y1, x2 = p['x2']+item.x1, y2 = p['y2']+item.y1, tags = p['tags'])
+            item.autoPaste(self.clipboard)
         self.ui.onContentChanged()
 
     def deleteSelectedChildren(self):

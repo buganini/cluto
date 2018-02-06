@@ -203,6 +203,9 @@ class Item(object):
                 r.append(c)
         return r
 
+    def autoPaste(self):
+        pass
+
     def ocr(self):
         pass
 
