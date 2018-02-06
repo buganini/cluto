@@ -5,8 +5,9 @@ from PyQt5.QtWidgets import *
 
 class WorkArea():
     class QWorkArea(QWidget):
-        def __init__(self):
+        def __init__(self, scrollArea):
             QWidget.__init__(self)
+            self.scrollArea = scrollArea
             self.scale = 1
             self.item = None
             self.selstart = (None, None)
@@ -134,6 +135,16 @@ class WorkArea():
         def resizeEvent(self, event):
             pass
 
+        def zoomActual(self):
+            self.scale = 1
+            self.updateGeometry()
+
+        def zoomFit(self):
+            xscale = self.scrollArea.viewport().width() / self.w
+            yscale = self.scrollArea.viewport().height() / self.h
+            self.scale = min(xscale, yscale)
+            self.updateGeometry()
+
         def onItemChanged(self):
             self.item = self.ui.core.getCurrentItem()
             if not self.item:
@@ -144,9 +155,15 @@ class WorkArea():
     def __init__(self, ui, workAreaScroller):
         self.ui = ui
         self.workAreaScroller = workAreaScroller
-        self.workArea = self.QWorkArea()
+        self.workArea = self.QWorkArea(self.workAreaScroller)
         self.workArea.ui = ui
         self.workAreaScroller.setWidget(self.workArea)
+
+    def zoomActual(self):
+        self.workArea.zoomActual()
+
+    def zoomFit(self):
+        self.workArea.zoomFit()
 
     def onItemChanged(self):
         self.workArea.onItemChanged()

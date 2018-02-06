@@ -29,10 +29,11 @@ class Toolbar():
 
         toolBar.addSeparator()
 
-        self.tbZoomIn = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-zoom-in.png")), "Zoom In")
-        self.tbZoomOut = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-zoom-out.png")), "Zoom Out")
         self.tbZoomActual = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-zoom-100.png")), "Zoom 100%")
         self.tbZoomFit = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-zoom-fit.png")), "Zoom Fit")
+
+        self.tbZoomActual.triggered.connect(self.zoomActual)
+        self.tbZoomFit.triggered.connect(self.zoomFit)
 
         toolBar.addSeparator()
 
@@ -121,6 +122,12 @@ class Toolbar():
             item = self.ui.core.getCurrentItem()
             if item:
                 item.remove()
+
+    def zoomActual(self):
+        self.ui.zoomActual()
+
+    def zoomFit(self):
+        self.ui.zoomFit()
 
     def copy(self):
         self.ui.core.copy()

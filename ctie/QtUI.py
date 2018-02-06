@@ -91,6 +91,12 @@ class CtieUI():
     def set_status(self, s):
         self.uiStatusBar.showMessage(s)
 
+    def zoomActual(self):
+        self.uiWorkArea.zoomActual()
+
+    def zoomFit(self):
+        self.uiWorkArea.zoomFit()
+
     def edit_regex(self, *arg):
         self.builder.get_object("regex").get_buffer().set_text(self.core.getRegex())
         self.builder.get_object("regex_window").show()
