@@ -1,7 +1,11 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 class QTagEdit(QPlainTextEdit):
+    focusIn = pyqtSignal()
+    focusOut = pyqtSignal()
+
     def __init__(self):
         QPlainTextEdit.__init__(self)
         font = QtGui.QFont("Consolas")
@@ -10,6 +14,14 @@ class QTagEdit(QPlainTextEdit):
         self.setFont(font)
 
         self.textChanged.connect(self.onTextChanged)
+
+    def focusInEvent(self, event):
+        QPlainTextEdit.focusInEvent(self, event)
+        self.focusIn.emit()
+
+    def focusOutEvent(self, event):
+        QPlainTextEdit.focusOutEvent(self, event)
+        self.focusOut.emit()
 
     def setPlainText(self, text):
         QPlainTextEdit.setPlainText(self, text)

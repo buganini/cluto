@@ -11,6 +11,7 @@ class TagManager():
         self.panel_child_tags = panel_child_tags
         self.item_tags = item_tags
         self.child_tags = child_tags
+        self.focus = None
         btn_new_tag.clicked.connect(self.add_tag)
 
     def onItemChanged(self):
@@ -63,6 +64,10 @@ class TagManager():
 
             self.item_tags.addWidget(label, r, 0)
             self.item_tags.addWidget(edit, r, 1)
+
+            if self.focus == tag:
+                edit.setFocus()
+            edit.focusIn.connect(partial(self.focusIn, tag))
             r += 1
 
         if len(self.ui.core.selections)==1:
@@ -94,3 +99,6 @@ class TagManager():
     def add_tag(self):
         tag = self.edit_new_tag.text()
         self.ui.core.addTag(tag, byUser=True)
+
+    def focusIn(self, tag):
+        self.focus = tag
