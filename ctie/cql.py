@@ -25,6 +25,7 @@
 
 import os
 import re
+import json
 
 class CQL(object):
 	def __init__(self, i):
@@ -140,7 +141,7 @@ class CQL(object):
 		if re.match('^\d+$',t):
 			return int(t)
 		if (t[0]==t[-1] and t[0] in ("'", '"')):
-			return eval(t)
+			return json.loads(t)
 		if (len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}'):
 			key = t[2:-1]
 			if t[0]=='$':
