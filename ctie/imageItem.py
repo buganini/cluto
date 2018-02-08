@@ -118,6 +118,9 @@ class ImageItem(Item):
     def getContent(self):
         return self.get_pil_cropped()
 
+    def prepare(self):
+        self.get_cropped()
+
     def drawQT(self, painter):
         pixmap = QtGui.QPixmap(self.get_cropped())
         w, h = self.getSize()

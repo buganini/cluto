@@ -81,6 +81,9 @@ class Item(object):
     def getSize(self):
         return self.x2-self.x1, self.y2-self.y1
 
+    def prepare(self):
+        pass
+
     def draw(self, widget, cr):
         pass
 
@@ -123,8 +126,11 @@ class Item(object):
 
     def addChild(self, **arg):
         k = self.__class__
-        self.children.append(k(parent = self, **arg))
+        child = k(parent = self, **arg)
+        self.children.append(child)
         ctie.instance.ui.onItemTreeChanged()
+        ctie.instance.worker.addItem(child)
+        return child
 
     def removeChild(self, child):
         self.children.remove(child)

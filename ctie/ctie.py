@@ -34,6 +34,8 @@ from pdfItem import *
 from cql import *
 from helpers import *
 
+from worker import WorkerDispatcher
+
 instance = None
 
 class Ctie(object):
@@ -60,6 +62,7 @@ class Ctie(object):
         self.bulkMode = False
         self.ocrMode = False
         self.collationMode = False
+        self.worker = WorkerDispatcher(self)
 
     def openProject(self, path, confirm=False):
         workspace = os.path.abspath(path)
@@ -350,6 +353,9 @@ class Ctie(object):
         self.ui.onItemChanged()
         self.ui.zoomFit()
         print("Load from {}".format(path))
+        self.worker.reset()
+        for i in self.clips:
+            self.worker.addItem(i)
         return True
 
     def save(self, path, confirm=False):

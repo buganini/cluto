@@ -61,7 +61,9 @@ class CtieUI():
         timer = QtCore.QTimer(app)
         timer.singleShot(1, self.openProject)
 
-        sys.exit(app.exec_())
+        r = app.exec_()
+        self.core.worker.stop()
+        sys.exit(r)
 
     def openProject(self):
         project = QFileDialog.getExistingDirectory(self.ui, u"Select Project Folder")
