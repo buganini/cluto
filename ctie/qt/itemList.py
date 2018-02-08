@@ -2,6 +2,7 @@ import os
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import *
+from .QThumbnail import QThumbnail
 
 class ItemList(QObject):
     class QClickableWidget(QWidget):
@@ -43,10 +44,8 @@ class ItemList(QObject):
             layout = QVBoxLayout()
             layout.setSpacing(0)
 
-            img = QLabel()
+            img = QThumbnail(item)
             img.setStyleSheet("padding: 10px;")
-            img.setAlignment(QtCore.Qt.AlignCenter)
-            item.drawThumbnailQT(img, 300, 200)
             layout.addWidget(img)
 
             label = QLabel()
