@@ -454,8 +454,12 @@ class Ctie(object):
         item = self.getCurrentItem()
         if item is None:
             return
+        total = len(self.items)
+        done = 0
         for item in self.items:
             item.batchPaste(self.clipboard, chk_empty, chk_overlap, chk_overlap_aon, chk_boundary, chk_boundary_aon)
+            done += 1
+            print("{}/{}".format(done, total))
         self.ui.onContentChanged()
 
     def autoPaste(self):
@@ -571,8 +575,12 @@ class Ctie(object):
         self.onSelectionChanged()
 
     def batchTrim(self, left, top, right, bottom, margin):
+        total = len(self.items)
+        done = 0
         for item in self.items:
             item.trim(left, top, right, bottom, margin)
+            done += 1
+            print("{}/{}".format(done, total))
         self.edge_limiter(self.items)
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
