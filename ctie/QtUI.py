@@ -134,17 +134,6 @@ class CtieUI():
         else:
             self.core.disableCopyTag(key)
 
-    def copy(self, *arg):
-        self.core.copy()
-
-    def paste(self, *arg):
-        self.core.paste()
-        self.canvas.queue_draw()
-
-    def autopaste(self, *arg):
-        self.core.autoPaste()
-        self.canvas.queue_draw()
-
     def delete(self, *arg):
         self.core.deleteSelectedChildren()
 

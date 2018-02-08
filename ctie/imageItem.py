@@ -118,22 +118,6 @@ class ImageItem(Item):
     def getContent(self):
         return self.get_pil_cropped()
 
-    def getThumbnailPath(self, w, h):
-        path = os.path.join(self.getWorkdir(), "thumbnail-%dx%dx%dx%d.jpg" % (self.x1, self.y1, self.x2, self.y2))
-        im = Image.open(self.get_cropped())
-        self.thumbnail_size = self.getThumbnailSize(w, h)[:2]
-        if not os.path.exists(path):
-            if self.thumbnail_size[0]<im.size[0] and self.thumbnail_size[1]<im.size[1]:
-                im.thumbnail(self.thumbnail_size)
-            else:
-                im = im.resize(self.thumbnail_size)
-            im.save(path)
-        del(im)
-        return path
-
-    def drawThumbnailQT(self, widget, w, h):
-        widget.setPixmap(QtGui.QPixmap(self.getThumbnailPath(w, h)))
-
     def drawQT(self, painter):
         pixmap = QtGui.QPixmap(self.get_cropped())
         w, h = self.getSize()

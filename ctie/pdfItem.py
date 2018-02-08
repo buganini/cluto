@@ -103,27 +103,6 @@ class PdfItem(BaseItem):
         else:
             return None
 
-    def drawThumbnail(self, widget, cr):
-        cw = widget.get_allocated_width()
-        ch = widget.get_allocated_height()
-        sw, sh, factor = self.getThumbnailSize(cw, ch)
-        pw, ph =self.getPdfPage().get_size()
-        pw = int(pw*factor)
-        ph = int(ph*factor)
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, pw, ph)
-        ctx = cairo.Context(surface)
-        ctx.scale(factor, factor)
-        self.getPdfPage().render(ctx)
-        ctx.scale(1/factor, 1/factor)
-        pb = Gdk.pixbuf_get_from_surface(ctx.get_target(), 0, 0, pw, ph)
-        xo, yo = (cw-sw)/2, (ch-sh)/2
-        cr.set_source_rgba(255,255,255,255)
-        cr.rectangle(xo, yo, sw, sh)
-        cr.fill()
-        cr.rectangle(xo, yo, sw, sh)
-        Gdk.cairo_set_source_pixbuf(cr, pb, xo-self.x1*factor, yo-self.y1*factor)
-        cr.fill()
-
     def drawThumbnailQT(self, widget, w, h):
         sw, sh, factor = self.getThumbnailSize(w, h)
         page = self.getPdfPageQT()

@@ -81,28 +81,10 @@ class Item(object):
     def getSize(self):
         return self.x2-self.x1, self.y2-self.y1
 
-    def getThumbnailSize(self, cw, ch):
-        w = self.x2-self.x1
-        h = self.y2-self.y1
-        wf = cw/w
-        hf = ch/h
-        if wf < hf:
-            sw = cw
-            sh = h*wf
-            factor = wf
-        else:
-            sw = w*hf
-            sh = ch
-            factor = hf
-        return int(sw), int(sh), factor
-
-    def drawThumbnail(self, widget, cr):
-        pass
-
-    def drawThumbnailQT(self, widget, width, height):
-        pass
-
     def draw(self, widget, cr):
+        pass
+
+    def drawQT(self, painter):
         pass
 
     def getTags(self):
