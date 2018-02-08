@@ -146,11 +146,18 @@ class WorkArea():
             self.updateGeometry()
 
         def onItemChanged(self):
+            zoomFit = False
+            if not self.item:
+                zoomFit = True
             self.item = self.ui.core.getCurrentItem()
             if not self.item:
                 return
             self.w, self.h = self.item.getSize()
-            self.updateGeometry()
+            if zoomFit:
+                self.zoomFit()
+            else:
+                self.updateGeometry()
+
 
     def __init__(self, ui, workAreaScroller):
         self.ui = ui
