@@ -152,6 +152,10 @@ class ImageItem(Item):
         w, h = self.getSize()
         painter.drawPixmap(0, 0, w, h, pixmap)
 
+    def check_boundary(self, x1, y1, x2, y2):
+        im = self.get_pil_l()
+        return imglib.boundary_check(im, x1, y1, x2, y2)
+
     def autoPaste(self, clipboard):
         im = self.get_pil_l()
         todo = []

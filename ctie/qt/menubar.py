@@ -3,6 +3,7 @@ from PyQt5 import QtGui
 from .QChrootFileDirDialog import *
 from .regexManager import *
 from .edgeDialog import *
+from .pasteDialog import *
 from .setTagDialog import *
 
 class Menubar():
@@ -46,7 +47,7 @@ class Menubar():
         self.ui.core.batchShrink(left, top, right, bottom, amount)
 
     def onAutoPaste(self):
-        self.ui.core.autoPaste()
+        PasteDialog(self.ui)
 
     def onSetTag(self):
         SetTagDialog(self.ui)

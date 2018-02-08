@@ -447,6 +447,16 @@ class Ctie(object):
                 item.addChild(x1 = x1+item.x1, y1 = y1+item.y1, x2 = x2+item.x1, y2 = y2+item.y1, tags = p['tags'])
         self.ui.onContentChanged()
 
+    def batchPaste(self, chk_empty, chk_overlap, chk_overlap_aon, chk_boundary, chk_boundary_aon):
+        if not self.clipboard:
+            return
+        item = self.getCurrentItem()
+        if item is None:
+            return
+        for item in self.items:
+            item.batchPaste(self.clipboard, chk_empty, chk_overlap, chk_overlap_aon, chk_boundary, chk_boundary_aon)
+        self.ui.onContentChanged()
+
     def autoPaste(self):
         if not self.clipboard:
             return
@@ -550,7 +560,6 @@ class Ctie(object):
         selections.sort(reverse = True)
         for i in selections:
             item.resize(i, xoff, yoff)
-
 
     def reorder_children(self):
         item = self.getCurrentItem()

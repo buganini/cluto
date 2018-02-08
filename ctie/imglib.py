@@ -85,6 +85,39 @@ def bottomTrim(im, x1, y1, x2, y2, margin=default_margin, threshold=default_thre
 	ny2=a+margin
 	return min(ny2, y2)
 
+def boundary_check(im, x1, y1, x2, y2, threshold=default_threshold):
+	w, h = im.size
+	lastpixel = im.getpixel((x1, y1))
+	if y1 != 0:
+		y = y1
+		for x in range(x1+1, x2-1):
+			pixel = im.getpixel((x,y))
+			if abs(pixel-lastpixel) > threshold:
+				return False
+			lastpixel = pixel
+	if x2 != w:
+		x = x2-1
+		for y in range(y1+1,y2-1):
+			pixel = im.getpixel((x,y))
+			if abs(pixel-lastpixel) > threshold:
+				return False
+			lastpixel = pixel
+	if y2 != h:
+		y = y2-1
+		for x in range(x1+1,x2):
+			pixel = im.getpixel((x,y))
+			if abs(pixel-lastpixel) > threshold:
+				return False
+			lastpixel = pixel
+	if x1 != 0:
+		x = x1
+		for y in range(y1+1,y2):
+			pixel = im.getpixel((x,y))
+			if abs(pixel-lastpixel) > threshold:
+				return False
+			lastpixel = pixel
+	return True
+
 def autoPasteCheck(im, px1, py1, px2, py2, x1, y1, x2, y2, threshold=default_threshold):
 	lastpixel = im.getpixel((x1+px1, y1+py1))
 	if y1!=0:

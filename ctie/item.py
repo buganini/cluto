@@ -28,6 +28,7 @@ from PIL import Image
 import weakref
 import uuid
 import os
+import utils
 # from gi.repository import Gtk
 
 import ctie
@@ -202,6 +203,58 @@ class Item(object):
             if i not in ordered_list:
                 r.append(c)
         return r
+
+    def batchPaste(self, clipboard, chk_empty, chk_overlap, chk_overlap_aon, chk_boundary, chk_boundary_aon):
+        if chk_empty and self.children:
+            return
+
+        todo = []
+        for p in clipboard:
+            x1 = p['x1']
+            y1 = p['y1']
+            x2 = p['x2']
+            y2 = p['y2']
+            x1 = max(x1, 0)
+            y1 = max(y1, 0)
+            x2 = min(x2, self.x2-self.x1)
+            y2 = min(y2, self.y2-self.y1)
+            x1 = x1 + self.x1
+            y1 = y1 + self.y1
+            x2 = x2 + self.x1
+            y2 = y2 + self.y1
+            if x2-x1>1 and y2-y1>1:
+                todo.append({'x1':x1, 'y1':y1, 'x2':x2, 'y2':y2, 'tags':p['tags']})
+
+        if chk_overlap:
+            newtodo = []
+            for p in todo:
+                ok = True
+                for c in self.children:
+                    if utils.rect_overlap(p['x1'], p['y1'], p['x2'], p['y2'], c.x1, c.y1, c.x2, c.y2):
+                        ok = False
+                        break
+                if ok:
+                    newtodo.append(p)
+                else:
+                    if chk_overlap_aon:
+                        return
+            todo = newtodo
+
+        if chk_boundary:
+            newtodo = []
+            for p in todo:
+                if self.check_boundary(p['x1'], p['y1'], p['x2'], p['y2']):
+                    newtodo.append(p)
+                else:
+                    if chk_boundary_aon:
+                        return
+            todo = newtodo
+
+        for p in todo:
+            self.addChild(x1 = p['x1'], y1 = p['y1'], x2 = p['x2'], y2 = p['y2'], tags = p['tags'])
+
+    def check_boundary(self, x1, y1, x2, y2):
+        return True
 
     def autoPaste(self):
         pass
