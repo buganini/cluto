@@ -148,6 +148,12 @@ class CtieUI():
     def delete(self, *arg):
         self.core.deleteSelectedChildren()
 
+    def zoomFit(self, *arg):
+        self.uiWorkArea.zoomFit()
+
+    def zoomActual(self, *arg):
+        self.uiWorkArea.zoomActual()
+
     def remove_item(self, *arg):
         item = self.core.getCurrentItem()
         if item is None:

@@ -348,6 +348,7 @@ class Ctie(object):
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
         self.ui.onItemChanged()
+        self.ui.zoomFit()
         print("Load from {}".format(path))
         return True
 
