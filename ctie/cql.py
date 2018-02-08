@@ -70,19 +70,22 @@ class CQL(object):
 			if stack:
 				continue
 
-			if level<=6 and t in ('&&', '||'):
+			if level<=7 and t in ('&&', '||'):
+				sep = i
+				level = 7
+			elif level<=6 and t in ('==', '!=','>=','<=','>','<'):
 				sep = i
 				level = 6
-			elif level<=5 and t in ('==', '!=','>=','<=','>','<'):
+			elif level<=5 and t==',':
 				sep = i
 				level = 5
-			elif level<=4 and t==',':
+			elif level<=4 and ( t=='+' or re.match('^-+$', t) ):
 				sep = i
 				level = 4
-			elif level<=3 and ( t=='+' or re.match('^-+$', t) ):
+			elif level<=3 and t=="!":
 				sep = i
 				level = 3
-			elif level<=2 and ( t in ('!') or  re.match('^[A-Za-z]\w*$', t) ):
+			elif level<=2 and re.match('^[A-Za-z]\w*$', t):
 				sep = i
 				level = 2
 			elif level<=1 and ((len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"'))):
@@ -105,7 +108,7 @@ class CQL(object):
 			self.op = '[]'
 			self.lval = CQL(tokens[0:sep])
 			self.rval = CQL(tokens[sep+1:end])
-		elif t in ('!',' = ') or re.match('^[A-Za-z]\w*$',t):
+		elif t in ('!','=') or re.match('^[A-Za-z]\w*$',t):
 			self.rval = CQL(tokens[sep+1:])
 		elif re.match('^-+$', t):
 			self.lval = CQL(tokens[0:sep])
@@ -120,6 +123,9 @@ class CQL(object):
 			self.loaded = False
 		if self.rval!=None and not self.rval:
 			self.loaded = False
+
+	def __str__(self):
+		return "({} {} {})".format(self.op, self.lval, self.rval)
 
 	def __nonzero__(self):
 		return self.loaded
@@ -234,7 +240,7 @@ class CQL(object):
 			return lval-rval
 		if t=='!':
 			return not rval
-		if t==' = ':
+		if t=='=':
 			if type(rval)==type([]):
 				return tuple(rval)
 			else:
