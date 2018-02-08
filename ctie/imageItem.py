@@ -23,7 +23,6 @@
  SUCH DAMAGE.
 """
 
-# from gi.repository import Gtk, Gdk
 from PyQt5 import QtCore, QtGui
 import os
 import math
@@ -132,20 +131,8 @@ class ImageItem(Item):
         del(im)
         return path
 
-    def drawThumbnail(self, widget, cr):
-        tfile = self.getThumbnailPath(widget.get_allocated_width(), widget.get_allocated_height())
-        pb = Gtk.Image.new_from_file(tfile).get_pixbuf()
-        Gdk.cairo_set_source_pixbuf(cr, pb, (widget.get_allocated_width()-self.thumbnail_size[0])/2, (widget.get_allocated_height()-self.thumbnail_size[1])/2)
-        cr.paint()
-
     def drawThumbnailQT(self, widget, w, h):
         widget.setPixmap(QtGui.QPixmap(self.getThumbnailPath(w, h)))
-
-    def draw(self, widget, cr, factor):
-        cr.scale(factor, factor)
-        Gdk.cairo_set_source_pixbuf(cr, self.get_pixbuf(), 0, 0)
-        cr.paint()
-        cr.scale(1/factor, 1/factor)
 
     def drawQT(self, painter):
         pixmap = QtGui.QPixmap(self.get_cropped())
@@ -155,25 +142,6 @@ class ImageItem(Item):
     def check_boundary(self, x1, y1, x2, y2):
         im = self.get_pil_l()
         return imglib.boundary_check(im, x1, y1, x2, y2)
-
-    def autoPaste(self, clipboard):
-        im = self.get_pil_l()
-        todo = []
-        for p in clipboard:
-            x1 = p['x1']
-            y1 = p['y1']
-            x2 = p['x2']
-            y2 = p['y2']
-            x1 = max(x1, 0)
-            y1 = max(y1, 0)
-            x2 = min(x2, self.x2-self.x1)
-            y2 = min(y2, self.y2-self.y1)
-
-            if imglib.autoPasteCheck(im, self.x1, self.y1, self.x2, self.y2, x1, y1, x2, y2):
-                todo.append({'x1':x1, 'y1':y1, 'x2':x2, 'y2':y2, 'tags':p['tags']})
-        for p in todo:
-            if x2-x1>1 and y2-y1>1:
-                self.addChild(x1 = p['x1']+self.x1, y1 = p['y1']+self.y1, x2 = p['x2']+self.x1, y2 = p['y2']+self.y1, tags = p['tags'])
 
     def _prepare_ocr(self):
         return tmpfile

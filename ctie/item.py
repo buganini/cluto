@@ -29,7 +29,6 @@ import weakref
 import uuid
 import os
 import utils
-# from gi.repository import Gtk
 
 import ctie
 from cql import *
@@ -255,9 +254,6 @@ class Item(object):
 
     def check_boundary(self, x1, y1, x2, y2):
         return True
-
-    def autoPaste(self):
-        pass
 
     def ocr(self):
         pass

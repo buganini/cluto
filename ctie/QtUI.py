@@ -22,15 +22,6 @@ class CtieUI():
     def __init__(self):
         self.utils = utils
         self.core = Ctie(self)
-        self.signal_mask = False
-        self.focus_field = (None, None)
-        self.focus_entry = None
-        self.preview_canvas = None
-        self.canvas = None
-        self.zoom = 100
-        self.selstart = (None, None)
-        self.selend = (None, None)
-        self.mode = None
         self.uiref = {}
         self.app_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -91,26 +82,6 @@ class CtieUI():
     def set_status(self, s):
         self.uiStatusBar.showMessage(s)
 
-    def zoomActual(self):
-        self.uiWorkArea.zoomActual()
-
-    def zoomFit(self):
-        self.uiWorkArea.zoomFit()
-
-    def edit_regex(self, *arg):
-        self.builder.get_object("regex").get_buffer().set_text(self.core.getRegex())
-        self.builder.get_object("regex_window").show()
-
-    def regex_apply(self, *arg):
-        b = self.builder.get_object("regex").get_buffer()
-        text = b.get_text(b.get_start_iter(), b.get_end_iter(), 0).strip()
-        try:
-            text = text.decode("utf-8")
-        except:
-            pass
-        self.core.setRegex(text)
-        self.builder.get_object("regex_window").hide()
-
     def selectPreviousItem(self, *arg):
         item = self.core.getCurrentItem()
         if item is None:
@@ -146,17 +117,6 @@ class CtieUI():
         elif (evt.keyval==Gdk.KEY_V or evt.keyval==Gdk.KEY_v) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
             self.paste()
 
-    def set_value(self, *arg):
-        self.builder.get_object('set_value_window').show()
-
-    def set_value_apply(self, *arg):
-        key = self.builder.get_object('set_value_key').get_text()
-        value = self.builder.get_object('set_value_value').get_text()
-        isFormula = self.builder.get_object('set_value_value_is_formula').get_active()
-        if not key:
-            return
-        self.core.batchSetTag(key, value, isFormula)
-
     def load(self):
         LoadDialog(self)
 
@@ -167,23 +127,6 @@ class CtieUI():
         ret = QMessageBox.question(self.ui, 'Save', "Target already exists, overwrite?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ret == QMessageBox.Yes:
             self.core.save(path, True)
-
-    def copy_setting(self, obj, *arg):
-        tagsbox = self.builder.get_object("copy_setting_tags")
-        c = tagsbox.get_child()
-        if c:
-            tagsbox.remove(c)
-        tags_table = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
-        tagsbox.add(tags_table)
-        for i,key in enumerate(self.core.tags):
-            toggle = Gtk.CheckButton.new_with_label(key)
-            if key in self.core.copy_tags:
-                toggle.set_active(True)
-            else:
-                toggle.set_active(False)
-            toggle.connect('toggled', self.copy_setting_toggle, key)
-            tags_table.pack_start(toggle,False,False,0)
-        self.builder.get_object("copy_setting_window").show_all()
 
     def copy_setting_toggle(self, obj, key):
         if obj.get_active():
@@ -205,138 +148,11 @@ class CtieUI():
     def delete(self, *arg):
         self.core.deleteSelectedChildren()
 
-    def do_export(self, *arg):
-        outputdir = self.builder.get_object('output_dir').get_filename()
-        export_filter = CQL(self.builder.get_object('export_filter').get_text())
-        if not export_filter:
-            print("Invalid filter")
-            return
-        export_content = CQL(self.builder.get_object('export_content').get_text())
-        if not export_content:
-            print("Invalid content")
-            return
-        export_path = CQL(self.builder.get_object('path_pattern').get_text())
-        if not export_path:
-            print("Invalid path")
-            return
-        self.core.export(export_filter, export_content, export_path, outputdir)
-
-    def append_tag(self, *arg):
-        b = self.builder.get_object('path_pattern')
-        b.set_text("%s${%s}" % (b.get_text(), self.builder.get_object('tags_list').get_active_text()))
-
-    def export_show(self, *arg):
-        self.builder.get_object('export_window').show()
-
-    def add_tag(self, *arg):
-        tag = self.builder.get_object('new_tag').get_text()
-        if not tag:
-            return
-        self.core.addTag(tag)
-
-    def preview_draw(self, widget, cr):
-        item = self.core.getCurrentItem()
-        if item is None:
-            return
-        if len(self.core.selections)!=1:
-            return
-        child = item.children[self.core.selections[0]]
-        width = child.x2-child.x1
-        height = child.y2-child.y1
-
-        self.canvas.set_size_request(width, height)
-
-        child.draw(self.preview_canvas, cr, 1)
-
-    def zoom_fit(self, *arg):
-        item = self.core.getCurrentItem()
-        if item is None or not self.canvas:
-            return
-        workarea_window = self.builder.get_object('workarea_window')
-        alloc = workarea_window.get_allocation()
-        win_width = alloc.width
-        win_height = alloc.height
-        width = item.x2-item.x1
-        height = item.y2-item.y1
-        if width>win_width*0.8:
-            self.zoom = (win_width*0.8/width)*100
-        else:
-            self.zoom = 100
-        self.canvas.queue_draw()
-
-    def zoom_100(self, *arg):
-        if not self.canvas:
-            return
-        self.zoom = 100
-        self.canvas.queue_draw()
-
-    def zoom_in(self, *arg):
-        if not self.canvas:
-            return
-        self.zoom += 5
-        self.canvas.queue_draw()
-
-    def zoom_out(self, *arg):
-        if not self.canvas:
-            return
-        if self.zoom>5:
-            self.zoom -= 5
-        self.canvas.queue_draw()
-
     def remove_item(self, *arg):
         item = self.core.getCurrentItem()
         if item is None:
             return
         item.remove()
-
-    def add_item(self, *arg):
-        filec = Gtk.FileChooserDialog("Add", self.builder.get_object("main_window"), Gtk.FileChooserAction.OPEN | Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_ADD, Gtk.ResponseType.ACCEPT))
-        filec.set_select_multiple(True)
-        if Gtk.Dialog.run(filec)==Gtk.ResponseType.ACCEPT:
-            self.core.bulkMode = True
-            cs = filec.get_filenames()
-            cs.sort(natcmp)
-            for path in cs:
-                self.core.addItemByPath(path)
-            filec.destroy()
-            self.core.bulkMode = False
-            self.onItemTreeChanged()
-        else:
-            filec.destroy()
-            return
-
-    def change_level(self, *arg):
-        level = self.builder.get_object("level").get_active_text()
-        if level is None:
-            return
-        level = int(level)
-        if self.core.setLevel(level):
-            self.focus_field = (None, None)
-
-    def redraw_items_list(self, *arg):
-        items_list = self.builder.get_object("items_list")
-        for c in items_list.get_children():
-            items_list.remove(c)
-        for idx, item in enumerate(self.core.items):
-            if hasattr(item, "ui"):
-                evtbox = item.ui
-            else:
-                evtbox = Gtk.EventBox()
-                box = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
-                label = Gtk.Label(os.path.basename(item.path))
-                canvas = Gtk.DrawingArea()
-                canvas.connect("draw", item.drawThumbnail)
-                canvas.set_size_request(160, 240)
-                box.pack_start(canvas, False, False, 0)
-                box.pack_start(label, False, False, 0)
-                evtbox.add(box)
-                evtbox.p = item
-                item.ui = evtbox
-            evtbox.index = idx
-            evtbox.get_style_context().add_provider(self.css, 10)
-            evtbox.connect("button-press-event", self.item_button_press)
-            items_list.pack_start(evtbox, False, False, 5)
-            evtbox.show_all()
 
     def set_children_order(self, *arg):
         if not self.toggle_childrenpath:
@@ -344,139 +160,10 @@ class CtieUI():
             return
         self.core.reorder_children()
 
-    def level_sanitize(self):
-        level = self.builder.get_object("level")
-        l = self.core.getLevel()
-        try:
-            active = int(level.get_active_text())
-        except:
-            active = 0
-        level.remove_all()
-        for i in range(0,l):
-            level.append_text(str(i))
-        if active<l:
-            level.set_active(active)
-            self.core.setLevel(active)
-        else:
-            level.set_active(l-1)
-            self.core.setLevel(l-1)
-
-    def item_button_press(self, obj, evt):
-        if evt.button==1 and evt.type==Gdk.EventType.BUTTON_PRESS:
-            self.core.selectItemByIndex(obj.index)
-
-    def tags_refresh(self, *arg):
-        item = self.core.getCurrentItem()
-        if item is None:
-            return
-        self.builder.get_object('tags_pane').show_all()
-
-        tagsbox = self.builder.get_object('tags')
-        c = tagsbox.get_child()
-        if c:
-            tagsbox.remove(c)
-        collation_editor = self.builder.get_object("collation_editor")
-        collation_editor.master = None
-        collation_editor.set_text("")
-
-        grid_i = 0
-        tags_table = Gtk.Grid()
-        tagsbox.add(tags_table)
-
-        types = item.getTypes()
-        if types:
-            group = None
-            for t in types:
-                radio = Gtk.RadioButton.new_with_label_from_widget(group, t)
-                group = radio
-                if t == item.getType():
-                    radio.set_active(True)
-                else:
-                    radio.set_active(False)
-                radio.connect('toggled', self.set_type, (item, t))
-                tags_table.attach(radio,0,grid_i,3,1)
-                grid_i += 1
-
-        tags = self.core.getTags(item)
-        for tag in self.core.tags:
-            text = Gtk.Entry()
-            text.set_text(tags[tag])
-            text.connect('changed', self.set_tag, (item, tag))
-            text.connect("focus-in-event", self.entry_focus, ('p', item, tag))
-            if self.focus_field[0]=='p' and self.focus_field[1]==tag:
-                self.focus_entry = text
-            label = Gtk.Label(tag)
-            button = Gtk.Button()
-            btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
-            button.set_image(btn_img)
-            button.connect("clicked", self.clear_tag, (item, tag))
-            tags_table.attach(label,0,grid_i,1,1)
-            tags_table.attach(text,1,grid_i,1,1)
-            tags_table.attach(button,2,grid_i,1,1)
-            grid_i += 1
-        tagsbox.show_all()
-        GObject.idle_add(self.autofocus)
-        self.child_tags_refresh()
-
     def set_type(self, obj, data):
         item, t = data
         if obj.get_active():
             item.setType(t)
-
-    def child_tags_refresh(self, *arg):
-        item = self.core.getCurrentItem()
-        if item is None:
-            return
-
-        tagsbox = self.builder.get_object('child_tags')
-        c = tagsbox.get_child()
-        if c:
-            tagsbox.remove(c)
-
-        if len(self.core.selections)!=1:
-            return
-
-        child = item.children[self.core.selections[0]]
-        tags = self.core.getTags(child)
-
-        grid_i = 0
-        tags_table = Gtk.Grid()
-        tagsbox.add(tags_table)
-
-        types = child.getTypes()
-        if types:
-            group = None
-            for t in types:
-                radio = Gtk.RadioButton.new_with_label_from_widget(group, t)
-                group = radio
-                if t == child.getType():
-                    radio.set_active(True)
-                else:
-                    radio.set_active(False)
-                radio.connect('toggled', self.set_type, (child, t))
-                tags_table.attach(radio,0,grid_i,3,1)
-                grid_i += 1
-
-        for key in self.core.tags:
-            text = Gtk.Entry()
-            text.set_text(tags[key])
-            text.connect('changed', self.set_tag, (child, key))
-            text.connect("focus-in-event", self.entry_focus, ('c', child, key))
-
-            if self.focus_field[0]=='c' and self.focus_field[1]==key:
-                self.focus_entry = text
-            label = Gtk.Label(key)
-            button = Gtk.Button()
-            btn_img = Gtk.Image.new_from_stock(Gtk.STOCK_CLEAR, Gtk.IconSize.BUTTON)
-            button.set_image(btn_img)
-            button.connect("clicked", self.clear_tag, (child, key))
-            tags_table.attach(label,0,grid_i,1,1)
-            tags_table.attach(text,1,grid_i,1,1)
-            tags_table.attach(button,2,grid_i,1,1)
-            grid_i += 1
-        tagsbox.show_all()
-        self.collation_cb(None)
-        GObject.idle_add(self.autofocus)
 
     def autofocus(self, *arg):
         if self.focus_entry:
@@ -542,9 +229,6 @@ class CtieUI():
     def onItemChanged(self):
         self.uiWorkArea.onItemChanged()
         self.uiTagManager.onItemChanged()
-        # self.preview_canvas.queue_draw()
-        # self.zoom_fit()
-        # self.tags_refresh()
 
     def onSelectionChanged(self):
         self.uiTagManager.onSelectionChanged()

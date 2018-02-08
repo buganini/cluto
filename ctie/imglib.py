@@ -117,35 +117,3 @@ def boundary_check(im, x1, y1, x2, y2, threshold=default_threshold):
 				return False
 			lastpixel = pixel
 	return True
-
-def autoPasteCheck(im, px1, py1, px2, py2, x1, y1, x2, y2, threshold=default_threshold):
-	lastpixel = im.getpixel((x1+px1, y1+py1))
-	if y1!=0:
-		y = y1+py1
-		for x in range(x1+px1+1, x2+px1-1):
-			pixel = im.getpixel((x,y))
-			if abs(pixel-lastpixel)>threshold:
-				return False
-			lastpixel = pixel
-	if x2!=px2-px1:
-		x = x2+px1-1
-		for y in range(y1+py1+1,y2+py1-1):
-			pixel = im.getpixel((x,y))
-			if abs(pixel-lastpixel)>threshold:
-				return False
-			lastpixel = pixel
-	if y2!=py2-py1:
-		y = y2+py1-1
-		for x in range(x1+px1+1,x2+px1):
-			pixel = im.getpixel((x,y))
-			if abs(pixel-lastpixel)>threshold:
-				return False
-			lastpixel = pixel
-	if x1!=0:
-		x = x1+px1
-		for y in range(y1+py1+1,y2+py1):
-			pixel = im.getpixel((x,y))
-			if abs(pixel-lastpixel)>threshold:
-				return False
-			lastpixel = pixel
-	return True
