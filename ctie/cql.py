@@ -144,16 +144,16 @@ class CQL(object):
 		if (len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}'):
 			key = t[2:-1]
 			if t[0]=='$':
-				try:
-					return item.tags[key]
-				except:
-					return ""
+				r = item.getTag(key)
+				if r is None:
+					r = ""
+				return r
 			elif t[0]=='@':
-				t = item
-				r = None
-				while r is None and t:
-					r = t.tags.get(key, None)
-					t = t.parent
+				r = item.getTag(key)
+				if r is None:
+					r = item.getTagFromParent(key)
+				if r is None:
+					r = ""
 				return r
 			elif t[0]=='#':
 				r = []

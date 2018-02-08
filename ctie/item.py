@@ -124,6 +124,14 @@ class Item(object):
     def getTag(self, key):
         return self.tags.get(key)
 
+    def getTagFromParent(self, key):
+        t = self.parent
+        r = None
+        while r is None and t:
+            r = t.tags.get(key, None)
+            t = t.parent
+        return r
+
     def unsetTag(self, key):
         del(self.tags[key])
         ctie.ui.onTagChanged()

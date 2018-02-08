@@ -58,6 +58,7 @@ class TagManager():
 
             edit = QTagEdit()
             edit.setPlainText(item.getTag(tag))
+            edit.setPlaceholderText(item.getTagFromParent(tag))
             edit.textChanged.connect(partial(self.set_tag, item, tag, edit))
 
             self.item_tags.addWidget(label, r, 0)
@@ -76,6 +77,7 @@ class TagManager():
 
                 edit = QTagEdit()
                 edit.setPlainText(child.getTag(tag))
+                edit.setPlaceholderText(child.getTagFromParent(tag))
                 edit.textChanged.connect(partial(self.set_tag, child, tag, edit))
 
                 self.child_tags.addWidget(label, r, 0)
