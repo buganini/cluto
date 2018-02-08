@@ -61,3 +61,5 @@ Query Language:
 			TEXT(content) -> text
 		COALESCE
 			coalesce(("", "a","b", "", "c")) -> "a"
+		PRINT
+			print(x) -> x # output to stdout
