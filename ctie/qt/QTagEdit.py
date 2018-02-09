@@ -10,6 +10,7 @@ class QTagEdit(QPlainTextEdit):
         QPlainTextEdit.__init__(self)
         font = QtGui.QFont("Consolas")
         font.setStyleHint(QtGui.QFont.TypeWriter)
+        self.blank = True
         self.blocked = False
         self.setFont(font)
 
@@ -34,7 +35,10 @@ class QTagEdit(QPlainTextEdit):
     def onTextChanged(self):
         if self.blocked:
             return
-        self.updateHeight()
+        blank = not self.toPlainText()
+        if self.blank != blank:
+            self.blank = blank
+            self.updateHeight()
 
     def updateHeight(self):
         currText = self.toPlainText()
