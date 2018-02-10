@@ -24,21 +24,29 @@
 """
 
 from PyQt5 import QtGui
-# from popplerqt5 import Poppler as QtPoppler
+from popplerqt5 import Poppler as QtPoppler
 import pdf
+import os
 
+import ctie
 from item import Item as BaseItem
 
 cache_pdf = {}
 cache_pdf_page = {}
-cache_pdf_qt = {}
-cache_pdf_page_qt = {}
+cache_pdf_page_image = {}
 lastRender = None
 
 class PdfItem(BaseItem):
     @staticmethod
     def probe(filename):
         return filename.lower().endswith(".pdf")
+
+    @staticmethod
+    def addItem(core, path):
+        pdf = QtPoppler.Document.load(os.path.join(core.workspace, path))
+        for i in range(pdf.numPages()):
+            item = PdfItem(pdf = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
+            core.clips.append(item)
 
     def __init__(self, pdf=None, page=None, **args):
         global cache_pdf
@@ -49,7 +57,9 @@ class PdfItem(BaseItem):
         if pdf:
             cache_pdf[self.path] = pdf
         if self.x2==-1 or self.y2==-1:
-            self.x2, self.y2 = self.getPdfPage().get_size()
+            size = self.getPdfPage().pageSizeF()
+            self.x2 = size.width()
+            self.y2 = size.height()
         self.text = None
         self.image = None
         self.table = None
@@ -80,7 +90,7 @@ class PdfItem(BaseItem):
             return "txt"
         elif self.getType()=="Image":
             if self.image is None:
-                self.image = pdf.getImage(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+                self.image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
             return self.image.extension
         elif self.getType()=="Table":
             return "csv"
@@ -90,67 +100,40 @@ class PdfItem(BaseItem):
     def getContent(self):
         if self.getType()=="Text":
             if self.text is None:
-                self.text = pdf.getText(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+                self.text = pdf.getText(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
             return self.text
         elif self.getType()=="Image":
             if self.image is None:
-                self.image = pdf.getImage(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+                self.image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
             return self.image
         elif self.getType()=="Table":
             # if self.table is None:
-            self.table = pdf.getTable(self.path, self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100, rSep=[x*100 for x in self.rowSep], cSep=[x*100 for x in self.colSep])
+            self.table = pdf.getTable(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100, rSep=[x*100 for x in self.rowSep], cSep=[x*100 for x in self.colSep])
             return self.table
         else:
             return None
 
-    def drawThumbnailQT(self, widget, w, h):
-        sw, sh, factor = self.getThumbnailSize(w, h)
-        page = self.getPdfPageQT()
-        image = page.renderToImage(factor*72, factor*72)
-        widget.setPixmap(QtGui.QPixmap.fromImage(image))
-
-    def draw(self, widget, cr, factor):
-        global lastRender
-        cr.set_source_rgba(255,255,255,255)
-        cr.paint()
-        pw, ph =self.getPdfPage().get_size()
-        pw = int(pw*factor)
-        ph = int(ph*factor)
-        if lastRender and (id(self), factor) == (lastRender[0], lastRender[1]):
-            pb = lastRender[2]
-        else:
-            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, pw, ph)
-            ctx = cairo.Context(surface)
-            ctx.scale(factor, factor)
-            self.getPdfPage().render(ctx)
-            ctx.scale(1/factor, 1/factor)
-            pb = Gdk.pixbuf_get_from_surface(ctx.get_target(), 0, 0, pw, ph)
-            lastRender = (id(self), factor, pb)
-        Gdk.cairo_set_source_pixbuf(cr, pb, -self.x1*factor, -self.y1*factor)
-        cr.paint()
-
     def drawQT(self, painter):
-        pass
+        image = self.getPdfPageImage()
+        painter.drawImage(0, 0, image)
+
+    def getPdfPageImage(self):
+        global cache_pdf_page_image
+        if self.path not in cache_pdf_page_image:
+            cache_pdf_page_image[self.path]={}
+        if self.page not in cache_pdf_page_image[self.path]:
+            cache_pdf_page_image[self.path][self.page] = self.getPdfPage().renderToImage(72, 72)
+        return cache_pdf_page_image[self.path][self.page]
 
     def getPdfPage(self):
         global cache_pdf, cache_pdf_page
         if self.path not in cache_pdf:
-            cache_pdf[self.path] = Poppler.Document.new_from_file("file://"+self.path, None)
+            doc = QtPoppler.Document.load(os.path.join(ctie.instance.workspace, self.path))
+            doc.setRenderHint(QtPoppler.Document.Antialiasing)
+            doc.setRenderHint(QtPoppler.Document.TextAntialiasing)
+            cache_pdf[self.path] = doc
         if self.path not in cache_pdf_page:
             cache_pdf_page[self.path]={}
         if self.page not in cache_pdf_page[self.path]:
-            cache_pdf_page[self.path][self.page] = cache_pdf[self.path].get_page(self.page)
+            cache_pdf_page[self.path][self.page] = cache_pdf[self.path].page(self.page)
         return cache_pdf_page[self.path][self.page]
-
-    def getPdfPageQT(self):
-        global cache_pdf_qt, cache_pdf_page_qt
-        if self.path not in cache_pdf_qt:
-            doc = QtPoppler.Document.load(self.path)
-            doc.setRenderHint(QtPoppler.Document.Antialiasing)
-            doc.setRenderHint(QtPoppler.Document.TextAntialiasing)
-            cache_pdf_qt[self.path] = doc
-        if self.path not in cache_pdf_page_qt:
-            cache_pdf_page_qt[self.path]={}
-        if self.page not in cache_pdf_page_qt[self.path]:
-            cache_pdf_page_qt[self.path][self.page] = cache_pdf_qt[self.path].page(self.page)
-        return cache_pdf_page_qt[self.path][self.page]

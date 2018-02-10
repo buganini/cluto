@@ -251,13 +251,9 @@ class Ctie(object):
             path = os.path.relpath(path, self.workspace)
             print("Add item from", path)
             if PdfItem.probe(path):
-                pdf = Poppler.Document.new_from_file("file://"+path, None)
-                for i in range(pdf.get_n_pages()):
-                    item = PdfItem(pdf = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
-                    self.clips.append(item)
+                PdfItem.addItem(self, path)
             elif ImageItem.probe(path):
-                item = ImageItem(path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
-                self.clips.append(item)
+                ImageItem.addItem(self, path)
         self._genItems()
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()

@@ -46,6 +46,11 @@ class ImageItem(Item):
     def probe(filename):
         return os.path.splitext(filename.lower())[1] in (".jpg", ".png", ".jpeg", ".tiff", ".bmp")
 
+    @staticmethod
+    def addItem(core, path):
+        item = ImageItem(path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
+        core.clips.append(item)
+
     def __init__(self, **args):
         super(ImageItem, self).__init__(**args)
         if self.x2==-1 or self.y2==-1:
