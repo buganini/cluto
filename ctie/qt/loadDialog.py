@@ -8,8 +8,12 @@ class LoadDialog(QtCore.QObject):
     class TableModel(QtCore.QAbstractTableModel):
         def __init__(self, savedir):
             QtCore.QAbstractTableModel.__init__(self)
-            self.data = os.listdir(savedir)
-            self.time = [datetime.fromtimestamp(os.path.getmtime(os.path.join(savedir, x))).strftime("%c") for x in self.data]
+            files = os.listdir(savedir)
+            times = [os.path.getmtime(os.path.join(savedir, x)) for x in files]
+            l = list(zip(files, times))
+            l.sort(key=lambda x:(-x[1], x[0]))
+            self.data = [x[0] for x in l]
+            self.time = [datetime.fromtimestamp(x[1]).strftime("%c") for x in l]
 
         def rowCount(self, parent):
             return len(self.data)
