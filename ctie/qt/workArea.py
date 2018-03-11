@@ -158,7 +158,6 @@ class WorkArea():
             else:
                 self.updateGeometry()
 
-
     def __init__(self, ui, workAreaScroller):
         self.ui = ui
         self.workAreaScroller = workAreaScroller

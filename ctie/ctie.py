@@ -59,6 +59,8 @@ class Ctie(object):
         self.storage = None
         self.savedir = None
         self.tempdir = None
+
+        self.focusTag = None
         self.bulkMode = False
         self.ocrMode = False
         self.collationMode = False
@@ -632,3 +634,11 @@ class Ctie(object):
     def setCollationMode(self, enabled):
         self.collationMode = enabled
         print("CollationMode:", enabled)
+        self.onSetCollationMode()
+
+    def onSetCollationMode(self):
+        self.ui.onSetCollationMode()
+
+    def setFocusTag(self, tag):
+        self.focusTag = tag
+        self.ui.onSetFocusTag()

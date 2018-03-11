@@ -44,6 +44,12 @@ class CtieUI():
         self.uiItemList = ItemList(self, ui.findChild(QVBoxLayout, "itemList"), ui.findChild(QScrollArea, "itemListScroller"))
         self.uiStatusBar = ui.findChild(QStatusBar, "statusBar")
         self.uiWorkArea = WorkArea(self, ui.findChild(QScrollArea, "workAreaScroller"))
+
+        uiCollcationSplitter = ui.findChild(QSplitter, "collationSplitter")
+        uiCollcationSplitter.setStretchFactor(0, 1)
+        uiCollcationSplitter.setStretchFactor(1, 0)
+        self.uiCollationView = CollationView(self, uiCollcationSplitter, ui.findChild(QVBoxLayout, "collationView"), ui.findChild(QScrollArea, "collationViewAreaScroller"))
+
         self.uiLevelSelector = LevelSelector(self, ui.findChild(QComboBox, "level"))
         self.uiItemFilter = ItemFilter(self, ui.findChild(QLineEdit, "edit_filter"), ui.findChild(QPushButton, "btn_filter"))
         self.uiTagManager = TagManager(
@@ -54,12 +60,11 @@ class CtieUI():
             ui.findChild(QGridLayout, "item_tags"),
             ui.findChild(QGridLayout, "child_tags"),
         )
-        self.uiCollcationSplitter = ui.findChild(QSplitter, "collationSplitter")
-        self.uiCollcationSplitter.setSizes([1, 0])
-        self.uiCollcationSplitter.handle(1).setEnabled(False)
 
         timer = QtCore.QTimer(app)
         timer.singleShot(1, self.openProject)
+
+        self.onSetCollationMode()
 
         r = app.exec_()
         self.core.worker.stop()
@@ -225,11 +230,13 @@ class CtieUI():
 
     def onItemChanged(self):
         self.uiWorkArea.onItemChanged()
+        self.uiCollationView.onItemChanged()
         self.uiTagManager.onItemChanged()
 
     def onSelectionChanged(self):
         self.uiTagManager.onSelectionChanged()
         self.uiWorkArea.onSelectionChanged()
+        self.uiCollationView.onSelectionChanged()
 
     def onItemTreeChanged(self):
         self.uiLevelSelector.onItemTreeChanged()
@@ -239,6 +246,7 @@ class CtieUI():
 
     def onContentChanged(self):
         self.uiWorkArea.onContentChanged()
+        self.uiCollationView.onContentChanged()
 
     def onTagChanged(self):
         self.uiTagManager.onTagChanged()
@@ -253,3 +261,9 @@ class CtieUI():
         if not item:
             return
         self.uiItemList.onItemBlurred(item)
+
+    def onSetCollationMode(self):
+        self.uiCollationView.onSetCollationMode()
+
+    def onSetFocusTag(self):
+        self.uiCollationView.onSetFocusTag()

@@ -47,9 +47,28 @@ class Item(object):
             self.path = parent.path
 
         self.hash = str(uuid.uuid4())
+        self.listener = []
 
     def __str__(self):
         return "{0:X} # {1} ({2},{3},{4},{5})".format(id(self), os.path.basename(self.path), self.x1, self.y1, self.x2, self.y2)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['listener']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.listener = []
+
+    def addListener(self, l):
+        self.listener.append(l)
+
+    def removeListener(self, l):
+        try:
+            self.listener.remove(l)
+        except:
+            pass
 
     def getWorkdir(self):
         path = os.path.join(ctie.instance.tempdir, self.hash)
@@ -105,6 +124,8 @@ class Item(object):
             self.tags[key] = str(CQL(value).eval(self))
         else:
             self.tags[key] = value
+        for l in self.listener:
+            l()
 
     def getTag(self, key):
         return self.tags.get(key)
