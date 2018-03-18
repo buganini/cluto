@@ -36,7 +36,7 @@ class CQL(object):
 			return
 		if type(i)!=type([]):
 			try:
-				tokens = re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|[\$@%#]\{.+?\}|(?:"[^"]*\\(?:.[^"]*\\)*.[^"]*")|(?:"[^"]*")|(?:'[^']*\\(?:.[^']*\\)*.[^']*')|(?:'[^']*')|\+|-+|!|\(|\)|\[|\]|[A-Za-z_]\w*|\d+|,)""",i)
+				tokens = re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|[\$@%#]\{.+?\}|(?:"[^"]*\\(?:.[^"]*\\)*.[^"]*")|(?:"[^"]*")|(?:'[^']*\\(?:.[^']*\\)*.[^']*')|(?:'[^']*')|\+|-+|!|[A-Za-z_]\w*\(|\(|\)|\[|\]|\d+|,)""",i)
 			except:
 				return
 			self.tree = self.parse(tokens)
@@ -62,6 +62,11 @@ class CQL(object):
 					sep = i
 					level = 1
 				stack.append(']')
+			elif re.match(r'^[A-Za-z_]\w*\($', t):
+				if not stack and level<=1:
+					sep = i
+					level = 1
+				stack.append(')')
 			elif t in (')',']'):
 				if stack and t==stack[-1]:
 					end = i
@@ -71,25 +76,22 @@ class CQL(object):
 			if stack:
 				continue
 
-			if level<=7 and t in ('&&', '||'):
-				sep = i
-				level = 7
-			elif level<=6 and t in ('==', '!=','>=','<=','>','<'):
+			if level <= 6 and t in ('&&', '||'):
 				sep = i
 				level = 6
-			elif level<=5 and t==',':
+			elif level <= 5 and t in ('==', '!=','>=','<=','>','<'):
 				sep = i
 				level = 5
-			elif level<=4 and ( t=='+' or re.match('^-+$', t) ):
+			elif level <= 4 and t==',':
 				sep = i
 				level = 4
-			elif level<=3 and t=="!":
+			elif level <= 3 and ( t=='+' or re.match('^-+$', t) ):
 				sep = i
 				level = 3
-			elif level<=2 and re.match('^[A-Za-z]\w*$', t):
+			elif level <= 2 and t=="!":
 				sep = i
 				level = 2
-			elif level<=1 and ((len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"'))):
+			elif level <= 1 and ((len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"'))):
 				sep = i
 				level = 1
 
@@ -109,7 +111,9 @@ class CQL(object):
 			self.op = '[]'
 			self.lval = CQL(tokens[0:sep])
 			self.rval = CQL(tokens[sep+1:end])
-		elif t in ('!','=') or re.match('^[A-Za-z]\w*$',t):
+		elif re.match(r'^[A-Za-z_]\w*\($',t):
+			self.rval = CQL(tokens[sep+1:end])
+		elif t in ('!','='):
 			self.rval = CQL(tokens[sep+1:])
 		elif re.match('^-+$', t):
 			self.lval = CQL(tokens[0:sep])
@@ -193,7 +197,7 @@ class CQL(object):
 					curr = (0,0)
 					trace = [curr]
 					last = item.children[0]
-					for i in xrange(1,len(item.children)):
+					for i in range(1,len(item.children)):
 						child = item.children[i]
 						x = child.x1+child.x2/2.0
 						if x<last['x1']:
@@ -246,8 +250,8 @@ class CQL(object):
 				return tuple(rval)
 			else:
 				return rval
-		if re.match('^[A-Za-z_]\w*$', t):
-			t = t.upper()
+		if re.match(r'^[A-Za-z_]\w*\($', t):
+			t = t.upper()[:-1]
 			if t=='ABS':
 				return abs(rval)
 			elif t=='TEXT':
