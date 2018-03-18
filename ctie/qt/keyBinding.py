@@ -18,14 +18,25 @@ class KeyBinding():
         self.ctrl_page_down.activated.connect(self.onCtrlPageDown)
 
     def onPageUp(self):
-        self.ui.core.selectPrevItem()
-
+        if self.ui.core.collationMode:
+            self.ui.core.selectPrevChild()
+        else:
+            self.ui.core.selectPrevItem()
 
     def onPageDown(self):
-        self.ui.core.selectNextItem()
+        if self.ui.core.collationMode:
+            self.ui.core.selectNextChild()
+        else:
+            self.ui.core.selectNextItem()
 
     def onCtrlPageUp(self):
-        self.ui.core.selectPrevChild()
+        if self.ui.core.collationMode:
+            self.ui.core.selectPrevItem()
+        else:
+            self.ui.core.selectPrevChild()
 
     def onCtrlPageDown(self):
-        self.ui.core.selectNextChild()
+        if self.ui.core.collationMode:
+            self.ui.core.selectNextItem()
+        else:
+            self.ui.core.selectNextChild()
