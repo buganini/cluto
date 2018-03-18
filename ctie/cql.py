@@ -282,6 +282,8 @@ class CQL(object):
 				return rval[1] in rval[0]
 			elif t=='SPLIT':
 				return rval[1].split(rval[0])
+			elif t=='LEN':
+				return len(rval)
 			elif t=='REPLACE':
 				return rval[2].replace(rval[0], rval[1])
 			elif t=='PRINT':

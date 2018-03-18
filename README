@@ -50,6 +50,8 @@ Query Language:
 			suffix("c.d") -> "d"
 		PATHJOIN
 			pathjoin("a/b","c.d") -> "a/b/c.d"
+		LEN
+			len("a","b","abc") -> 3
 		LIST_HAS
 			list_has(("a","b"),"a") -> true
 			list_has(("a","b"),"c") -> false
