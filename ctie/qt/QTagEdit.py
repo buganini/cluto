@@ -6,10 +6,12 @@ class QTagEdit(QPlainTextEdit):
     focusIn = pyqtSignal()
     focusOut = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, fontSize=None):
         QPlainTextEdit.__init__(self)
         font = QtGui.QFont("Consolas")
         font.setStyleHint(QtGui.QFont.TypeWriter)
+        if not fontSize is None:
+            font.setPointSize(fontSize)
         self.prevContent = True
         self.blocked = False
         self.setFont(font)

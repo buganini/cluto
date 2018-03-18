@@ -55,7 +55,7 @@ class CollationView():
         self.collationViewArea = self.QViewArea(self.collationViewAreaScroller)
         self.collationViewArea.ui = ui
         self.collationViewAreaScroller.setWidget(self.collationViewArea)
-        self.edit = QTagEdit()
+        self.edit = QTagEdit(28)
         self.edit.textChanged.connect(self.editTextChanged)
         self.collationView.addWidget(self.edit)
         self.item = None
