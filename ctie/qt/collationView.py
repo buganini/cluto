@@ -78,6 +78,8 @@ class CollationView():
         self.collationViewArea.update_item()
 
     def onSetFocusTag(self):
+        if not self.item:
+            return
         tag = self.ui.core.focusTag
         self.blockItemUpdated = True
         self.edit.setPlainText(self.item.getTag(tag))
@@ -95,6 +97,8 @@ class CollationView():
         if self.item:
             self.item.removeListener(self.onItemUpdated)
         self.item = self.collationViewArea.update_item()
+        if not self.item:
+            return
         self.item.addListener(self.onItemUpdated)
         self.onSetFocusTag()
 
