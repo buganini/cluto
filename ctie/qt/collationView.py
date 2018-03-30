@@ -1,6 +1,6 @@
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
-from .QTagEdit import *
+from .QAutoEdit import *
 
 class CollationView():
     class QViewArea(QWidget):
@@ -55,7 +55,7 @@ class CollationView():
         self.collationViewArea = self.QViewArea(self.collationViewAreaScroller)
         self.collationViewArea.ui = ui
         self.collationViewAreaScroller.setWidget(self.collationViewArea)
-        self.edit = QTagEdit(28)
+        self.edit = QAutoEdit(28)
         self.edit.textChanged.connect(self.editTextChanged)
         self.collationView.addWidget(self.edit)
         self.item = None

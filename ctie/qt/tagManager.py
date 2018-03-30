@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 from functools import partial
-from .QTagEdit import *
+from .QAutoEdit import *
 
 class TagManager():
     ITEM = 1
@@ -72,7 +72,7 @@ class TagManager():
             label = QLabel()
             label.setText(tag)
 
-            edit = QTagEdit()
+            edit = QAutoEdit()
             edit.setPlainText(item.getTag(tag))
             edit.setPlaceholderText(item.getTagFromParent(tag))
             edit.textChanged.connect(partial(self.set_tag, item, tag, edit))
@@ -96,7 +96,7 @@ class TagManager():
                 label = QLabel()
                 label.setText(tag)
 
-                edit = QTagEdit()
+                edit = QAutoEdit()
                 edit.setPlainText(child.getTag(tag))
                 edit.setPlaceholderText(child.getTagFromParent(tag))
                 edit.textChanged.connect(partial(self.set_tag, child, tag, edit))

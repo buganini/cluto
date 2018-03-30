@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-class QTagEdit(QPlainTextEdit):
+class QAutoEdit(QPlainTextEdit):
     focusIn = pyqtSignal()
     focusOut = pyqtSignal()
 
