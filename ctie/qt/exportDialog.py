@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5 import uic
+from .QAutoEdit import *
 import os
 import json
 import re
@@ -150,8 +151,10 @@ class ExportDialog(QtCore.QObject):
         self.edit_filename = self.exportui.findChild(QLineEdit, "edit_filename")
         self.edit_filename.setText("""PREFIX(BASENAME(%{FILE}))+"#"+%{PAGE}+"-"+%{LEVEL}+"-"+%{INDEX}+"."+%{EXTENSION}""")
 
-        self.edit_content = self.exportui.findChild(QLineEdit, "edit_content")
-        self.edit_content.setText("%{CONTENT}")
+        self.edit_content = QAutoEdit()
+        self.edit_content.setPlainText("%{CONTENT}")
+        edit_content_frame = self.exportui.findChild(QGridLayout, "edit_content_frame")
+        edit_content_frame.addWidget(self.edit_content)
 
         # Message
         self.message = self.exportui.findChild(QLabel, "message")
