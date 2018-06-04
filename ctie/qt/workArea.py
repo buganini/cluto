@@ -9,6 +9,8 @@ class WorkArea():
             QWidget.__init__(self)
             self.scrollArea = scrollArea
             self.scale = 1
+            self.w = None
+            self.h = None
             self.item = None
             self.selstart = (None, None)
             self.selend = (None, None)
@@ -141,6 +143,8 @@ class WorkArea():
             self.updateGeometry()
 
         def zoomFit(self):
+            if self.w is None:
+                return
             xscale = self.scrollArea.viewport().width() / self.w
             yscale = self.scrollArea.viewport().height() / self.h
             self.scale = min(xscale, yscale)
