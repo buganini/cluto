@@ -126,9 +126,10 @@ class ImageItem(Item):
     def prepare(self):
         self.get_cropped()
 
-    def drawQT(self, painter):
+    def drawQT(self, painter, scale):
         pixmap = QtGui.QPixmap(self.get_cropped())
         w, h = self.getSize()
+        painter.scale(scale, scale)
         painter.drawPixmap(0, 0, w, h, pixmap)
 
     def check_boundary(self, x1, y1, x2, y2):

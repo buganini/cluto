@@ -92,10 +92,11 @@ class WorkArea():
             if not self.item:
                 return
             item = self.item
+            item_painter = QtGui.QPainter(self)
+            item.drawQT(item_painter, self.scale)
+
             painter = QtGui.QPainter(self)
             painter.scale(self.scale, self.scale)
-            item.drawQT(painter)
-
             if self.selstart!=(None, None) and self.selend!=(None, None):
                 sx0, sy0 = self.selstart
                 sx1, sy1 = self.selend

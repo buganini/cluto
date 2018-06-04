@@ -106,7 +106,7 @@ class Item(object):
     def draw(self, widget, cr):
         pass
 
-    def drawQT(self, painter):
+    def drawQT(self, painter, scale):
         pass
 
     def getTags(self):

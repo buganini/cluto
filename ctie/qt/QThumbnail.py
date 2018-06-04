@@ -18,5 +18,4 @@ class QThumbnail(QWidget):
     def paintEvent(self, event):
         item = self.item
         painter = QtGui.QPainter(self)
-        painter.scale(self.scale, self.scale)
-        item.drawQT(painter)
+        item.drawQT(painter, self.scale)

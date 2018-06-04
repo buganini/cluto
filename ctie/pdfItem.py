@@ -113,17 +113,17 @@ class PdfItem(BaseItem):
         else:
             return None
 
-    def drawQT(self, painter):
-        image = self.getPdfPageImage()
-        painter.drawImage(0, 0, image)
+    def drawQT(self, painter, scale=1):
+        image = self.getPdfPageImage(scale)
+        painter.drawImage(0, 0, image, self.x1*scale, self.y1*scale, (self.x2-self.x1)*scale, (self.y2-self.y1)*scale)
 
-    def getPdfPageImage(self):
+    def getPdfPageImage(self, scale):
         global cache_pdf_page_image
-        if self.path not in cache_pdf_page_image:
-            cache_pdf_page_image[self.path]={}
-        if self.page not in cache_pdf_page_image[self.path]:
-            cache_pdf_page_image[self.path][self.page] = self.getPdfPage().renderToImage(72, 72)
-        return cache_pdf_page_image[self.path][self.page]
+        if self.hash not in cache_pdf_page_image:
+            cache_pdf_page_image[self.hash]={}
+        if scale not in cache_pdf_page_image[self.hash]:
+            cache_pdf_page_image[self.hash][scale] = self.getPdfPage().renderToImage(72*scale, 72*scale)
+        return cache_pdf_page_image[self.hash][scale]
 
     def getPdfPage(self):
         global cache_pdf, cache_pdf_page
