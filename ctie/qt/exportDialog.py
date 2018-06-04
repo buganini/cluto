@@ -196,7 +196,7 @@ class ExportDialog(QtCore.QObject):
         self.edit_filter.setText(filter)
         self.edit_outputdir.setText(outputdir)
         self.edit_filename.setText(filename)
-        self.edit_content.setText(content)
+        self.edit_content.setPlainText(content)
 
     def onSave(self):
         exports = self.edit_export.text()
@@ -204,7 +204,7 @@ class ExportDialog(QtCore.QObject):
             "filter": self.edit_filter.text(),
             "outputdir": self.edit_outputdir.text(),
             "filename": self.edit_filename.text(),
-            "content": self.edit_content.text(),
+            "content": self.edit_content.toPlainText(),
         }
         changed = False
         for d in self.exports:
@@ -224,7 +224,7 @@ class ExportDialog(QtCore.QObject):
         filter = self.edit_filter.text()
         outputdir = self.edit_outputdir.text()
         filename = self.edit_filename.text()
-        content = self.edit_content.text()
+        content = self.edit_content.toPlainText()
         self.ui.core.export(filter, outputdir, filename, content)
         self.message.setText("Export finished.")
 
