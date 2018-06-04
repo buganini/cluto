@@ -38,6 +38,9 @@ Query Language:
 	Functions:
 		ABS
 			abs(-1) -> 1
+		CONCAT
+			concat("abc", "def") -> "abcdef"
+			concat(["abc", "def"], ["123", "456"]) -> ["abc123", "def456"]
 		JOIN
 			join(" ",("a","b")) -> "a b"
 		BASENAME

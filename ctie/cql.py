@@ -278,6 +278,16 @@ class CQL(object):
 				return os.path.splitext(rval)[1]
 			elif t=='PATHJOIN':
 				return os.path.join(rval[0], rval[1])
+			elif t=='CONCAT':
+				alllist = True
+				for i in rval:
+					if type(i)!=type([]):
+						alllist = False
+						break
+				if alllist:
+					return ["".join(x) for x in zip(*rval)]
+				else:
+					return "".join(rval)
 			elif t=='LIST_HAS':
 				return rval[1] in rval[0]
 			elif t=='SPLIT':
