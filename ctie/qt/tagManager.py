@@ -68,6 +68,20 @@ class TagManager():
         self.item.addListener(self.onItemUpdated)
 
         r = 0
+
+        types = item.getTypes()
+        if types:
+            comboBox = QComboBox()
+            for t in types:
+                comboBox.addItem(t)
+            label = QLabel()
+            label.setText("Type")
+            comboBox.setCurrentIndex(types.index(item.getType()))
+            comboBox.currentTextChanged.connect(item.setType)
+            self.item_tags.addWidget(label, r, 0)
+            self.item_tags.addWidget(comboBox, r, 1)
+            r += 1
+
         for tag in self.ui.core.getTags():
             label = QLabel()
             label.setText(tag)
@@ -92,6 +106,20 @@ class TagManager():
             child = item.children[self.ui.core.selections[0]]
 
             r = 0
+
+            types = child.getTypes()
+            if types:
+                comboBox = QComboBox()
+                for t in types:
+                    comboBox.addItem(t)
+                label = QLabel()
+                label.setText("Type")
+                comboBox.setCurrentIndex(types.index(child.getType()))
+                comboBox.currentTextChanged.connect(child.setType)
+                self.child_tags.addWidget(label, r, 0)
+                self.child_tags.addWidget(comboBox, r, 1)
+                r += 1
+
             for tag in self.ui.core.getTags():
                 label = QLabel()
                 label.setText(tag)
