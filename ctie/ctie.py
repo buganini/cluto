@@ -60,6 +60,11 @@ class Ctie(object):
         self.savedir = None
         self.tempdir = None
 
+        self.horizontalSplitter = False
+        self.verticalSplitter = False
+        self.tableRowSplitter = False
+        self.tableColumnSplitter = False
+
         self.focusTag = None
         self.bulkMode = False
         self.ocrMode = False
@@ -619,6 +624,30 @@ class Ctie(object):
                     item.parent.children.remove(item)
                 else:
                     self.clips.remove(item)
+
+    def setHorizontalSplitter(self, enable):
+        self.horizontalSplitter = enable
+        if enable:
+            self.ui.setTableRowSplitter(False)
+            self.ui.setTableColumnSplitter(False)
+
+    def setVerticalSplitter(self, enable):
+        self.verticalSplitter = enable
+        if enable:
+            self.ui.setTableRowSplitter(False)
+            self.ui.setTableColumnSplitter(False)
+
+    def setTableRowSplitter(self, enable):
+        self.tableRowSplitter = enable
+        if enable:
+            self.ui.setHorizontalSplitter(False)
+            self.ui.setVerticalSplitter(False)
+
+    def setTableColumnSplitter(self, enable):
+        self.tableColumnSplitter = enable
+        if enable:
+            self.ui.setHorizontalSplitter(False)
+            self.ui.setVerticalSplitter(False)
 
     def setOcrMode(self, enabled):
         self.ocrMode = enabled

@@ -60,6 +60,16 @@ class Toolbar():
         self.tbTableRowSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-gravity-west-16.png")), "Table Row Splitter")
         self.tbTableColumnSplitter = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-gravity-south-16.png")), "Table Column Splitter")
 
+        self.tbHorizontalSplitter.setCheckable(True)
+        self.tbVerticalSplitter.setCheckable(True)
+        self.tbTableRowSplitter.setCheckable(True)
+        self.tbTableColumnSplitter.setCheckable(True)
+
+        self.tbHorizontalSplitter.toggled.connect(self.onSetHorizontalSplitter)
+        self.tbVerticalSplitter.toggled.connect(self.onSetVerticalSplitter)
+        self.tbTableRowSplitter.toggled.connect(self.onSetTableRowSplitter)
+        self.tbTableColumnSplitter.toggled.connect(self.onSetTableColumnSplitter)
+
         toolBar.addSeparator()
 
         self.tbExport = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-color-triangle-16.png")), "Export")
@@ -151,6 +161,57 @@ class Toolbar():
         if item is None:
             return
         self.ui.utils.open_path(item.getWorkdir())
+
+    def onItemChanged(self):
+        self.updateUI()
+
+    def onContentChanged(self):
+        self.updateUI()
+
+    def updateUI(self):
+        item = self.ui.core.getCurrentItem()
+        if item is None:
+            self.tbHorizontalSplitter.setChecked(False)
+            self.tbVerticalSplitter.setChecked(False)
+            self.tbTableRowSplitter.setChecked(False)
+            self.tbTableColumnSplitter.setChecked(False)
+            self.tbHorizontalSplitter.setEnabled(False)
+            self.tbVerticalSplitter.setEnabled(False)
+            self.tbTableRowSplitter.setEnabled(False)
+            self.tbTableColumnSplitter.setEnabled(False)
+            return
+        self.tbHorizontalSplitter.setEnabled(True)
+        self.tbVerticalSplitter.setEnabled(True)
+        isTable = item.getType()=="Table"
+        if not isTable:
+            self.tbTableRowSplitter.setChecked(False)
+            self.tbTableColumnSplitter.setChecked(False)
+        self.tbTableRowSplitter.setEnabled(isTable)
+        self.tbTableColumnSplitter.setEnabled(isTable)
+
+    def onSetHorizontalSplitter(self, enable):
+        self.ui.core.setHorizontalSplitter(enable)
+
+    def onSetVerticalSplitter(self, enable):
+        self.ui.core.setVerticalSplitter(enable)
+
+    def onSetTableRowSplitter(self, enable):
+        self.ui.core.setTableRowSplitter(enable)
+
+    def onSetTableColumnSplitter(self, enable):
+        self.ui.core.setTableColumnSplitter(enable)
+
+    def setHorizontalSplitter(self, enable):
+        self.tbHorizontalSplitter.setChecked(enable)
+
+    def setVerticalSplitter(self, enable):
+        self.tbVerticalSplitter.setChecked(enable)
+
+    def setTableRowSplitter(self, enable):
+        self.tbTableRowSplitter.setChecked(enable)
+
+    def setTableColumnSplitter(self, enable):
+        self.tbTableColumnSplitter.setChecked(enable)
 
     def toggleOcrMode(self, enabled):
         self.ui.core.setOcrMode(enabled)

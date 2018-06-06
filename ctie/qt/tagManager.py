@@ -77,7 +77,7 @@ class TagManager():
             label = QLabel()
             label.setText("Type")
             comboBox.setCurrentIndex(types.index(item.getType()))
-            comboBox.currentTextChanged.connect(item.setType)
+            comboBox.currentTextChanged.connect(partial(self.setType, item))
             self.item_tags.addWidget(label, r, 0)
             self.item_tags.addWidget(comboBox, r, 1)
             r += 1
@@ -140,6 +140,10 @@ class TagManager():
                 r += 1
         else:
             self.panel_child_tags.setVisible(False)
+
+    def setType(self, item, type):
+        item.setType(type)
+        self.ui.updateToolBar();
 
     def set_tag(self, item, tag, edit):
         value = edit.toPlainText()

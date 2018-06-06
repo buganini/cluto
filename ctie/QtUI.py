@@ -232,6 +232,7 @@ class CtieUI():
         self.uiWorkArea.onItemChanged()
         self.uiCollationView.onItemChanged()
         self.uiTagManager.onItemChanged()
+        self.uiToolBar.onItemChanged()
 
     def onSelectionChanged(self):
         self.uiTagManager.onSelectionChanged()
@@ -247,6 +248,7 @@ class CtieUI():
     def onContentChanged(self):
         self.uiWorkArea.onContentChanged()
         self.uiCollationView.onContentChanged()
+        self.uiToolBar.onContentChanged()
 
     def onTagChanged(self):
         self.uiTagManager.onTagChanged()
@@ -267,3 +269,18 @@ class CtieUI():
 
     def onSetFocusTag(self):
         self.uiCollationView.onSetFocusTag()
+
+    def updateToolBar(self):
+        self.uiToolBar.updateUI()
+
+    def setHorizontalSplitter(self, enable):
+        self.uiToolBar.setHorizontalSplitter(enable)
+
+    def setVerticalSplitter(self, enable):
+        self.uiToolBar.setVerticalSplitter(enable)
+
+    def setTableRowSplitter(self, enable):
+        self.uiToolBar.setTableRowSplitter(enable)
+
+    def setTableColumnSplitter(self, enable):
+        self.uiToolBar.setTableColumnSplitter(enable)

@@ -41,9 +41,7 @@ class WorkArea():
             item = self.item
             x2 = event.x()/self.scale
             y2 = event.y()/self.scale
-            if False:
-                pass
-            else:
+            if self.editRect():
                 x1,y1 = self.selstart
                 if (x1,y1)==(None, None):
                     return
@@ -75,6 +73,37 @@ class WorkArea():
                     xoff = self.selend[0]-self.selstart[0]
                     yoff = self.selend[1]-self.selstart[1]
                     self.ui.core.resize(xoff, yoff)
+            elif self.selend!=(None, None):
+                if self.ui.core.horizontalSplitter:
+                    x = self.selend[0]
+                    y = self.selend[1]
+                    if self.ui.core.verticalSplitter:
+                        item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x1+x, y2 = item.y1+y)
+                        item.addChild(x1 = item.x1+x, y1 = item.y1, x2 = item.x2, y2 = item.y1+y)
+                        item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x1+x, y2 = item.y2)
+                        item.addChild(x1 = item.x1+x, y1 = item.y1+y, x2 = item.x2, y2 = item.y2)
+                    else:
+                        item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x1+x, y2 = item.y2)
+                        item.addChild(x1 = item.x1+x, y1 = item.y1, x2 = item.x2, y2 = item.y2)
+                if self.ui.core.verticalSplitter:
+                    x = self.selend[0]
+                    y = self.selend[1]
+                    if self.ui.core.horizontalSplitter:
+                        item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x1+x, y2 = item.y1+y)
+                        item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x1+x, y2 = item.y2)
+                        item.addChild(x1 = item.x1+x, y1 = item.y1, x2 = item.x2, y2 = item.y1+y)
+                        item.addChild(x1 = item.x1+x, y1 = item.y1+y, x2 = item.x2, y2 = item.y2)
+                    else:
+                        item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x2, y2 = item.y1+y)
+                        item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x2, y2 = item.y2)
+                if item.getType()=="Table":
+                    if self.ui.core.tableRowSplitter:
+                        y = self.selend[1]
+                        item.addRowSep(y)
+                    if self.ui.core.tableColumnSplitter:
+                        x = self.selend[0]
+                        item.addColSep(x)
+
             self.selstart = (None, None)
             self.selend = (None, None)
             self.mode = None
@@ -90,6 +119,18 @@ class WorkArea():
             self.resize(self.w*self.scale, self.h*self.scale)
             self.update()
 
+        def editRect(self):
+            editRect = True
+            if self.ui.core.horizontalSplitter and self.selend!=(None, None):
+                editRect = False
+            if self.ui.core.verticalSplitter and self.selend!=(None, None):
+                editRect = False
+            if self.ui.core.tableRowSplitter and self.selend!=(None, None):
+                editRect = False
+            if self.ui.core.tableColumnSplitter and self.selend!=(None, None):
+                editRect = False
+            return editRect
+
         def paintEvent(self, event):
             if not self.item:
                 return
@@ -99,21 +140,24 @@ class WorkArea():
 
             painter = QtGui.QPainter(self)
             painter.scale(self.scale, self.scale)
-            if self.selstart!=(None, None) and self.selend!=(None, None):
+            pen = QtGui.QPen(QtCore.Qt.red, 1/self.scale, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap)
+
+            editRect = self.editRect()
+
+            if editRect and self.selstart!=(None, None) and self.selend!=(None, None):
                 sx0, sy0 = self.selstart
                 sx1, sy1 = self.selend
                 xoff = sx1 - sx0
                 yoff = sy1 - sy0
 
                 if len(self.ui.core.selections)==0: # new rect
-                    painter.setPen(QtGui.QPen(QtCore.Qt.blue, 1/self.scale, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap))
+                    pen.setColor(QtCore.Qt.blue)
+                    painter.setPen(pen)
                     painter.drawRect(sx0,sy0,xoff,yoff)
             else:
                 xoff = 0
                 yoff = 0
 
-            pen = QtGui.QPen(QtCore.Qt.red, 1/self.scale, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap)
-            painter.setPen(pen)
             for i, child in enumerate(item.children):
                 x1 = (child.x1-item.x1)
                 y1 = (child.y1-item.y1)
@@ -134,6 +178,30 @@ class WorkArea():
                     pen.setColor(QtCore.Qt.red)
                     painter.setPen(pen)
                     painter.drawRect(x1, y1, x2-x1, y2-y1)
+
+            if item.getType()=="Table":
+                pen.setColor(QtGui.QColor(0xff, 0xa5, 0x00))
+                painter.setPen(pen)
+                for x in item.colSep:
+                    painter.drawLine(x, 0.0, x, item.y2-item.y1)
+                for y in item.rowSep:
+                    painter.drawLine(0.0, y, item.x2-item.x1, y)
+
+            pen.setColor(QtCore.Qt.magenta)
+            painter.setPen(pen)
+            if self.ui.core.horizontalSplitter and self.selend!=(None, None):
+                painter.drawLine(self.selend[0], 0.0, self.selend[0], item.y2-item.y1)
+
+            if self.ui.core.verticalSplitter and self.selend!=(None, None):
+                painter.drawLine(0.0, self.selend[1], item.x2-item.x1, self.selend[1])
+
+            pen.setColor(QtCore.Qt.green)
+            painter.setPen(pen)
+            if self.ui.core.tableRowSplitter and self.selend!=(None, None):
+                painter.drawLine(0.0, self.selend[1], item.x2-item.x1, self.selend[1])
+
+            if self.ui.core.tableColumnSplitter and self.selend!=(None, None):
+                painter.drawLine(self.selend[0], 0.0, self.selend[0], item.y2-item.y1)
 
         def resizeEvent(self, event):
             pass
