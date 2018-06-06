@@ -103,9 +103,6 @@ class Item(object):
     def prepare(self):
         pass
 
-    def draw(self, widget, cr):
-        pass
-
     def drawQT(self, painter, scale):
         pass
 

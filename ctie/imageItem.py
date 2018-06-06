@@ -36,8 +36,6 @@ from helpers import *
 from item import Item
 import imglib
 
-cache_pixbuf = {}
-cache_gtk = {}
 cache_pil_rgb = {}
 cache_pil_l = {}
 
@@ -57,30 +55,6 @@ class ImageItem(Item):
             im = Image.open(os.path.join(ctie.instance.workspace, self.path))
             self.x2, self.y2 = im.size
             del(im)
-
-    def get_gtk(self):
-        global cache_gtk
-        oid = id(self)
-        try:
-            o = cache_gtk[oid]()
-        except:
-            o = None
-        if not o:
-            o = Gtk.Image.new_from_file(self.get_cropped())
-            cache_gtk[oid] = weakref.ref(o)
-        return o
-
-    def get_pixbuf(self):
-        global cache_pixbuf
-        oid = id(self)
-        try:
-            o = cache_pixbuf[oid]()
-        except:
-            o = None
-        if not o:
-            o = self.get_gtk().get_pixbuf()
-            cache_pixbuf[oid] = weakref.ref(o)
-        return o
 
     def get_pil_rgb(self):
         global cache_pil_rgb
