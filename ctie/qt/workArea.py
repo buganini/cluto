@@ -81,9 +81,9 @@ class WorkArea():
             self.update()
 
         def wheelEvent(self, event):
-            self.scale += event.angleDelta().y()/4096
+            self.scale += event.angleDelta().y()*self.scale/2048
             self.scale = min(self.scale, 10)
-            self.scale = max(self.scale, 0.03)
+            self.scale = max(self.scale, 0.005)
             self.updateGeometry()
 
         def updateGeometry(self):
