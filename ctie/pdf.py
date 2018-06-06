@@ -26,7 +26,7 @@ class Image:
 		self.extension = extension
 
 	def save(self, path):
-		f=open(path, "w")
+		f=open(path, "wb")
 		f.write(self.blob)
 		f.close()
 
@@ -111,7 +111,7 @@ def getImage(file, page, bx1, by1, bx2, by2):
 	imgs = content[1]
 
 	ret = None
-	bf=open("blob", "r")
+	bf=open("blob", "rb")
 	fmtmap={"JPEG":"jpg"}
 	for offset, size, fmt, x1, y1, x2, y2 in imgs[0:1]:
 		bf.seek(offset)
