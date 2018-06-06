@@ -45,21 +45,19 @@ class PdfItem(BaseItem):
     def addItem(core, path):
         pdf = QtPoppler.Document.load(os.path.join(core.workspace, path))
         for i in range(pdf.numPages()):
-            item = PdfItem(pdf = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
+            item = PdfItem(doc = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
             core.clips.append(item)
 
-    def __init__(self, pdf=None, page=None, **args):
+    def __init__(self, doc=None, page=None, **args):
         global cache_pdf
         super(PdfItem, self).__init__(**args)
         self.page = page
         if self.page is None:
             self.page = self.parent.page
-        if pdf:
-            cache_pdf[self.path] = pdf
+        if doc:
+            cache_pdf[self.path] = doc
         if self.x2==-1 or self.y2==-1:
-            size = self.getPdfPage().pageSizeF()
-            self.x2 = size.width()
-            self.y2 = size.height()
+            self.x2, self.y2 = pdf.getPageSize(os.path.join(ctie.instance.workspace, self.path), self.page)
         self.text = None
         self.image = None
         self.table = None
@@ -90,7 +88,7 @@ class PdfItem(BaseItem):
             return "txt"
         elif self.getType()=="Image":
             if self.image is None:
-                self.image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+                self.image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
             return self.image.extension
         elif self.getType()=="Table":
             return "csv"
@@ -99,16 +97,16 @@ class PdfItem(BaseItem):
 
     def getContent(self):
         if self.getType()=="Text":
-            if self.text is None:
-                self.text = pdf.getText(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+            if True:
+                self.text = pdf.getText(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
             return self.text
         elif self.getType()=="Image":
-            if self.image is None:
-                self.image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100)
+            if True:
+                self.image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
             return self.image
         elif self.getType()=="Table":
-            # if self.table is None:
-            self.table = pdf.getTable(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1*100, self.y1*100, self.x2*100, self.y2*100, rSep=[x*100 for x in self.rowSep], cSep=[x*100 for x in self.colSep])
+            if True:
+                self.table = pdf.getTable(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2, rSep=self.rowSep, cSep=self.colSep)
             return self.table
         else:
             return None
@@ -122,7 +120,7 @@ class PdfItem(BaseItem):
         if self.hash not in cache_pdf_page_image:
             cache_pdf_page_image[self.hash]={}
         if scale not in cache_pdf_page_image[self.hash]:
-            cache_pdf_page_image[self.hash][scale] = self.getPdfPage().renderToImage(72*scale, 72*scale)
+            cache_pdf_page_image[self.hash][scale] = self.getPdfPage().renderToImage(7200*scale, 7200*scale)
         return cache_pdf_page_image[self.hash][scale]
 
     def getPdfPage(self):

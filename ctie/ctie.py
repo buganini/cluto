@@ -33,6 +33,7 @@ from imageItem import *
 from pdfItem import *
 from cql import *
 from helpers import *
+import pdf
 
 from worker import WorkerDispatcher
 
@@ -70,6 +71,8 @@ class Ctie(object):
         self.ocrMode = False
         self.collationMode = False
         self.worker = WorkerDispatcher(self)
+
+        pdf.xpdfimport = "/opt/libreoffice5.4/program/xpdfimport"
 
     def openProject(self, path, confirm=False):
         workspace = os.path.abspath(path)
@@ -379,6 +382,7 @@ class Ctie(object):
         filename = CQL(filename)
         content = CQL(content)
         todo = self.clips
+        count = 0
         while todo:
             newtodo = []
             for item in todo:
@@ -408,6 +412,8 @@ class Ctie(object):
                         f = open(path,'w')
                         f.write(cnt)
                         f.close()
+                    count += 1
+                    print("Output", count)
                 newtodo.extend(item.children)
             todo = newtodo
 
@@ -539,7 +545,6 @@ class Ctie(object):
             self.selections[0] += len(item.children)-1
             self.selections[0] %= len(item.children)
         self.onSelectionChanged()
-
 
     def selectNextChild(self):
         item = self.getCurrentItem()

@@ -20,6 +20,8 @@ import re
 from table import Table
 from ranges import CRanges
 
+xpdfimport = "./xpdfimport"
+
 class Image:
 	def __init__(self, blob, extension):
 		self.blob = blob
@@ -124,16 +126,48 @@ def getText(file, page, bx1, by1, bx2, by2):
 	content = _getContent(file, page, bx1, by1, bx2, by2)
 	return content[0]
 
-def _getContent(file, page, bx1, by1, bx2, by2):
-	pdf=subprocess.Popen(["./xpdfimport","-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+def getPageSize(file, page):
+	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
-	pdf.stdin.write("\n")
+	pdf.stdin.write(b"\n")
+	pdf.stdin.flush()
+
+	pagen=-1
+
+	end = False
+	while True:
+		#pager
+		cmd_queue=[]
+		while True:
+			try:
+				ls = pdf.stdout.readline().decode("utf-8").rstrip("\r\n")
+				if not ls:
+					end = True
+					break
+			except :
+				end=True
+				break
+			l = Line(ls)
+			cmd = l.readToken()
+			if cmd=='startPage':
+				page_width = l.readFloat()
+				page_height = l.readFloat()
+				if pagen==page:
+					return page_width, page_height
+				pagen += 1
+		if end:
+			break
+	return -1, -1
+
+def _getContent(file, page, bx1, by1, bx2, by2):
+	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+
+	pdf.stdin.write(b"\n")
+	pdf.stdin.flush()
 
 	pagen=-1
 	page_width=0
 	page_height=0
-
-	cmds=pdf.stdout.readlines().__iter__()
 
 	text = {}
 	imgs = []
@@ -147,15 +181,16 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 		cmd_queue=[]
 		while True:
 			try:
-				ls = cmds.next().rstrip("\r\n")
-			except:
+				ls = pdf.stdout.readline().decode("utf-8").rstrip("\r\n")
+				if not ls:
+					end = True
+					break
+			except :
 				end=True
 				break
 			l = Line(ls)
 			cmd = l.readToken()
-			if cmd=='setPageNum':
-				pagenum = l.readInt()
-			elif cmd=='startPage':
+			if cmd=='startPage':
 				pagen += 1
 				page_width = l.readFloat()
 				page_height = l.readFloat()
@@ -225,22 +260,19 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 		if end:
 			break
 
-	pdf.wait()
-
 	text = charsToText(text)
 
 	return (text, imgs)
 
 def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
-	pdf=subprocess.Popen(["./xpdfimport","-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
-	pdf.stdin.write("\n")
+	pdf.stdin.write(b"\n")
+	pdf.stdin.flush()
 
 	pagen=-1
 	page_width=0
 	page_height=0
-
-	cmds=pdf.stdout.readlines().__iter__()
 
 	vsep = {}
 	hsep = {}
@@ -255,15 +287,16 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 		cmd_queue=[]
 		while True:
 			try:
-				ls = cmds.next().rstrip("\r\n")
-			except:
+				ls = pdf.stdout.readline().decode("utf-8").rstrip("\r\n")
+				if not ls:
+					end = True
+					break
+			except :
 				end=True
 				break
 			l = Line(ls)
 			cmd = l.readToken()
-			if cmd=='setPageNum':
-				pagenum = l.readInt()
-			elif cmd=='startPage':
+			if cmd=='startPage':
 				pagen += 1
 				page_width = l.readFloat()
 				page_height = l.readFloat()
@@ -357,17 +390,15 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 		if end:
 			break
 
-	pdf.wait()
-
 	if cSep and rSep:
 		cSep.insert(0, 0)
 		cSep.append(bx2)
 		rSep.insert(0, 0)
 		rSep.append(by2)
 	else:
-		vsepPos = vsep.keys()
+		vsepPos = list(vsep.keys())
 		vsepPos.sort()
-		hsepPos = hsep.keys()
+		hsepPos = list(hsep.keys())
 		hsepPos.sort()
 
 	textmap = {}
