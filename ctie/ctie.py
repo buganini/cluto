@@ -527,7 +527,7 @@ class Ctie(object):
         return tags
 
     def batchSetTag(self, key, value, isFormula):
-        if key not in self.tags:
+        if not key.startswith("_") and key not in self.tags:
             self.tags.append(key)
         for it in self.items:
             it.setTag(key, value, isFormula)
