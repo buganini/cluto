@@ -33,7 +33,6 @@ from item import Item as BaseItem
 
 cache_pdf = {}
 cache_pdf_page = {}
-cache_pdf_page_image = {}
 lastRender = None
 
 class PdfItem(BaseItem):
@@ -112,16 +111,11 @@ class PdfItem(BaseItem):
             return None
 
     def drawQT(self, painter, scale=1):
-        image = self.getPdfPageImage(scale)
-        painter.drawImage(0, 0, image, self.x1*scale, self.y1*scale, (self.x2-self.x1)*scale, (self.y2-self.y1)*scale)
+        image = self.getPdfImage(scale)
+        painter.drawImage(0, 0, image)
 
-    def getPdfPageImage(self, scale):
-        global cache_pdf_page_image
-        if self.hash not in cache_pdf_page_image:
-            cache_pdf_page_image[self.hash]={}
-        if scale not in cache_pdf_page_image[self.hash]:
-            cache_pdf_page_image[self.hash][scale] = self.getPdfPage().renderToImage(7200*scale, 7200*scale)
-        return cache_pdf_page_image[self.hash][scale]
+    def getPdfImage(self, scale):
+        return self.getPdfPage().renderToImage(7200*scale, 7200*scale, self.x1*scale, self.y1*scale, (self.x2-self.x1)*scale, (self.y2-self.y1)*scale)
 
     def getPdfPage(self):
         global cache_pdf, cache_pdf_page
