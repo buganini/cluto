@@ -150,11 +150,11 @@ def getPageSize(file, page):
 			l = Line(ls)
 			cmd = l.readToken()
 			if cmd=='startPage':
+				pagen += 1
 				page_width = l.readFloat()
 				page_height = l.readFloat()
 				if pagen==page:
 					return page_width, page_height
-				pagen += 1
 		if end:
 			break
 	return -1, -1
