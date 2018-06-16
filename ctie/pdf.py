@@ -19,6 +19,9 @@ import subprocess
 import re
 from table import Table
 from ranges import CRanges
+import utils
+import PIL.Image
+import io
 
 xpdfimport = "./xpdfimport"
 
@@ -31,6 +34,14 @@ class Image:
 		f=open(path, "wb")
 		f.write(self.blob)
 		f.close()
+
+class PILImage:
+	def __init__(self, im, extension):
+		self.im = im
+		self.extension = extension
+
+	def save(self, path):
+		self.im.save(path)
 
 class Line:
 	def __init__(self,s):
@@ -112,14 +123,62 @@ def getImage(file, page, bx1, by1, bx2, by2):
 	content = _getContent(file, page, bx1, by1, bx2, by2)
 	imgs = content[1]
 
-	ret = None
-	bf=open("blob", "rb")
 	fmtmap={"JPEG":"jpg"}
-	for offset, size, fmt, x1, y1, x2, y2 in imgs[0:1]:
+
+	if len(imgs) == 0:
+		return None
+
+	if len(imgs) == 1:
+		bf=open("blob", "rb")
+		offset, size, fmt, x1, y1, x2, y2 = imgs[0]
 		bf.seek(offset)
 		blob=bf.read(size)
-		ret = Image(blob, fmtmap.get(fmt, fmt.lower()))
+		bf.close()
+		return Image(blob, fmtmap.get(fmt, fmt.lower()))
+
+	ims = []
+	mx1 = None
+	my1 = None
+	mx2 = None
+	my2 = None
+	ws = None
+	hs = None
+	bf=open("blob", "rb")
+	for offset, size, fmt, x1, y1, x2, y2 in imgs:
+		bf.seek(offset)
+		pfile = io.BytesIO()
+		pfile.write(bf.read(size))
+		pfile.flush()
+		pfile.seek(0)
+		im = PIL.Image.open(pfile)
+		ims.append((im, x1, y1, x2, y2))
+		if ws is None:
+			fw = x2 - x1
+			fh = y2 - y1
+			w, h = im.size
+			ws = w/fw
+			hs = h/fh
+		if mx1 is None:
+			mx1 = x1
+		else:
+			mx1 = min(mx1, x1)
+		if my1 is None:
+			my1 = y1
+		else:
+			my1 = min(my1, y1)
+		if mx2 is None:
+			mx2 = x2
+		else:
+			mx2 = max(mx2, x2)
+		if my2 is None:
+			my2 = y2
+		else:
+			my2 = max(my2, y2)
 	bf.close()
+	gim = PIL.Image.new("RGB", (int((mx2-mx1)*ws), int((my2-my1)*hs)))
+	for im, x1, y1, x2, y2 in ims:
+		gim.paste(im, (int((x1-mx1)*ws), int((y1-my1)*hs)))
+	ret = PILImage(gim, "png")
 	return ret
 
 def getText(file, page, bx1, by1, bx2, by2):
