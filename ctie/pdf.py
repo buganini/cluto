@@ -232,7 +232,8 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 				x1, y1 = translate(ctm[-1], x1, y1)
 				x2, y2 = translate(ctm[-1], x2, y2)
 				if pagen==page:
-					if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
+					intersect = utils.intersect(x1, y1, x2, y2, bx1, by1, bx2, by2)
+					if intersect and utils.dimension(*intersect)/utils.dimension(x1, y1, x2, y2) > 0.8:
 						imgs.append((blobOffset, bufSize, fmt, x1, y1, x2, y2))
 				blobOffset += bufSize
 			elif cmd=="updateFont":
