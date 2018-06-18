@@ -177,6 +177,7 @@ def getImage(file, page, bx1, by1, bx2, by2):
 	bf.close()
 	gim = PIL.Image.new("RGB", (int((mx2-mx1)*ws), int((my2-my1)*hs)))
 	for im, x1, y1, x2, y2 in ims:
+		#TODO: resize
 		gim.paste(im, (int((x1-mx1)*ws), int((y1-my1)*hs)))
 	ret = PILImage(gim, "png")
 	return ret
