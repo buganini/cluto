@@ -27,8 +27,6 @@ import os
 from PIL import Image
 import pickle
 
-#from gi.repository import Poppler
-
 from imageItem import *
 from pdfItem import *
 from cql import *
@@ -71,6 +69,8 @@ class Ctie(object):
         self.ocrMode = False
         self.collationMode = False
         self.worker = WorkerDispatcher(self)
+
+        self.export_canceled = False
 
         pdf.xpdfimport = "/opt/libreoffice5.4/program/xpdfimport"
 
@@ -355,8 +355,7 @@ class Ctie(object):
         self.ui.zoomFit()
         print("Load from {}".format(path))
         self.worker.reset()
-        for i in self.clips:
-            self.worker.addItem(i)
+        self.worker.addBgJobs(self.clips)
         return True
 
     def save(self, path, confirm=False):
@@ -377,13 +376,25 @@ class Ctie(object):
         fp.close()
         print("Save to {}".format(path))
 
-    def export(self, filter, outputdir, filename, content):
+    def export(self, filter, outputdir, filename, content, cbProgress):
+        self.export_canceled = False
         filter = CQL(filter)
         filename = CQL(filename)
         content = CQL(content)
+        done = 0
+        total = 0
+        exported = 0
         todo = self.clips
-        count = 0
         while todo:
+            newtodo = []
+            for item in todo:
+                total += 1
+                newtodo.extend(item.children)
+            todo = newtodo
+
+        cbProgress(done, total, exported, False)
+        todo = self.clips
+        while todo and not self.export_canceled:
             newtodo = []
             for item in todo:
                 if filter.eval(item):
@@ -412,10 +423,17 @@ class Ctie(object):
                         f = open(path,'w')
                         f.write(cnt)
                         f.close()
-                    count += 1
-                    print("Output", count)
+                    exported += 1
                 newtodo.extend(item.children)
+                done += 1
+                cbProgress(done, total, exported, self.export_canceled)
+                if self.export_canceled:
+                    break
             todo = newtodo
+        cbProgress(done, total, exported, True)
+
+    def abort_export(self):
+        self.export_canceled = True
 
     def copy(self):
         if not self.selections:

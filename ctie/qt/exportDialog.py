@@ -101,6 +101,8 @@ class ExportDialog(QtCore.QObject):
             self.data.pop(row)
             self.endRemoveRows()
 
+    progress_signal = pyqtSignal(int, int, int, bool)
+
     def __init__(self, ui):
         QtCore.QObject.__init__(self)
         self.ui = ui
@@ -166,6 +168,9 @@ class ExportDialog(QtCore.QObject):
         self.btn_export.clicked.connect(self.onApply)
         self.buttons.button(QDialogButtonBox.Close).clicked.connect(self.onClose)
 
+        self.progress_dialog = None
+        self.progress_signal.connect(self._onProgress)
+
         self.exportui.show()
 
     @QtCore.pyqtSlot(QtCore.QItemSelection, QtCore.QItemSelection)
@@ -221,12 +226,35 @@ class ExportDialog(QtCore.QObject):
             self.commit()
 
     def onApply(self):
+        self.ui.core.worker.addFgJob(self)
+
+    def worker(self):
         filter = self.edit_filter.text()
         outputdir = self.edit_outputdir.text()
         filename = self.edit_filename.text()
         content = self.edit_content.toPlainText()
-        self.ui.core.export(filter, outputdir, filename, content)
-        self.message.setText("Export finished.")
+        self.ui.core.export(filter, outputdir, filename, content, self.onProgress)
+
+    def onProgress(self, done, total, exported, finished):
+        self.progress_signal.emit(done, total, exported, finished)
+
+    def _onProgress(self, done, total, exported, finished):
+        if finished:
+            if self.progress_dialog and not self.progress_dialog.wasCanceled():
+                self.progress_dialog.hide()
+            self.progress_dialog = None
+        else:
+            if self.progress_dialog is None:
+                self.progress_dialog = QProgressDialog("Exporting...", "Abort", done, total, self.exportui)
+                self.progress_dialog.canceled.connect(self.abort)
+                self.progress_dialog.setAutoReset(False)
+                self.progress_dialog.setAutoClose(False)
+                self.progress_dialog.setWindowModality(QtCore.Qt.WindowModal)
+                self.progress_dialog.show()
+            self.progress_dialog.setValue(done)
+
+    def abort(self):
+        self.ui.core.abort_export()
 
     def onClose(self):
         self.exportui.close()

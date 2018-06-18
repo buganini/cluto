@@ -21,14 +21,18 @@ class WorkerDispatcher():
 
                 with self.dispatcher.mutex:
                     try:
-                        item = self.dispatcher.todo_item.pop(0)
+                        job = self.dispatcher.fg_todo.pop(0)
                     except:
-                        item = None
-                    print("Todo:", len(self.dispatcher.todo_item))
+                        job = None
 
-                if item:
-                    item.prepare()
-                    self.dispatcher.todo_item.extend(item.children)
+                if job is None:
+                    try:
+                        job = self.dispatcher.bg_todo.pop(0)
+                    except:
+                        job = None
+
+                if job:
+                    job.worker()
                     done = True
 
                 if not done:
@@ -36,7 +40,8 @@ class WorkerDispatcher():
                         self.dispatcher.cond.wait()
 
     def __init__(self, core):
-        self.todo_item = []
+        self.fg_todo = []
+        self.bg_todo = []
         self.core = core
         self.mutex = threading.Lock()
         self.cond = threading.Condition(self.mutex)
@@ -48,7 +53,8 @@ class WorkerDispatcher():
 
     def reset(self):
         self.mutex.acquire()
-        self.todo_item = []
+        self.fg_todo = []
+        self.bg_todo = []
         self.mutex.release()
         with self.mutex:
             self.cond.notify_all()
@@ -59,9 +65,30 @@ class WorkerDispatcher():
         with self.mutex:
             self.cond.notify_all()
 
-    def addItem(self, item):
+    def addFgJob(self, job):
         self.mutex.acquire()
-        self.todo_item.append(item)
+        self.fg_todo.append(job)
+        self.mutex.release()
+        with self.mutex:
+            self.cond.notify_all()
+
+    def addFgJobs(self, jobs):
+        self.mutex.acquire()
+        self.fg_todo.extend(jobs)
+        self.mutex.release()
+        with self.mutex:
+            self.cond.notify_all()
+
+    def addBgJob(self, job):
+        self.mutex.acquire()
+        self.bg_todo.append(job)
+        self.mutex.release()
+        with self.mutex:
+            self.cond.notify_all()
+
+    def addBgJobs(self, jobs):
+        self.mutex.acquire()
+        self.bg_todo.extend(jobs)
         self.mutex.release()
         with self.mutex:
             self.cond.notify_all()

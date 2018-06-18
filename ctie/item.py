@@ -100,7 +100,7 @@ class Item(object):
     def getSize(self):
         return self.x2-self.x1, self.y2-self.y1
 
-    def prepare(self):
+    def worker(self):
         pass
 
     def drawQT(self, painter, scale):
@@ -147,7 +147,7 @@ class Item(object):
         child = k(parent = self, **arg)
         self.children.append(child)
         ctie.instance.ui.onItemTreeChanged()
-        ctie.instance.worker.addItem(child)
+        ctie.instance.worker.addBgJob(child)
         return child
 
     def removeChild(self, child):
