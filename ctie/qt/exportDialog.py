@@ -252,6 +252,7 @@ class ExportDialog(QtCore.QObject):
                 self.progress_dialog.setWindowModality(QtCore.Qt.WindowModal)
                 self.progress_dialog.show()
             self.progress_dialog.setValue(done)
+            self.progress_dialog.setLabelText("Exporting... ({} exported)".format(exported))
 
     def abort(self):
         self.ui.core.abort_export()
