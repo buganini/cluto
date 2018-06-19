@@ -99,7 +99,7 @@ class ImageItem(Item):
 
     def worker(self):
         self.get_cropped()
-        ctie.instance.worker.addBgItems(self.children)
+        ctie.instance.worker.addBgJobs(self.children)
 
     def drawQT(self, painter, scale):
         pixmap = QtGui.QPixmap(self.get_cropped())

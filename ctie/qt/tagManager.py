@@ -168,3 +168,8 @@ class TagManager():
         if self.blockItemUpdated:
             return
         self.refresh_tags()
+
+    def onProjectChanged(self):
+        if self.blockItemUpdated:
+            return
+        self.refresh_tags()

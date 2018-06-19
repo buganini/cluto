@@ -18,6 +18,9 @@ class ItemList(QObject):
         self.scroller = scroller
         self.uiMap = {}
 
+    def onProjectChanged(self):
+        self.reset()
+
     def onLevelChanged(self):
         self.reset()
 

@@ -82,6 +82,11 @@ class CtieUI():
 
     def onProjectChanged(self):
         self.uiToolBar.onProjectChanged()
+        self.uiItemList.onProjectChanged()
+        self.uiLevelSelector.onProjectChanged()
+        self.uiWorkArea.onProjectChanged()
+        self.uiTagManager.onProjectChanged()
+        self.uiCollationView.onProjectChanged()
 
     def onLevelChanged(self):
         self.uiItemList.onLevelChanged()

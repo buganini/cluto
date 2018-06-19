@@ -231,6 +231,10 @@ class WorkArea():
             else:
                 self.updateGeometry()
 
+        def reset(self):
+            self.resize(0, 0)
+            self.update()
+
     def __init__(self, ui, workAreaScroller):
         self.ui = ui
         self.workAreaScroller = workAreaScroller
@@ -243,6 +247,12 @@ class WorkArea():
 
     def zoomFit(self):
         self.workArea.zoomFit()
+
+    def reset(self):
+        self.workArea.reset()
+
+    def onProjectChanged(self):
+        self.reset()
 
     def onItemChanged(self):
         self.workArea.onItemChanged()

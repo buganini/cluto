@@ -71,6 +71,9 @@ class CollationView():
     def onContentChanged(self):
         self.update_item()
 
+    def onProjectChanged(self):
+        self.update_item()
+
     def onSetCollationMode(self):
         enabled = self.ui.core.collationMode
         self.splitter.setSizes([1, (0, 1)[enabled]])
@@ -98,6 +101,9 @@ class CollationView():
             self.item.removeListener(self.onItemUpdated)
         self.item = self.collationViewArea.update_item()
         if not self.item:
+            self.blockItemUpdated = True
+            self.edit.setPlainText("")
+            self.blockItemUpdated = False
             return
         self.item.addListener(self.onItemUpdated)
         self.onSetFocusTag()

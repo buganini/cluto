@@ -10,7 +10,13 @@ class LevelSelector(QObject):
         self.selector.currentIndexChanged.connect(self.onCurrentIndexChanged)
         self.blocked = False
 
+    def onProjectChanged(self):
+        self.update()
+
     def onItemTreeChanged(self):
+        self.update()
+
+    def update(self):
         self.blocked = True
         current = self.ui.core.currentLevel
         self.selector.clear()

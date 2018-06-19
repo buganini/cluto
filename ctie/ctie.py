@@ -42,6 +42,16 @@ class Ctie(object):
         global instance
         instance = self
         self.ui = ui
+
+        self.worker = WorkerDispatcher(self)
+
+        self.reset()
+
+        self.export_canceled = False
+
+        pdf.xpdfimport = "/opt/libreoffice5.4/program/xpdfimport"
+
+    def reset(self):
         self.exports = []
         self.regex = []
         self.clips = []
@@ -68,11 +78,6 @@ class Ctie(object):
         self.bulkMode = False
         self.ocrMode = False
         self.collationMode = False
-        self.worker = WorkerDispatcher(self)
-
-        self.export_canceled = False
-
-        pdf.xpdfimport = "/opt/libreoffice5.4/program/xpdfimport"
 
     def openProject(self, path, confirm=False):
         workspace = os.path.abspath(path)
@@ -80,6 +85,8 @@ class Ctie(object):
         if not os.path.exists(storage) and not confirm:
             self.ui.onProjectInitConfirm(path)
             return
+
+        self.reset()
         self.workspace = workspace
         self.storage = storage
         if not os.path.exists(self.storage):
