@@ -70,6 +70,9 @@ class Item(object):
         except:
             pass
 
+    def getTitle(self):
+        return os.path.basename(self.path)
+
     def getWorkdir(self):
         path = os.path.join(ctie.instance.tempdir, self.hash)
         if not os.path.exists(path):

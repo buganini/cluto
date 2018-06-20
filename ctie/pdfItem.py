@@ -63,6 +63,8 @@ class PdfItem(BaseItem):
         self.rowSep = []
         self.colSep = []
 
+    def getTitle(self):
+        return "{} p{}".format(os.path.basename(self.path), self.page+1)
 
     def addRowSep(self, pos):
         self.rowSep.append(pos)

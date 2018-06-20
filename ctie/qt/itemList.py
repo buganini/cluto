@@ -54,7 +54,7 @@ class ItemList(QObject):
             label = QLabel()
             label.setStyleSheet("padding: 10px;")
             label.setAlignment(QtCore.Qt.AlignCenter)
-            label.setText(os.path.basename(item.path))
+            label.setText(item.getTitle())
             layout.addWidget(label)
 
             widget = self.QClickableWidget()
