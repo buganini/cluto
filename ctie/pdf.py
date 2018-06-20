@@ -43,6 +43,12 @@ class PILImage:
 	def save(self, path):
 		self.im.save(path)
 
+class DummyImage:
+	extension = "null"
+
+	def save(self, path):
+		pass
+
 class Line:
 	def __init__(self,s):
 		self.s_orig=str(s)
@@ -126,7 +132,7 @@ def getImage(file, page, bx1, by1, bx2, by2):
 	fmtmap={"JPEG":"jpg"}
 
 	if len(imgs) == 0:
-		return None
+		return DummyImage()
 
 	if len(imgs) == 1:
 		bf=open("blob", "rb")
