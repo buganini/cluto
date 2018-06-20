@@ -34,6 +34,7 @@ class Image:
 		f=open(path, "wb")
 		f.write(self.blob)
 		f.close()
+		return True
 
 class PILImage:
 	def __init__(self, im, extension):
@@ -42,12 +43,13 @@ class PILImage:
 
 	def save(self, path):
 		self.im.save(path)
+		return True
 
 class DummyImage:
 	extension = "null"
 
 	def save(self, path):
-		pass
+		return False
 
 class Line:
 	def __init__(self,s):

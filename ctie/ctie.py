@@ -425,12 +425,14 @@ class Ctie(object):
                         print("Exists:", path)
                     cnt = content.eval(item)
                     if hasattr(cnt, "save"):
-                        cnt.save(path)
+                        ok = cnt.save(path)
                     else:
                         f = open(path,'w')
                         f.write(cnt)
                         f.close()
-                    exported += 1
+                        ok = True
+                    if ok:
+                        exported += 1
                 newtodo.extend(item.children)
                 done += 1
                 cbProgress(done, total, exported, self.export_canceled)
