@@ -395,6 +395,7 @@ class Ctie(object):
         while todo:
             newtodo = []
             for item in todo:
+                item.resetCache()
                 total += 1
                 newtodo.extend(item.children)
             todo = newtodo

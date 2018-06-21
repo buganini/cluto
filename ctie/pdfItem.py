@@ -57,9 +57,6 @@ class PdfItem(BaseItem):
             cache_pdf[self.path] = doc
         if self.x2==-1 or self.y2==-1:
             self.x2, self.y2 = pdf.getPageSize(os.path.join(ctie.instance.workspace, self.path), self.page)
-        self.text = None
-        self.image = None
-        self.table = None
         self.rowSep = []
         self.colSep = []
 
@@ -84,13 +81,32 @@ class PdfItem(BaseItem):
             default = "Text"
         return self.tags.get("_type", default)
 
+    def getImage(self):
+        image = self.cache.get("image")
+        if image is None:
+            image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
+            self.cache["image"] = image
+        return image
+
+    def getText(self):
+        text = self.cache.get("text")
+        if text is None:
+            text = pdf.getText(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
+            self.cache["text"] = text
+        return text
+
+    def getTable(self):
+        table = self.cache.get("table")
+        if table is None:
+            table = pdf.getTable(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2, rSep=self.rowSep, cSep=self.colSep)
+            self.cache["table"] = table
+        return table
+
     def getExtension(self):
         if self.getType()=="Text":
             return "txt"
         elif self.getType()=="Image":
-            if self.image is None:
-                self.image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
-            return self.image.extension
+            return self.getImage().extension
         elif self.getType()=="Table":
             return "csv"
         else:
@@ -98,17 +114,11 @@ class PdfItem(BaseItem):
 
     def getContent(self):
         if self.getType()=="Text":
-            if True:
-                self.text = pdf.getText(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
-            return self.text
+            return self.getText()
         elif self.getType()=="Image":
-            if True:
-                self.image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
-            return self.image
+            return self.getImage()
         elif self.getType()=="Table":
-            if True:
-                self.table = pdf.getTable(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2, rSep=self.rowSep, cSep=self.colSep)
-            return self.table
+            return self.getTable()
         else:
             return None
 

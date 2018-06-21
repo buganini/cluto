@@ -43,6 +43,7 @@ class Item(object):
         self.y2 = int(y2)
         self.children = []
         self.tags = dict(tags)
+        self.cache = {}
         if self.path is None:
             self.path = parent.path
 
@@ -55,11 +56,16 @@ class Item(object):
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['listener']
+        del state['cache']
         return state
 
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.listener = []
+        self.cache = {}
+
+    def resetCache(self):
+        self.cache = {}
 
     def addListener(self, l):
         self.listener.append(l)
