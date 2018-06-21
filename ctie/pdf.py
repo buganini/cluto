@@ -289,6 +289,9 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 				x1, y1 = translate(ctm[-1], x1, y1)
 				x2, y2 = translate(ctm[-1], x2, y2)
 
+				x1, x2 = utils.asc(x1, x2)
+				y1, y2 = utils.asc(y1, y2)
+
 				c = l.readStr()
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
 					text[(x1,y1,x2,y2)]=c
@@ -304,6 +307,10 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 				x2, y2 = translate(m, width, height)
 				x1, y1 = translate(ctm[-1], x1, y1)
 				x2, y2 = translate(ctm[-1], x2, y2)
+
+				x1, x2 = utils.asc(x1, x2)
+				y1, y2 = utils.asc(y1, y2)
+
 				if pagen==page:
 					intersect = utils.intersect(x1, y1, x2, y2, bx1, by1, bx2, by2)
 					if intersect and utils.dimension(*intersect)/utils.dimension(x1, y1, x2, y2) > 0.8:
@@ -417,6 +424,9 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 				# x2, y2 = translate(m, x2, y2)
 				x1, y1 = translate(ctm[-1], x1, y1)
 				x2, y2 = translate(ctm[-1], x2, y2)
+
+				x1, x2 = utils.asc(x1, x2)
+				y1, y2 = utils.asc(y1, y2)
 
 				c = l.readStr()
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
