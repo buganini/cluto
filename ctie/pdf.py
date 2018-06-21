@@ -22,6 +22,7 @@ from ranges import CRanges
 import utils
 import PIL.Image
 import io
+import functools
 
 xpdfimport = "./xpdfimport"
 
@@ -200,12 +201,19 @@ def getText(file, page, bx1, by1, bx2, by2):
 	return content[0]
 
 def getPageSize(file, page):
+	sizes = getPageSizes(file)
+	if 0 <= page and page < len(sizes):
+		return sizes[page]
+	return -1, -1
+
+@functools.lru_cache(maxsize=4)
+def getPageSizes(file):
 	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
 	pdf.stdin.write(b"\n")
 	pdf.stdin.flush()
 
-	pagen=-1
+	ret = []
 
 	end = False
 	while True:
@@ -223,14 +231,12 @@ def getPageSize(file, page):
 			l = Line(ls)
 			cmd = l.readToken()
 			if cmd=='startPage':
-				pagen += 1
 				page_width = l.readFloat()
 				page_height = l.readFloat()
-				if pagen==page:
-					return page_width, page_height
+				ret.append((page_width, page_height))
 		if end:
 			break
-	return -1, -1
+	return ret
 
 def _getContent(file, page, bx1, by1, bx2, by2):
 	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
