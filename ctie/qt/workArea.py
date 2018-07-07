@@ -138,7 +138,11 @@ class WorkArea():
             item_painter = QtGui.QPainter(self)
             item.drawQT(item_painter, self.scale)
 
+            fontSize = 6*item.scaleFactor
+            padding = 1*item.scaleFactor
+
             painter = QtGui.QPainter(self)
+            painter.setFont(QtGui.QFont('Consolas', fontSize))
             painter.scale(self.scale, self.scale)
             pen = QtGui.QPen(QtCore.Qt.red, 1/self.scale, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap)
 
@@ -159,25 +163,40 @@ class WorkArea():
                 yoff = 0
 
             for i, child in enumerate(item.children):
+                index = str(i+1)
                 x1 = (child.x1-item.x1)
                 y1 = (child.y1-item.y1)
                 x2 = (child.x2-item.x1)
                 y2 = (child.y2-item.y1)
+                _x, _y = x1, y1
+                _w, _h = x2-x1, y2-y1
                 if i in self.ui.core.selections:
                     pen.setColor(QtCore.Qt.blue)
                     painter.setPen(pen)
                     if self.mode=='move':
-                        painter.drawRect(x1+xoff, y1+yoff, x2-x1, y2-y1)
+                        _x = x1 + xoff, y1 + yoff
+                        _y = y1 + yoff
+                        painter.drawRect(_x, _y, x2-x1, y2-y1)
                     elif self.mode=='resize':
                         ex1, ex2 = asc(x1, x2+xoff)
                         ey1, ey2 = asc(y1, y2+yoff)
-                        painter.drawRect(ex1, ey1, ex2-ex1, ey2-ey1)
+                        _x = ex1
+                        _y = ey1
+                        _w = ex2-ex1
+                        _h = ey2-ey1
+                        painter.drawRect(_x, _y, _w, _h)
                     else:
                         painter.drawRect(x1, y1, x2-x1, y2-y1)
                 else:
                     pen.setColor(QtCore.Qt.red)
                     painter.setPen(pen)
                     painter.drawRect(x1, y1, x2-x1, y2-y1)
+                _x += padding
+                _y += padding
+                _w -= 2*padding
+                _h -= 2*padding
+                painter.drawText(_x, _y, _w, _h, QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop, index)
+                painter.drawText(_x, _y, _w, _h, QtCore.Qt.AlignRight|QtCore.Qt.AlignBottom, index)
 
             if item.getType()=="Table":
                 pen.setColor(QtGui.QColor(0xff, 0xa5, 0x00))

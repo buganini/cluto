@@ -47,6 +47,7 @@ class PdfItem(BaseItem):
             item = PdfItem(doc = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
             core.clips.append(item)
 
+    scaleFactor = 100
     def __init__(self, doc=None, page=None, **args):
         global cache_pdf
         super(PdfItem, self).__init__(**args)

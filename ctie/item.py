@@ -34,6 +34,7 @@ import ctie
 from cql import *
 
 class Item(object):
+    scaleFactor = 1
     def __init__(self, path = None, parent = None, x1 = 0, y1 = 0, x2 = 0, y2 = 0, tags = {}):
         self.path = path
         self.parent = parent
