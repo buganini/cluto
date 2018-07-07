@@ -312,8 +312,8 @@ class Item(object):
         self.x2 = x2
         self.y2 = y2
 
-    def hsplit(self):
+    def rowsToChildren(self):
         pass
 
-    def vsplit(self):
+    def colsToChildren(self):
         pass

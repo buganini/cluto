@@ -21,13 +21,13 @@ class Menubar():
         batchShrink.triggered.connect(self.onBatchShrink)
         menuBatch.addAction(batchShrink)
 
-        batchVSplit = QAction('Detect Vertical Splitter', self.menubar)
-        batchVSplit.triggered.connect(self.onBatchVSplit)
-        menuBatch.addAction(batchVSplit)
+        batchColsToChildren = QAction('Columns to children', self.menubar)
+        batchColsToChildren.triggered.connect(self.onBatchColsToChildren)
+        menuBatch.addAction(batchColsToChildren)
 
-        batchHSplit = QAction('Detect Horizontal Splitter', self.menubar)
-        batchHSplit.triggered.connect(self.onBatchHSplit)
-        menuBatch.addAction(batchHSplit)
+        batchRowsToChildren = QAction('Rows to children', self.menubar)
+        batchRowsToChildren.triggered.connect(self.onBatchRowsToChildren)
+        menuBatch.addAction(batchRowsToChildren)
 
         batchAutoPaste = QAction('Auto Paste', self.menubar)
         batchAutoPaste.triggered.connect(self.onBatchAutoPaste)
@@ -47,13 +47,13 @@ class Menubar():
         thisShrink.triggered.connect(self.onThisShrink)
         menuThis.addAction(thisShrink)
 
-        thisVSplit = QAction('Detect Vertical Splitter', self.menubar)
-        thisVSplit.triggered.connect(self.onThisVSplit)
-        menuThis.addAction(thisVSplit)
+        thisColsToChildren = QAction('Columns to children', self.menubar)
+        thisColsToChildren.triggered.connect(self.onThisColsToChildren)
+        menuThis.addAction(thisColsToChildren)
 
-        thisHSplit = QAction('Detect Horizontal Splitter', self.menubar)
-        thisHSplit.triggered.connect(self.onThisHSplit)
-        menuThis.addAction(thisHSplit)
+        thisRowsToChildren = QAction('Rows to children', self.menubar)
+        thisRowsToChildren.triggered.connect(self.onThisRowsToChildren)
+        menuThis.addAction(thisRowsToChildren)
 
         menuOCR = menubar.addMenu('&OCR')
         ocrRegex = QAction('Regular Expression', self.menubar)
@@ -66,11 +66,11 @@ class Menubar():
     def doBatchTrim(self, left, top, right, bottom, margin):
         self.ui.core.batchTrim(left, top, right, bottom, margin)
 
-    def onBatchVSplit(self):
-        self.ui.core.batchVSplit()
+    def onBatchColsToChildren(self):
+        self.ui.core.batchColsToChildren()
 
-    def onBatchHSplit(self):
-        self.ui.core.batchHSplit()
+    def onBatchRowsToChildren(self):
+        self.ui.core.batchRowsToChildren()
 
     def onBatchShrink(self):
         EdgeDialog(self.ui, "Batch Shrink", "Amount", 1, self.doBatchShrink)
@@ -103,14 +103,14 @@ class Menubar():
         if item:
             item.shrink(left, top, right, bottom, amount)
 
-    def onThisVSplit(self):
+    def onThisColsToChildren(self):
         item = self.ui.core.getCurrentItem()
         if item:
-            item.vsplit()
+            item.colsToChildren()
             self.ui.onContentChanged()
 
-    def onThisHSplit(self):
+    def onThisRowsToChildren(self):
         item = self.ui.core.getCurrentItem()
         if item:
-            item.hsplit()
+            item.rowsToChildren()
             self.ui.onContentChanged()

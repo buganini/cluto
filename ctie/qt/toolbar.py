@@ -82,7 +82,6 @@ class Toolbar():
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         toolBar.addWidget(spacer)
 
-        self.tbExport = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-revert-to-saved-ltr.png")), "Export")
         self.tbDisplayAreaPath = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "stock-vchain-16.png")), "Display Area(s) Path")
         self.tbOcrMode = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-bold.png")), "OCR Mode")
         self.tbCollationMode = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-edit.png")), "Collation Mode")

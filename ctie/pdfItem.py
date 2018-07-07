@@ -143,18 +143,35 @@ class PdfItem(BaseItem):
             cache_pdf_page[self.path][self.page] = cache_pdf[self.path].page(self.page)
         return cache_pdf_page[self.path][self.page]
 
-    def hsplit(self):
-        vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
-        if len(hs)==0:
-            return
-        hs = [self.y1] + hs + [self.y2]
+    def getBounds(self):
+        return pdf.getBounds(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
+
+    def getTableItem(self):
+        tableItem = self
+        while not tableItem.getType()!="Table" and tableItem.parent:
+            tableItem = tableItem.parent
+        return tableItem
+
+    def rowsToChildren(self):
+        tableItem = self.getTableItem()
+        if tableItem.rowSep:
+            hs = [self.y1] + tableItem.rowSep + [self.y2]
+        else:
+            vs, hs = pdf.getLines(self.getFullPath(), self.page, tableItem.x1, tableItem.y1, tableItem.x2, tableItem.y2)
+            if len(hs)==0:
+                return
+            hs = [self.y1] + hs + [self.y2]
         for i in range(len(hs) - 1):
             self.addChild(x1 = self.x1, y1 = hs[i], x2 = self.x2, y2 = hs[i+1])
 
-    def vsplit(self):
-        vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
-        if len(vs)==0:
-            return
-        vs = [self.x1] + vs + [self.x2]
+    def colsToChildren(self):
+        tableItem = self.getTableItem()
+        if tableItem.colSep:
+            vs = [self.x1] + tableItem.colSep + [self.x2]
+        else:
+            vs, hs = pdf.getLines(self.getFullPath(), self.page, tableItem.x1, tableItem.y1, tableItem.x2, tableItem.y2)
+            if len(vs)==0:
+                return
+            vs = [self.x1] + vs + [self.x2]
         for i in range(len(vs) - 1):
             self.addChild(x1 = vs[i], y1 = self.y1, x2 = vs[i+1], y2 = self.y2)

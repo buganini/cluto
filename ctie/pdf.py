@@ -571,7 +571,7 @@ def getLines(file, page, bx1, by1, bx2, by2):
 
 	ctm=[]
 	end = False
-	contentPos = []
+	contentBounds = []
 	while True:
 		#pager
 		cmd_queue=[]
@@ -624,7 +624,7 @@ def getLines(file, page, bx1, by1, bx2, by2):
 
 				x1, x2 = utils.asc(x1, x2)
 				y1, y2 = utils.asc(y1, y2)
-				contentPos.append((x1, y1, x2, y2))
+				contentBounds.append((x1, y1, x2, y2))
 			elif cmd=="drawImage":
 				width = l.readInt()
 				height = l.readInt()
@@ -640,7 +640,7 @@ def getLines(file, page, bx1, by1, bx2, by2):
 				x1, x2 = utils.asc(x1, x2)
 				y1, y2 = utils.asc(y1, y2)
 
-				# contentPos.append((x1, y1, x2, y2))
+				# contentBounds.append((x1, y1, x2, y2))
 			elif cmd in ("strokePath", "fillPath", "eoFillPath"):
 				if pagen!=page:
 					continue
@@ -686,7 +686,7 @@ def getLines(file, page, bx1, by1, bx2, by2):
 			continue
 
 		hasContent = False
-		for pos in contentPos:
+		for pos in contentBounds:
 			if utils.intersect(minx, miny, maxx, maxy, pos[0], pos[1], pos[2], pos[3]):
 				hasContent = True
 				break

@@ -638,16 +638,16 @@ class Ctie(object):
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
-    def batchVSplit(self):
+    def batchColsToChildren(self):
         for item in self.items:
-            item.vsplit()
+            item.colsToChildren()
         self.ui.onContentChanged()
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
-    def batchHSplit(self):
+    def batchRowsToChildren(self):
         for item in self.items:
-            item.hsplit()
+            item.rowsToChildren()
         self.ui.onContentChanged()
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
