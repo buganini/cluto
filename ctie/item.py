@@ -76,6 +76,9 @@ class Item(object):
         except:
             pass
 
+    def getFullPath(self):
+        return os.path.join(ctie.instance.workspace, self.path)
+
     def getTitle(self):
         return os.path.basename(self.path)
 

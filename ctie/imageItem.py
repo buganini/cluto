@@ -52,7 +52,7 @@ class ImageItem(Item):
     def __init__(self, **args):
         super(ImageItem, self).__init__(**args)
         if self.x2==-1 or self.y2==-1:
-            im = Image.open(os.path.join(ctie.instance.workspace, self.path))
+            im = Image.open(self.getFullPath())
             self.x2, self.y2 = im.size
             del(im)
 
@@ -64,7 +64,7 @@ class ImageItem(Item):
         except:
             o = None
         if not o:
-            o = Image.open(os.path.join(ctie.instance.workspace, self.path)).convert('RGB')
+            o = Image.open(self.getFullPath()).convert('RGB')
             cache_pil_rgb[oid] = weakref.ref(o)
         return o
 
@@ -76,12 +76,12 @@ class ImageItem(Item):
         except:
             o = None
         if not o:
-            o = Image.open(os.path.join(ctie.instance.workspace, self.path)).convert('L')
+            o = Image.open(self.getFullPath()).convert('L')
             cache_pil_l[oid] = weakref.ref(o)
         return o
 
     def get_pil_cropped(self):
-        return Image.open(os.path.join(ctie.instance.workspace, self.path)).convert('RGB').crop((self.x1, self.y1, self.x2, self.y2))
+        return Image.open(self.getFullPath()).convert('RGB').crop((self.x1, self.y1, self.x2, self.y2))
 
     def get_cropped(self):
         bfile = os.path.join(self.getWorkdir(), "cropped-%dx%dx%dx%d.jpg" % (self.x1, self.y1, self.x2, self.y2))

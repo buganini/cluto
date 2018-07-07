@@ -56,7 +56,7 @@ class PdfItem(BaseItem):
         if doc:
             cache_pdf[self.path] = doc
         if self.x2==-1 or self.y2==-1:
-            self.x2, self.y2 = pdf.getPageSize(os.path.join(ctie.instance.workspace, self.path), self.page)
+            self.x2, self.y2 = pdf.getPageSize(self.getFullPath(), self.page)
         self.rowSep = []
         self.colSep = []
 
@@ -84,21 +84,21 @@ class PdfItem(BaseItem):
     def getImage(self):
         image = self.cache.get("image")
         if image is None:
-            image = pdf.getImage(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
+            image = pdf.getImage(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
             self.cache["image"] = image
         return image
 
     def getText(self):
         text = self.cache.get("text")
         if text is None:
-            text = pdf.getText(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2)
+            text = pdf.getText(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
             self.cache["text"] = text
         return text
 
     def getTable(self):
         table = self.cache.get("table")
         if table is None:
-            table = pdf.getTable(os.path.join(ctie.instance.workspace, self.path), self.page, self.x1, self.y1, self.x2, self.y2, rSep=self.rowSep, cSep=self.colSep)
+            table = pdf.getTable(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2, rSep=self.rowSep, cSep=self.colSep)
             self.cache["table"] = table
         return table
 
@@ -132,7 +132,7 @@ class PdfItem(BaseItem):
     def getPdfPage(self):
         global cache_pdf, cache_pdf_page
         if self.path not in cache_pdf:
-            doc = QtPoppler.Document.load(os.path.join(ctie.instance.workspace, self.path))
+            doc = QtPoppler.Document.load(self.getFullPath())
             doc.setRenderHint(QtPoppler.Document.Antialiasing)
             doc.setRenderHint(QtPoppler.Document.TextAntialiasing)
             cache_pdf[self.path] = doc
