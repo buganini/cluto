@@ -383,7 +383,7 @@ class Ctie(object):
         fp.close()
         print("Save to {}".format(path))
 
-    def export(self, filter, outputdir, filename, content, cbProgress):
+    def export(self, filter, outputdir, filename, content, overwrite, cbProgress):
         self.export_canceled = False
         filter = CQL(filter)
         filename = CQL(filename)
@@ -424,6 +424,8 @@ class Ctie(object):
                         os.makedirs(pdir)
                     if os.path.exists(path):
                         print("Exists:", path)
+                        if not overwrite:
+                            continue
                     cnt = content.eval(item)
                     if hasattr(cnt, "save"):
                         ok = cnt.save(path)

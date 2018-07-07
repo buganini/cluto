@@ -147,6 +147,7 @@ class ExportDialog(QtCore.QObject):
         self.edit_filter.setText("%{COUNT}==0")
 
         self.edit_outputdir = self.exportui.findChild(QLineEdit, "edit_outputdir")
+        self.chk_overwrite = self.exportui.findChild(QCheckBox, "overwrite")
         self.btn_browse = self.exportui.findChild(QToolButton, "btn_browse")
         self.btn_browse.clicked.connect(self.onBrowse)
 
@@ -192,16 +193,19 @@ class ExportDialog(QtCore.QObject):
                 outputdir = d[1]["outputdir"]
                 filename = d[1]["filename"]
                 content = d[1]["content"]
+                overwrite = d[1].get("overwrite", True)
                 break
         else:
             filter = ""
             outputdir = ""
             filename = ""
             content = ""
+            overwrite = True
         self.edit_filter.setText(filter)
         self.edit_outputdir.setText(outputdir)
         self.edit_filename.setText(filename)
         self.edit_content.setPlainText(content)
+        self.chk_overwrite.setChecked(overwrite)
 
     def onSave(self):
         exports = self.edit_export.text()
@@ -210,6 +214,7 @@ class ExportDialog(QtCore.QObject):
             "outputdir": self.edit_outputdir.text(),
             "filename": self.edit_filename.text(),
             "content": self.edit_content.toPlainText(),
+            "overwrite": self.chk_overwrite.isChecked()
         }
         changed = False
         for d in self.exports:
@@ -233,7 +238,8 @@ class ExportDialog(QtCore.QObject):
         outputdir = self.edit_outputdir.text()
         filename = self.edit_filename.text()
         content = self.edit_content.toPlainText()
-        self.ui.core.export(filter, outputdir, filename, content, self.onProgress)
+        overwrite = self.chk_overwrite.isChecked()
+        self.ui.core.export(filter, outputdir, filename, content, overwrite, self.onProgress)
 
     def onProgress(self, done, total, exported, finished):
         self.progress_signal.emit(done, total, exported, finished)
