@@ -74,10 +74,10 @@ class WorkArea():
                     yoff = self.selend[1]-self.selstart[1]
                     self.ui.core.resize(xoff, yoff)
             elif self.selend!=(None, None):
-                if self.ui.core.horizontalSplitter:
+                if self.ui.core.verticalSplitter:
                     x = self.selend[0]
                     y = self.selend[1]
-                    if self.ui.core.verticalSplitter:
+                    if self.ui.core.horizontalSplitter:
                         item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x1+x, y2 = item.y1+y)
                         item.addChild(x1 = item.x1+x, y1 = item.y1, x2 = item.x2, y2 = item.y1+y)
                         item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x1+x, y2 = item.y2)
@@ -85,10 +85,10 @@ class WorkArea():
                     else:
                         item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x1+x, y2 = item.y2)
                         item.addChild(x1 = item.x1+x, y1 = item.y1, x2 = item.x2, y2 = item.y2)
-                if self.ui.core.verticalSplitter:
+                if self.ui.core.horizontalSplitter:
                     x = self.selend[0]
                     y = self.selend[1]
-                    if self.ui.core.horizontalSplitter:
+                    if self.ui.core.verticalSplitter:
                         item.addChild(x1 = item.x1, y1 = item.y1, x2 = item.x1+x, y2 = item.y1+y)
                         item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x1+x, y2 = item.y2)
                         item.addChild(x1 = item.x1+x, y1 = item.y1, x2 = item.x2, y2 = item.y1+y)
@@ -189,10 +189,10 @@ class WorkArea():
 
             pen.setColor(QtCore.Qt.magenta)
             painter.setPen(pen)
-            if self.ui.core.horizontalSplitter and self.selend!=(None, None):
+            if self.ui.core.verticalSplitter and self.selend!=(None, None):
                 painter.drawLine(self.selend[0], 0.0, self.selend[0], item.y2-item.y1)
 
-            if self.ui.core.verticalSplitter and self.selend!=(None, None):
+            if self.ui.core.horizontalSplitter and self.selend!=(None, None):
                 painter.drawLine(0.0, self.selend[1], item.x2-item.x1, self.selend[1])
 
             pen.setColor(QtCore.Qt.green)
