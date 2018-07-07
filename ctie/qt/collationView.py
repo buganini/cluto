@@ -91,6 +91,8 @@ class CollationView():
     def editTextChanged(self):
         if self.blockItemUpdated:
             return
+        if not self.item:
+            return
         tag = self.ui.core.focusTag
         self.blockItemUpdated = True
         self.item.setTag(tag, self.edit.toPlainText())
