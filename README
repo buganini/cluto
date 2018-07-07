@@ -1,7 +1,8 @@
 Dependencies:
-	GTK3
+	Python3
+	PyQT5
+	PyQT5-Poppler
 	PIL
-	Poppler
 	xpdfimport from LibreOffice/OpenOffice.org
 
 Query Language:
