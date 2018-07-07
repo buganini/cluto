@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QTimer
 
 class QAutoEdit(QPlainTextEdit):
     focusIn = pyqtSignal()
@@ -12,12 +12,30 @@ class QAutoEdit(QPlainTextEdit):
         font.setStyleHint(QtGui.QFont.TypeWriter)
         if not fontSize is None:
             font.setPointSize(fontSize)
-        self.prevContent = True
+        self.timer = None
+        self.prevContent = None
         self.blocked = False
         self.setFont(font)
 
         self.updateHeight()
         self.textChanged.connect(self.onTextChanged)
+
+    def autoFit(self, immediate):
+        if self.timer:
+            self.timer.stop()
+        if immediate:
+            self._autoFit()
+        else:
+            self.timer = QTimer(self)
+            self.timer.singleShot(250, self._autoFit)
+
+    def _autoFit(self):
+        if self.blocked:
+            return
+        content = self.toPlainText()
+        if self.prevContent != content:
+            self.prevContent = content
+            self.updateHeight()
 
     def focusInEvent(self, event):
         QPlainTextEdit.focusInEvent(self, event)
@@ -29,19 +47,19 @@ class QAutoEdit(QPlainTextEdit):
 
     def setPlainText(self, text):
         QPlainTextEdit.setPlainText(self, text)
-        self.onTextChanged()
+        self.autoFit(True)
 
     def setPlaceholderText(self, text):
         QPlainTextEdit.setPlaceholderText(self, text)
         self.updateHeight()
 
     def onTextChanged(self):
-        if self.blocked:
-            return
-        content = self.toPlainText()
-        if self.prevContent != content:
-            self.prevContent = content
-            self.updateHeight()
+        self.autoFit(True)
+
+    def resizeEvent(self, newSize):
+        self.prevContent = None
+        QPlainTextEdit.resizeEvent(self, newSize)
+        self.autoFit(False)
 
     def updateHeight(self):
         currText = self.toPlainText()
