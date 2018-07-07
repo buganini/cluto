@@ -621,6 +621,7 @@ class Ctie(object):
             done += 1
             print("{}/{}".format(done, total))
         self.edge_limiter(self.items)
+        self.ui.onContentChanged()
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
@@ -628,6 +629,21 @@ class Ctie(object):
         for item in self.items:
             item.shrink(left, top, right, bottom, amount)
         self.edge_limiter(self.items)
+        self.ui.onContentChanged()
+        self.ui.onItemChanged()
+        self.ui.onItemListChanged()
+
+    def batchVSplit(self):
+        for item in self.items:
+            item.vsplit()
+        self.ui.onContentChanged()
+        self.ui.onItemChanged()
+        self.ui.onItemListChanged()
+
+    def batchHSplit(self):
+        for item in self.items:
+            item.hsplit()
+        self.ui.onContentChanged()
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 

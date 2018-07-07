@@ -46,4 +46,8 @@ def intersect(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2):
     return None
 
 def dimension(x1, y1, x2, y2):
-    return (x2-x1)*(y2-y1)
+    dx = x2-x1
+    dy = y2-y1
+    if dx < 0 or dy < 0:
+        return -1
+    return dx*dy

@@ -310,3 +310,9 @@ class Item(object):
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
+
+    def hsplit(self):
+        pass
+
+    def vsplit(self):
+        pass

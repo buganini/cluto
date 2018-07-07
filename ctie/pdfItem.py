@@ -141,3 +141,19 @@ class PdfItem(BaseItem):
         if self.page not in cache_pdf_page[self.path]:
             cache_pdf_page[self.path][self.page] = cache_pdf[self.path].page(self.page)
         return cache_pdf_page[self.path][self.page]
+
+    def hsplit(self):
+        vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
+        if len(hs)==0:
+            return
+        hs = [self.y1] + hs + [self.y2]
+        for i in range(len(hs) - 1):
+            self.addChild(x1 = self.x1, y1 = hs[i], x2 = self.x2, y2 = hs[i+1])
+
+    def vsplit(self):
+        vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
+        if len(vs)==0:
+            return
+        vs = [self.x1] + vs + [self.x2]
+        for i in range(len(vs) - 1):
+            self.addChild(x1 = vs[i], y1 = self.y1, x2 = vs[i+1], y2 = self.y2)

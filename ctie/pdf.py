@@ -61,14 +61,23 @@ class Line:
 		return bool(self.s)
 
 	def unshift(self, token):
+		if token is None:
+			return
 		self.s = token + " " + self.s
 
-	def readToken(self):
+	def splitToken(self):
 		try:
-			r, self.s = re.match("^(.[^ ]*) ?(.*)$", self.s).groups()
-			return r
+			a, b = re.match("^(.[^ ]*) ?(.*)$", self.s).groups()
+			return a, b
 		except:
-			return ''
+			return None, self.s
+
+	def readToken(self):
+		r, self.s = self.splitToken()
+		return r
+
+	def peekToken(self):
+		return self.splitToken()[0]
 
 	def readStr(self):
 		s = self.readToken()
@@ -103,7 +112,7 @@ class Line:
 		return self.readToken()=="1"
 
 	def __str__(self):
-		return self.s_orig
+		return "{} / {}".format(self.s, self.s_orig)
 
 def charsToText(charsMap):
 	s=[]
@@ -252,7 +261,6 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 	imgs = []
 
 	ctm=[]
-	sn = 0
 	blobOffset = 0
 	end = False
 	while True:
@@ -366,7 +374,6 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 	text = {}
 
 	ctm=[]
-	sn = 0
 	blobOffset = 0
 	end = False
 	while True:
@@ -437,7 +444,7 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 				c = l.readStr()
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
 					text[(x1,y1,x2,y2)]=c
-			elif cmd in ("strokePath", "fillPath"):
+			elif cmd in ("strokePath", "fillPath", "eoFillPath"):
 				if pagen!=page or (rSep and cSep):
 					continue
 				pts = []
@@ -445,38 +452,40 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 					token = l.readToken()
 					if token == "subpath":
 						isBorder = True
-						isInside = False
 						closed_flag = l.readBool()
 						ps = []
 					else:
 						l.unshift(token)
-						if ps and isBorder and isInside:
+						if ps and isBorder:
 							pts.append(ps)
 
-					x = l.readFloat()
-					y = l.readFloat()
-					curve = l.readBool()
-					if curve:
-						isBorder = False
-						break
-					x, y = translate(ctm[-1], x, y)
-					if x>=bx1 and y>=by1 and x<=bx2 and y<=by2:
-						isInside = True
+					try:
+						x = l.readFloat()
+						y = l.readFloat()
+						curve = l.readBool()
+						if curve:
+							isBorder = False
+							break
+						x, y = translate(ctm[-1], x, y)
 						ps.append((x,y))
+					except:
+						break
 
-				if ps and isBorder and isInside:
+				if ps and isBorder:
 					pts.append(ps)
 
 				for ps in pts:
 					for i in range(len(ps)-1):
 						if ps[i][0] == ps[i+1][0]:
-							if ps[i][0] not in vsep:
-								vsep[ps[i][0]] = CRanges()
-							vsep[ps[i][0]].add(ps[i][1], ps[i+1][1])
-						else:
-							if ps[i][1] not in hsep:
-								hsep[ps[i][1]] = CRanges()
-							hsep[ps[i][1]].add(ps[i][0], ps[i+1][0])
+							if bx1 <= ps[i][0] and ps[i][0] <= bx2:
+								if ps[i][0] not in vsep:
+									vsep[ps[i][0]] = CRanges()
+								vsep[ps[i][0]].add(ps[i][1], ps[i+1][1])
+						elif ps[i][1] == ps[i+1][1]:
+							if by1 <= ps[i][1] and ps[i][1] <= by2:
+								if ps[i][1] not in hsep:
+									hsep[ps[i][1]] = CRanges()
+								hsep[ps[i][1]].add(ps[i][0], ps[i+1][0])
 		if end:
 			break
 
@@ -547,3 +556,152 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 		table.set(rmap[pos[0]], cmap[pos[1]], charsToText(textmap[pos]))
 
 	return table
+
+def getLines(file, page, bx1, by1, bx2, by2):
+	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+
+	pdf.stdin.write(b"\n")
+	pdf.stdin.flush()
+
+	pagen=-1
+
+	vsep = {}
+	hsep = {}
+	polygons = []
+
+	ctm=[]
+	end = False
+	contentPos = []
+	while True:
+		#pager
+		cmd_queue=[]
+		while True:
+			try:
+				ls = pdf.stdout.readline().decode("utf-8").rstrip("\r\n")
+				if not ls:
+					end = True
+					break
+			except :
+				end=True
+				break
+			l = Line(ls)
+			cmd = l.readToken()
+			if cmd=='startPage':
+				pagen += 1
+				ctm=[(1, 0, 0, 1, 0, 0)]
+			elif cmd=='endPage':
+				if pagen==page:
+					end=True
+			elif cmd=="updateCtm":
+				m0 = l.readFloat()
+				m1 = l.readFloat()
+				m2 = l.readFloat()
+				m3 = l.readFloat()
+				m4 = l.readFloat()
+				m5 = l.readFloat()
+				ctm[-1] = (m0, m1, m2, m3, m4, m5)
+			elif cmd=="saveState":
+				ctm.append(ctm[-1])
+			elif cmd=="restoreState":
+				ctm.pop()
+			elif cmd=="drawChar":
+				if pagen!=page:
+					continue
+				x1 = l.readFloat()
+				y1 = l.readFloat()
+				x2 = l.readFloat()
+				y2 = l.readFloat()
+				m00 = l.readFloat()
+				m01 = l.readFloat()
+				m10 = l.readFloat()
+				m11 = l.readFloat()
+				fontSize = l.readFloat()
+				m = (m00, m01, m10, m11, 0, 0)
+				# x1, y1 = translate(m, x1, y1)
+				# x2, y2 = translate(m, x2, y2)
+				x1, y1 = translate(ctm[-1], x1, y1)
+				x2, y2 = translate(ctm[-1], x2, y2)
+
+				x1, x2 = utils.asc(x1, x2)
+				y1, y2 = utils.asc(y1, y2)
+				contentPos.append((x1, y1, x2, y2))
+			elif cmd=="drawImage":
+				width = l.readInt()
+				height = l.readInt()
+				maskBufSize = l.readInt()
+				fmt = l.readToken()
+				bufSize = l.readInt()
+				m = (1.0/width, 0, 0, -1.0/height, 0, 1)
+				x1, y1 = translate(m, 0, 0)
+				x2, y2 = translate(m, width, height)
+				x1, y1 = translate(ctm[-1], x1, y1)
+				x2, y2 = translate(ctm[-1], x2, y2)
+
+				x1, x2 = utils.asc(x1, x2)
+				y1, y2 = utils.asc(y1, y2)
+
+				# contentPos.append((x1, y1, x2, y2))
+			elif cmd in ("strokePath", "fillPath", "eoFillPath"):
+				if pagen!=page:
+					continue
+				pts = []
+				while l:
+					token = l.readToken()
+					if token == "subpath":
+						isBorder = True
+						closed_flag = l.readBool()
+						ps = []
+					else:
+						l.unshift(token)
+						if ps and isBorder:
+							pts.extend(ps)
+					try:
+						x = l.readFloat()
+						y = l.readFloat()
+						curve = l.readBool()
+						if curve:
+							isBorder = False
+							break
+						x, y = translate(ctm[-1], x, y)
+						ps.append((x,y))
+					except:
+						break
+
+				if ps and isBorder:
+					pts.extend(ps)
+
+				polygons.append(pts)
+		if end:
+			break
+
+	vsep = []
+	hsep = []
+	for ps in polygons:
+		minx = min([p[0] for p in ps])
+		miny = min([p[1] for p in ps])
+		maxx = max([p[0] for p in ps])
+		maxy = max([p[1] for p in ps])
+
+		if not utils.intersect(minx, miny, maxx, maxy, bx1, by1, bx2, by2):
+			continue
+
+		hasContent = False
+		for pos in contentPos:
+			if utils.intersect(minx, miny, maxx, maxy, pos[0], pos[1], pos[2], pos[3]):
+				hasContent = True
+				break
+
+		if hasContent:
+			continue
+
+		dx = maxx - minx
+		dy = maxy - miny
+		if dx == 0 or dy == 0:
+			continue
+
+		if dx > dy:
+			hsep.append(miny)
+		elif dx < dy:
+			vsep.append(minx)
+
+	return sorted(vsep), sorted(hsep)
