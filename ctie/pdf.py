@@ -444,48 +444,7 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 				c = l.readStr()
 				if x1>=bx1 and y1>=by1 and x2<=bx2 and y2<=by2:
 					text[(x1,y1,x2,y2)]=c
-			elif cmd in ("strokePath", "fillPath", "eoFillPath"):
-				if pagen!=page or (rSep and cSep):
-					continue
-				pts = []
-				while l:
-					token = l.readToken()
-					if token == "subpath":
-						isBorder = True
-						closed_flag = l.readBool()
-						ps = []
-					else:
-						l.unshift(token)
-						if ps and isBorder:
-							pts.append(ps)
 
-					try:
-						x = l.readFloat()
-						y = l.readFloat()
-						curve = l.readBool()
-						if curve:
-							isBorder = False
-							break
-						x, y = translate(ctm[-1], x, y)
-						ps.append((x,y))
-					except:
-						break
-
-				if ps and isBorder:
-					pts.append(ps)
-
-				for ps in pts:
-					for i in range(len(ps)-1):
-						if ps[i][0] == ps[i+1][0]:
-							if bx1 <= ps[i][0] and ps[i][0] <= bx2:
-								if ps[i][0] not in vsep:
-									vsep[ps[i][0]] = CRanges()
-								vsep[ps[i][0]].add(ps[i][1], ps[i+1][1])
-						elif ps[i][1] == ps[i+1][1]:
-							if by1 <= ps[i][1] and ps[i][1] <= by2:
-								if ps[i][1] not in hsep:
-									hsep[ps[i][1]] = CRanges()
-								hsep[ps[i][1]].add(ps[i][0], ps[i+1][0])
 		if end:
 			break
 
@@ -495,10 +454,7 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 		rSep.insert(0, 0)
 		rSep.append(by2)
 	else:
-		vsepPos = list(vsep.keys())
-		vsepPos.sort()
-		hsepPos = list(hsep.keys())
-		hsepPos.sort()
+		vsepPos, hsepPos = getLines(file, page, bx1, by1, bx2, by2)
 
 	textmap = {}
 
@@ -518,11 +474,11 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 					break
 		else:
 			for i in range(len(hsepPos)):
-				if y1 < hsepPos[i] and hsep[hsepPos[i]].contains(x1) > 1:
+				if y1 < hsepPos[i]:
 					row = i
 					break
 			for i in range(len(vsepPos)):
-				if x1 < vsepPos[i] and vsep[vsepPos[i]].contains(y1) > 1:
+				if x1 < vsepPos[i]:
 					col = i
 					break
 		pos = (row, col)
