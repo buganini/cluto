@@ -257,11 +257,8 @@ class CQL(object):
 			elif t=='TEXT':
 				return str(rval)
 			elif t=='JOIN':
-				if(type(rval[0])==unicode):
-					s = rval[0].encode("utf-8")
-				else:
-					s = rval[0]
-				a = [x.encode("utf-8") if type(x)==unicode else x for x in rval[1]]
+				s = str(rval[0])
+				a = [str(x) if type(x)!=str else x for x in rval[1]]
 				return s.join(a)
 			elif t=='COALESCE':
 				for i in rval:
