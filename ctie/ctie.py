@@ -188,7 +188,12 @@ class Ctie(object):
         self.ui.onSelectionChanged()
         item = self.getCurrentItem()
         if item:
-            self.ui.set_status('Area: %d Select: %s' % (len(item.children), ', '.join([str(i+1) for i in self.selections])))
+            if len(self.selections) == 1:
+                child = item.children[self.selections[0]]
+                bounds = " ({:.2f},{:.2f},{:.2f},{:.2f})".format(child.x1, child.y1, child.x2, child.y2)
+            else:
+                bounds = ""
+            self.ui.set_status('Area: {} Select: {}{}'.format(len(item.children), ', '.join([str(i+1) for i in self.selections]), bounds))
 
     def selectItemByIndex(self, index):
         orig = self.getCurrentItem()
