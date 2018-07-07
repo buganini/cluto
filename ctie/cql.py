@@ -293,6 +293,8 @@ class CQL(object):
 				return len(rval)
 			elif t=='REPLACE':
 				return rval[2].replace(rval[0], rval[1])
+			elif t=='REGEX_REPLACE':
+				return re.sub(rval[0], rval[1], rval[2])
 			elif t=='PRINT':
 				print(repr(rval))
 				return rval

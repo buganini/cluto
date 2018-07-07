@@ -62,6 +62,8 @@ Query Language:
 			split(";","a;b") -> ["a","b"]
 		REPLACE
 			replace("a","b","abc") -> "bbc"
+		REGEX_REPLACE
+			replace("[bc]+","z","abcdcbe") -> "azdze"
 		TEXT
 			TEXT(content) -> text
 		COALESCE
