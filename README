@@ -63,7 +63,7 @@ Query Language:
 		REPLACE
 			replace("a","b","abc") -> "bbc"
 		REGEX_REPLACE
-			replace("[bc]+","z","abcdcbe") -> "azdze"
+			regex_replace("[bc]+","z","abcdcbe") -> "azdze"
 		TEXT
 			TEXT(content) -> text
 		COALESCE
