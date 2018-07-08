@@ -113,7 +113,7 @@ class Item(object):
     def getSize(self):
         return self.x2-self.x1, self.y2-self.y1
 
-    def worker(self):
+    def __call__(self):
         pass
 
     def drawQT(self, painter, scale):

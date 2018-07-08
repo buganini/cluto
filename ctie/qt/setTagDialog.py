@@ -5,9 +5,10 @@ from PyQt5 import uic
 from datetime import datetime
 
 class SetTagDialog(QtCore.QObject):
-    def __init__(self, ui):
+    def __init__(self, ui, callback):
         QtCore.QObject.__init__(self)
         self.ui = ui
+        self.callback = callback
         self.ui.uiref["set_tag_dialog"] = self
         self.settagui = uic.loadUi(os.path.join(ui.app_path, "setTagDialog.ui"))
 
@@ -26,7 +27,7 @@ class SetTagDialog(QtCore.QObject):
         key = self.edit_key.text()
         value = self.edit_value.text()
         isFormula = self.chk_isformula.isChecked()
-        self.ui.core.batchSetTag(key, value, isFormula)
+        self.callback(key, value, isFormula)
         self.close()
 
     @QtCore.pyqtSlot()

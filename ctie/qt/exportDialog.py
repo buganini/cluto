@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5 import uic
 from .QAutoEdit import *
@@ -233,7 +232,7 @@ class ExportDialog(QtCore.QObject):
     def onApply(self):
         self.ui.core.worker.addFgJob(self)
 
-    def worker(self):
+    def __call__(self):
         filter = self.edit_filter.text()
         outputdir = self.edit_outputdir.text()
         filename = self.edit_filename.text()

@@ -32,7 +32,7 @@ class WorkerDispatcher():
                         job = None
 
                 if job:
-                    job.worker()
+                    job()
                     done = True
 
                 if not done:

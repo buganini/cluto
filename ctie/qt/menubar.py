@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import *
+from PyQt5 import QtCore
 from PyQt5 import QtGui
 from .QChrootFileDirDialog import *
 from .regexManager import *
@@ -6,8 +7,11 @@ from .edgeDialog import *
 from .pasteDialog import *
 from .setTagDialog import *
 
-class Menubar():
+class Menubar(QtCore.QObject):
+    progress_signal = QtCore.pyqtSignal(int, int)
+
     def __init__(self, ui, menubar):
+        QtCore.QObject.__init__(self)
         self.ui = ui
         self.menubar = menubar
 
@@ -60,29 +64,52 @@ class Menubar():
         ocrRegex.triggered.connect(self.onOcrRegex)
         menuOCR.addAction(ocrRegex)
 
+        self.progress_dialog = None
+        self.progress_signal.connect(self._onProgress)
+
     def onBatchTrim(self):
         EdgeDialog(self.ui, "Batch Trim", "Margin", 5, self.doBatchTrim)
 
     def doBatchTrim(self, left, top, right, bottom, margin):
-        self.ui.core.batchTrim(left, top, right, bottom, margin)
+        self.ui.core.batchTrim(left, top, right, bottom, margin, self.onProgress)
 
     def onBatchColsToChildren(self):
-        self.ui.core.batchColsToChildren()
+        self.ui.core.batchColsToChildren(self.onProgress)
 
     def onBatchRowsToChildren(self):
-        self.ui.core.batchRowsToChildren()
+        self.ui.core.batchRowsToChildren(self.onProgress)
 
     def onBatchShrink(self):
         EdgeDialog(self.ui, "Batch Shrink", "Amount", 1, self.doBatchShrink)
 
     def doBatchShrink(self, left, top, right, bottom, amount):
-        self.ui.core.batchShrink(left, top, right, bottom, amount)
+        self.ui.core.batchShrink(left, top, right, bottom, amount, self.onProgress)
 
     def onBatchAutoPaste(self):
         PasteDialog(self.ui)
 
     def onBatchSetTag(self):
-        SetTagDialog(self.ui)
+        SetTagDialog(self.ui, self.doBatchSetTag)
+
+    def doBatchSetTag(self, key, value, isFormula):
+        self.ui.core.batchSetTag(key, value, isFormula, self.onProgress)
+
+    def onProgress(self, done, total):
+        self.progress_signal.emit(done, total)
+
+    def _onProgress(self, done, total):
+        if done==total:
+            if self.progress_dialog and not self.progress_dialog.wasCanceled():
+                self.progress_dialog.hide()
+            self.progress_dialog = None
+        else:
+            if self.progress_dialog is None:
+                self.progress_dialog = QProgressDialog("Running batch task...", None, done, total, self.ui.ui)
+                self.progress_dialog.setAutoReset(False)
+                self.progress_dialog.setAutoClose(False)
+                self.progress_dialog.setWindowModality(QtCore.Qt.WindowModal)
+                self.progress_dialog.show()
+            self.progress_dialog.setValue(done)
 
     def onOcrRegex(self):
         RegexManager(self.ui)

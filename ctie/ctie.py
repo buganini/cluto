@@ -26,6 +26,7 @@
 import os
 from PIL import Image
 import pickle
+import functools
 
 from imageItem import *
 from pdfItem import *
@@ -561,13 +562,6 @@ class Ctie(object):
                 tags[tag] = ""
         return tags
 
-    def batchSetTag(self, key, value, isFormula):
-        if not key.startswith("_") and key not in self.tags:
-            self.tags.append(key)
-        for it in self.items:
-            it.setTag(key, value, isFormula)
-        self.ui.onTagChanged()
-
     def selectPrevChild(self):
         item = self.getCurrentItem()
         if item is None:
@@ -618,36 +612,79 @@ class Ctie(object):
         self.selections = range(0,len(item.children))
         self.onSelectionChanged()
 
-    def batchTrim(self, left, top, right, bottom, margin):
-        total = len(self.items)
+    def batchSetTag(self, key, value, isFormula, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchSetTag, key, value, isFormula, cbProgress))
+
+    def _batchSetTag(self, key, value, isFormula, cbProgress):
+        if not key.startswith("_") and key not in self.tags:
+            self.tags.append(key)
         done = 0
+        total = len(self.items)
+        cbProgress(done, total)
+        for it in self.items:
+            it.setTag(key, value, isFormula)
+            done += 1
+            cbProgress(done, total)
+        self.ui.onTagChanged()
+
+    def batchTrim(self, left, top, right, bottom, margin, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchTrim, left, top, right, bottom, margin, cbProgress))
+
+    def _batchTrim(self, left, top, right, bottom, margin, cbProgress):
+        done = 0
+        total = len(self.items)
+        cbProgress(done, total)
         for item in self.items:
             item.trim(left, top, right, bottom, margin)
             done += 1
-            print("{}/{}".format(done, total))
+            cbProgress(done, total)
         self.edge_limiter(self.items)
         self.ui.onContentChanged()
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
-    def batchShrink(self, left, top, right, bottom, amount):
+    def batchShrink(self, left, top, right, bottom, amount, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchShrink, left, top, right, bottom, amount, cbProgress))
+
+    def _batchShrink(self, left, top, right, bottom, amount, cbProgress):
+        done = 0
+        total = len(self.items)
+        cbProgress(done, total)
         for item in self.items:
             item.shrink(left, top, right, bottom, amount)
+            done += 1
+            cbProgress(done, total)
         self.edge_limiter(self.items)
         self.ui.onContentChanged()
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
-    def batchColsToChildren(self):
+    def batchColsToChildren(self, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchColsToChildren, cbProgress))
+
+    def _batchColsToChildren(self, cbProgress):
+        done = 0
+        total = len(self.items)
+        cbProgress(done, total)
         for item in self.items:
             item.colsToChildren()
+            done += 1
+            cbProgress(done, total)
         self.ui.onContentChanged()
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
-    def batchRowsToChildren(self):
+    def batchRowsToChildren(self, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchRowsToChildren, cbProgress))
+
+    def _batchRowsToChildren(self, cbProgress):
+        done = 0
+        total = len(self.items)
+        cbProgress(done, total)
         for item in self.items:
             item.rowsToChildren()
+            done += 1
+            cbProgress(done, total)
         self.ui.onContentChanged()
         self.ui.onItemChanged()
         self.ui.onItemListChanged()

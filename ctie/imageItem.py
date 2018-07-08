@@ -97,7 +97,7 @@ class ImageItem(Item):
     def getContent(self):
         return self.get_pil_cropped()
 
-    def worker(self):
+    def __call__(self):
         self.get_cropped()
         ctie.instance.worker.addBgJobs(self.children)
 
