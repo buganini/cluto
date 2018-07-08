@@ -258,6 +258,7 @@ class Ctie(object):
                 continue
             items.append(p)
         self.items = items
+        self.ui.set_status("{} items".format(len(self.items)))
 
     def addItemByPath(self, path):
         if os.path.isdir(path):
