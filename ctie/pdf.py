@@ -660,4 +660,4 @@ def getLines(file, page, bx1, by1, bx2, by2):
 		elif dx < dy:
 			vsep.append(minx)
 
-	return sorted(vsep), sorted(hsep)
+	return sorted(set(vsep)), sorted(set(hsep))
