@@ -73,7 +73,7 @@ class PdfItem(BaseItem):
         self.colSep.sort()
 
     def getTypes(self):
-        return ("Text", "Image", "Table")
+        return ("Text", "Image", "Images", "Table")
 
     def getType(self):
         if self.parent:
@@ -88,6 +88,13 @@ class PdfItem(BaseItem):
             image = pdf.getImage(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
             self.cache["image"] = image
         return image
+
+    def getImages(self):
+        images = self.cache.get("images")
+        if images is None:
+            images = pdf.getImage(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2, multiple=True)
+            self.cache["images"] = images
+        return images
 
     def getText(self):
         text = self.cache.get("text")
@@ -108,6 +115,8 @@ class PdfItem(BaseItem):
             return self.getText()
         elif self.getType()=="Image":
             return self.getImage()
+        elif self.getType()=="Images":
+            return self.getImages()
         elif self.getType()=="Table":
             return self.getTable()
         else:
