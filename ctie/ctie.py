@@ -437,7 +437,7 @@ class Ctie(object):
                     if hasattr(cnt, "save"):
                         ok = cnt.save(path)
                     else:
-                        f = open(path,'w')
+                        f = open(path+".txt",'w')
                         f.write(cnt)
                         f.close()
                         ok = True

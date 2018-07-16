@@ -32,7 +32,7 @@ class Image:
 		self.extension = extension
 
 	def save(self, path):
-		f=open(path, "wb")
+		f=open("{}.{}".format(path, self.extension), "wb")
 		f.write(self.blob)
 		f.close()
 		return True
@@ -43,7 +43,7 @@ class PILImage:
 		self.extension = extension
 
 	def save(self, path):
-		self.im.save(path)
+		self.im.save("{}.{}".format(path, self.extension))
 		return True
 
 class DummyImage:

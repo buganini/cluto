@@ -91,9 +91,6 @@ class ImageItem(Item):
             del(im)
         return bfile
 
-    def getExtension(self):
-        return "png"
-
     def getContent(self):
         return self.get_pil_cropped()
 

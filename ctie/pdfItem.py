@@ -103,16 +103,6 @@ class PdfItem(BaseItem):
             self.cache["table"] = table
         return table
 
-    def getExtension(self):
-        if self.getType()=="Text":
-            return "txt"
-        elif self.getType()=="Image":
-            return self.getImage().extension
-        elif self.getType()=="Table":
-            return "csv"
-        else:
-            return ""
-
     def getContent(self):
         if self.getType()=="Text":
             return self.getText()
