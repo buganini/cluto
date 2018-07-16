@@ -100,6 +100,7 @@ class Menubar(QtCore.QObject):
     def _onProgress(self, done, total):
         if done==total:
             if self.progress_dialog and not self.progress_dialog.wasCanceled():
+                self.progress_dialog.setValue(done)
                 self.progress_dialog.hide()
             self.progress_dialog = None
         else:
