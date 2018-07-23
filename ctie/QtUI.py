@@ -41,7 +41,7 @@ class CtieUI():
         self.uiMainSplitter = ui.findChild(QSplitter, "main_splitter")
         self.uiMainSplitter.setSizes([360, 1, 320])
         self.uiMainSplitter.setStretchFactor(1, 1)
-        self.uiItemList = ItemList(self, ui.findChild(QVBoxLayout, "itemList"), ui.findChild(QScrollArea, "itemListScroller"))
+        self.uiItemList = ItemList(self, ui.findChild(QVBoxLayout, "itemList"), ui.findChild(QScrollArea, "itemListScroller"), ui.findChild(QVBoxLayout, "items_settings"), ui.findChild(QPushButton, "btn_apply"))
         self.uiStatusBar = ui.findChild(QStatusBar, "statusBar")
         self.uiWorkArea = WorkArea(self, ui.findChild(QScrollArea, "workAreaScroller"))
 
@@ -51,7 +51,6 @@ class CtieUI():
         self.uiCollationView = CollationView(self, uiCollcationSplitter, ui.findChild(QVBoxLayout, "collationView"), ui.findChild(QScrollArea, "collationViewAreaScroller"))
 
         self.uiLevelSelector = LevelSelector(self, ui.findChild(QComboBox, "level"))
-        self.uiItemFilter = ItemFilter(self, ui.findChild(QLineEdit, "edit_filter"), ui.findChild(QPushButton, "btn_filter"))
         self.uiTagManager = TagManager(
             self,
             ui.findChild(QLineEdit, "edit_new_tag"),
@@ -246,7 +245,7 @@ class CtieUI():
 
     def onItemTreeChanged(self):
         self.uiLevelSelector.onItemTreeChanged()
-        self.uiItemFilter.onItemTreeChanged()
+        self.uiItemList.onItemTreeChanged()
         if self.core.bulkMode:
             return
 

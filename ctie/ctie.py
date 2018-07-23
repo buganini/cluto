@@ -59,6 +59,8 @@ class Ctie(object):
         self.tags = []
         self.filter_text = ""
         self.filter = None
+        self.sort_key_text = ""
+        self.sort_key = None
         self.items = []
         self.currentLevel = -1
         self.currentIndex = None
@@ -257,6 +259,13 @@ class Ctie(object):
             if self.filter and not self.filter.eval(p):
                 continue
             items.append(p)
+        if self.sort_key:
+            sk = []
+            for i in items:
+                sk.append(self.sort_key.eval(i))
+            items = list(zip(items, sk))
+            items.sort(key=lambda x:x[1])
+            items = [x[0] for x in items]
         self.items = items
         self.ui.set_status("{} items".format(len(self.items)))
 
@@ -328,21 +337,36 @@ class Ctie(object):
             text = text2
         return text
 
-    def setFilter(self, filter, notify=True):
+    def setItemsSettings(self, filter, sort_key, notify=True):
         f = CQL(filter)
-        r = False
+        s = CQL(sort_key)
+
+        ok_filter = False
         if f or filter=="":
             self.filter_text = filter
             self.filter = f
-            r = True
+            ok_filter = True
+
+        ok_sort = False
+        if s or sort_key=="":
+            self.sort_key_text = sort_key
+            self.sort_key = s
+            ok_sort = True
+
+        if ok_filter and ok_sort:
             if notify:
                 self._genItems()
                 self.currentIndex = 0
                 self.ui.onItemListChanged()
                 self.onItemFocused()
                 self.ui.onItemChanged()
-        if not r:
-            self.ui.set_status('Failed parsing filter')
+        else:
+            failed = []
+            if not ok_filter:
+                failed.append("filter")
+            if not ok_sort:
+                failed.append("sort")
+            self.ui.set_status('Failed parsing '+"/".join(failed))
 
     def hasSavedData(self):
         return bool(os.listdir(self.savedir))
@@ -361,7 +385,7 @@ class Ctie(object):
         self.copy_tags = data['tags']
         self.currentLevel = data.get("currentLevel", 0)
         self.currentIndex = data.get("currentIndex", 0)
-        self.setFilter(data.get("filter", ""), notify=False)
+        self.setItemsSettings(data.get("filter", ""), data.get("sort_key_text", ""), notify=False)
         self._genItems()
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
@@ -383,7 +407,8 @@ class Ctie(object):
             'copy_tags':self.copy_tags,
             'currentLevel':self.currentLevel,
             'currentIndex':self.currentIndex,
-            'filter': self.filter_text
+            'filter': self.filter_text,
+            'sort_key': self.sort_key_text,
         }
         fp = open(path, 'wb')
         pickle.dump(data, fp)

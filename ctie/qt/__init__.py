@@ -5,7 +5,6 @@ from .regexManager import *
 from .menubar import *
 from .toolbar import *
 from .itemList import *
-from .itemFilter import *
 from .levelSelector import *
 from .collationView import *
 from .workArea import *

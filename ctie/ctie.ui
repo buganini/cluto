@@ -52,10 +52,16 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="QLineEdit" name="edit_filter"/>
+             <layout class="QVBoxLayout" name="items_settings"/>
             </item>
             <item>
-             <widget class="QPushButton" name="btn_filter">
+             <widget class="QPushButton" name="btn_apply">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Apply</string>
               </property>

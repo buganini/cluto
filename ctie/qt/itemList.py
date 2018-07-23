@@ -3,6 +3,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import *
 from .QThumbnail import QThumbnail
+from .QAutoEdit import *
 
 class ItemList(QObject):
     class QClickableWidget(QWidget):
@@ -11,11 +12,18 @@ class ItemList(QObject):
         def mouseReleaseEvent(self, *args):
             self.clicked.emit(self)
 
-    def __init__(self, ui, listView, scroller):
+    def __init__(self, ui, listView, scroller, containerListSettings, btnApply):
         QObject.__init__(self)
         self.ui = ui
         self.listView = listView
         self.scroller = scroller
+        self.edit_filter = QAutoEdit()
+        self.edit_filter.setPlaceholderText("Filter")
+        self.edit_sort_key = QAutoEdit()
+        self.edit_sort_key.setPlaceholderText("Sort By")
+        containerListSettings.addWidget(self.edit_filter)
+        containerListSettings.addWidget(self.edit_sort_key)
+        btnApply.clicked.connect(self.onApply)
         self.uiMap = {}
 
     def onProjectChanged(self):
@@ -71,7 +79,14 @@ class ItemList(QObject):
             if item == currentItem:
                 self.onItemFocused(item)
 
+    def onItemTreeChanged(self):
+        self.edit_filter.setPlainText(self.ui.core.filter_text)
+        self.edit_sort_key.setPlainText(self.ui.core.sort_key_text)
 
     @pyqtSlot(QWidget)
     def onItemSelected(self, widget):
         self.ui.core.selectItemByIndex(widget.index)
+
+    @pyqtSlot(bool)
+    def onApply(self, checked):
+        self.ui.core.setItemsSettings(self.edit_filter.toPlainText(), self.edit_sort_key.toPlainText())
