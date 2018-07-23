@@ -36,6 +36,13 @@ class WorkArea():
         def mouseMoveEvent(self, event):
             self.selend = (event.x()/self.scale, event.y()/self.scale)
             self.update()
+            coord = []
+            coord.append("({:.2f}, {:.2f})".format(self.selstart[0], self.selstart[1]))
+            coord.append(" - ")
+            coord.append("({:.2f}, {:.2f})".format(self.selend[0], self.selend[1]))
+            coord.append(" {:.2f} x {:.2f}".format(abs(self.selend[0] - self.selstart[0]), abs(self.selend[1] - self.selstart[1])))
+            coord = "".join(coord)
+            self.ui.set_status(coord)
 
         def mouseReleaseEvent(self, event):
             item = self.item
