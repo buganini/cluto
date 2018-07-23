@@ -4,6 +4,7 @@ from PyQt5 import QtGui
 from .QChrootFileDirDialog import *
 from .regexManager import *
 from .edgeDialog import *
+from .denoiseDialog import *
 from .pasteDialog import *
 from .setTagDialog import *
 
@@ -33,6 +34,10 @@ class Menubar(QtCore.QObject):
         batchRowsToChildren.triggered.connect(self.onBatchRowsToChildren)
         menuBatch.addAction(batchRowsToChildren)
 
+        batchDenoise = QAction('Denoise', self.menubar)
+        batchDenoise.triggered.connect(self.onBatchDenoise)
+        menuBatch.addAction(batchDenoise)
+
         batchAutoPaste = QAction('Auto Paste', self.menubar)
         batchAutoPaste.triggered.connect(self.onBatchAutoPaste)
         menuBatch.addAction(batchAutoPaste)
@@ -59,6 +64,10 @@ class Menubar(QtCore.QObject):
         thisRowsToChildren.triggered.connect(self.onThisRowsToChildren)
         menuThis.addAction(thisRowsToChildren)
 
+        thisDenoise = QAction('Denoise', self.menubar)
+        thisDenoise.triggered.connect(self.onThisDenoise)
+        menuThis.addAction(thisDenoise)
+
         menuOCR = menubar.addMenu('&OCR')
         ocrRegex = QAction('Regular Expression', self.menubar)
         ocrRegex.triggered.connect(self.onOcrRegex)
@@ -84,6 +93,14 @@ class Menubar(QtCore.QObject):
 
     def doBatchShrink(self, left, top, right, bottom, amount):
         self.ui.core.batchShrink(left, top, right, bottom, amount, self.onProgress)
+
+    def onBatchDenoise(self):
+        item = self.ui.core.getCurrentItem()
+        if item:
+            DenoiseDialog(self.ui, 5 * item.scaleFactor, 5 * item.scaleFactor, self.doBatchDenoise)
+
+    def doBatchDenoise(self, min_width, min_height):
+        self.ui.core.batchDenoise(min_width, min_height, self.onProgress)
 
     def onBatchAutoPaste(self):
         PasteDialog(self.ui)
@@ -122,6 +139,7 @@ class Menubar(QtCore.QObject):
         item = self.ui.core.getCurrentItem()
         if item:
             item.trim(left, top, right, bottom, margin)
+            self.ui.onContentChanged()
 
     def onThisShrink(self):
         EdgeDialog(self.ui, "Shrink", "Amount", 1, self.doThisShrink)
@@ -141,4 +159,15 @@ class Menubar(QtCore.QObject):
         item = self.ui.core.getCurrentItem()
         if item:
             item.rowsToChildren()
+            self.ui.onContentChanged()
+
+    def onThisDenoise(self):
+        item = self.ui.core.getCurrentItem()
+        if item:
+            DenoiseDialog(self.ui, 5 * item.scaleFactor, 5 * item.scaleFactor, self.doThisDenoise)
+
+    def doThisDenoise(self, min_width, min_height):
+        item = self.ui.core.getCurrentItem()
+        if item:
+            item.denoise(min_width, min_height)
             self.ui.onContentChanged()

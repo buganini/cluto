@@ -285,6 +285,17 @@ class Item(object):
     def trim(self, *args):
         pass
 
+    def denoise(self, min_w, min_h):
+        delete = []
+        for c in self.children:
+            cw = c.x2 - c.x1
+            ch = c.y2 - c.y1
+            if cw < min_w or ch < min_h:
+                delete.append(c)
+
+        for c in delete:
+            self.children.remove(c)
+
     def shrink(self, left, top, right, bottom, amount=0):
         x1 = self.x1
         y1 = self.y1

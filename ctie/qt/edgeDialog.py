@@ -2,7 +2,6 @@ import os
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5 import uic
-from datetime import datetime
 
 class EdgeDialog(QtCore.QObject):
     def __init__(self, ui, title, value_name, initial_value, callback):

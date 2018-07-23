@@ -690,6 +690,21 @@ class Ctie(object):
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
+    def batchDenoise(self, min_width, min_height, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchDenoise, min_width, min_height, cbProgress))
+
+    def _batchDenoise(self, min_width, min_height, cbProgress):
+        done = 0
+        total = len(self.items)
+        cbProgress(done, total)
+        for item in self.items:
+            item.denoise(min_width, min_height)
+            done += 1
+            cbProgress(done, total)
+        self.ui.onContentChanged()
+        self.ui.onItemChanged()
+        self.ui.onItemListChanged()
+
     def edge_limiter(self, todo):
         while todo:
             delete = []
