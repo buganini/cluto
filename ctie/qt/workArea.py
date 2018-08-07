@@ -181,7 +181,7 @@ class WorkArea():
                     pen.setColor(QtCore.Qt.blue)
                     painter.setPen(pen)
                     if self.mode=='move':
-                        _x = x1 + xoff, y1 + yoff
+                        _x = x1 + xoff
                         _y = y1 + yoff
                         painter.drawRect(_x, _y, x2-x1, y2-y1)
                     elif self.mode=='resize':
