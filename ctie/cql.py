@@ -293,6 +293,18 @@ class CQL(object):
 				return rval[2].replace(rval[0], rval[1])
 			elif t=='REGEX_REPLACE':
 				return re.sub(rval[0], rval[1], rval[2])
+			elif t=='FIELD':
+				field = rval[0]
+				text = rval[1]
+				separator = ":"
+				if type(field) is str:
+					field = [field]
+				pat = r"^(?:{fields})[ \t]*[{separator}]+[ \t]*(.*?)\s*$".format(fields="|".join([re.escape(x) for x in field]), separator=separator)
+				m = re.findall(pat, text, flags=re.MULTILINE|re.IGNORECASE)
+				if m:
+					m = [x.strip() for x in m if x.strip()]
+					return " ".join(m)
+				return ""
 			elif t=='PRINT':
 				print(repr(rval))
 				return rval

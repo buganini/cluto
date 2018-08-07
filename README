@@ -69,5 +69,7 @@ Query Language:
 			TEXT(content) -> text
 		COALESCE
 			coalesce(("", "a","b", "", "c")) -> "a"
+		FIELD
+			field("foo", "name:blah\nfoo: bar\nhoho") -> "bar"
 		PRINT
 			print(x) -> x # output to stdout
