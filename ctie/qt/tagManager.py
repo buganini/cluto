@@ -40,7 +40,7 @@ class TagManager():
                     if widget:
                         tbd.append(widget)
         for widget in tbd:
-            widget.setParent(None)
+            self.item_tags.removeWidget(widget)
             widget.deleteLater()
 
         tbd = []
@@ -52,7 +52,7 @@ class TagManager():
                     if widget:
                         tbd.append(widget)
         for widget in tbd:
-            widget.setParent(None)
+            self.child_tags.removeWidget(widget)
             widget.deleteLater()
 
         if self.item:
