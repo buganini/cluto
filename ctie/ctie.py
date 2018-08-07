@@ -385,7 +385,7 @@ class Ctie(object):
         self.copy_tags = data['tags']
         self.currentLevel = data.get("currentLevel", 0)
         self.currentIndex = data.get("currentIndex", 0)
-        self.setItemsSettings(data.get("filter", ""), data.get("sort_key_text", ""), notify=False)
+        self.setItemsSettings(data.get("filter", ""), data.get("sort_key", ""), notify=False)
         self._genItems()
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
