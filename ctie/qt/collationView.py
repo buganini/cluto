@@ -28,8 +28,7 @@ class CollationView():
                 return
             item = self.item
             painter = QtGui.QPainter(self)
-            painter.scale(self.scale, self.scale)
-            item.drawQT(painter)
+            item.drawQT(painter, 0, 0, self.scale)
 
         def zoomFit(self):
             xscale = self.scrollArea.viewport().width() / self.w

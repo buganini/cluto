@@ -143,7 +143,7 @@ class WorkArea():
                 return
             item = self.item
             item_painter = QtGui.QPainter(self)
-            item.drawQT(item_painter, self.scale)
+            item.drawQT(item_painter, 0, 0, self.scale)
 
             fontSize = 6*item.scaleFactor
             padding = 1*item.scaleFactor

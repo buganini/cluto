@@ -122,9 +122,9 @@ class PdfItem(BaseItem):
         else:
             return None
 
-    def drawQT(self, painter, scale=1):
+    def drawQT(self, painter, xoff, yoff, scale=1):
         image = self.getPdfImage(scale)
-        painter.drawImage(0, 0, image)
+        painter.drawImage(xoff, yoff, image)
 
     def getPdfImage(self, scale):
         return self.getPdfPage().renderToImage(7200*scale, 7200*scale, self.x1*scale, self.y1*scale, (self.x2-self.x1)*scale, (self.y2-self.y1)*scale)

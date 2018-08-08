@@ -98,11 +98,11 @@ class ImageItem(Item):
         self.get_cropped()
         ctie.instance.worker.addBgJobs(self.children)
 
-    def drawQT(self, painter, scale):
+    def drawQT(self, painter, xoff, yoff, scale=1):
         pixmap = QtGui.QPixmap(self.get_cropped())
         w, h = self.getSize()
         painter.scale(scale, scale)
-        painter.drawPixmap(0, 0, w, h, pixmap)
+        painter.drawPixmap(xoff, yoff, w, h, pixmap)
 
     def check_boundary(self, x1, y1, x2, y2):
         im = self.get_pil_l()

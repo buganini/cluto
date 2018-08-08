@@ -116,7 +116,7 @@ class Item(object):
     def __call__(self):
         pass
 
-    def drawQT(self, painter, scale):
+    def drawQT(self, painter, xoff, yoff, scale=1):
         pass
 
     def getTags(self):
