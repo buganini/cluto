@@ -21,8 +21,11 @@ class ItemList(QObject):
         self.edit_filter.setPlaceholderText("Filter")
         self.edit_sort_key = QAutoEdit()
         self.edit_sort_key.setPlaceholderText("Sort By")
+        self.chk_marked_only = QCheckBox()
+        self.chk_marked_only.setText("Marked items only")
         containerListSettings.addWidget(self.edit_filter)
         containerListSettings.addWidget(self.edit_sort_key)
+        containerListSettings.addWidget(self.chk_marked_only)
         btnApply.clicked.connect(self.onApply)
         self.uiMap = {}
 
@@ -82,6 +85,7 @@ class ItemList(QObject):
     def onItemTreeChanged(self):
         self.edit_filter.setPlainText(self.ui.core.filter_text)
         self.edit_sort_key.setPlainText(self.ui.core.sort_key_text)
+        self.chk_marked_only.setChecked(self.ui.core.marked_only)
 
     @pyqtSlot(QWidget)
     def onItemSelected(self, widget):
@@ -89,4 +93,4 @@ class ItemList(QObject):
 
     @pyqtSlot(bool)
     def onApply(self, checked):
-        self.ui.core.setItemsSettings(self.edit_filter.toPlainText(), self.edit_sort_key.toPlainText())
+        self.ui.core.setItemsSettings(self.edit_filter.toPlainText(), self.edit_sort_key.toPlainText(), self.chk_marked_only.isChecked())

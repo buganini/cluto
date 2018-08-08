@@ -61,6 +61,7 @@ class Ctie(object):
         self.filter = None
         self.sort_key_text = ""
         self.sort_key = None
+        self.marked_only = False
         self.items = []
         self.currentLevel = -1
         self.currentIndex = None
@@ -265,7 +266,14 @@ class Ctie(object):
                 sk.append(self.sort_key.eval(i))
             items = list(zip(items, sk))
             items.sort(key=lambda x:x[1])
+            for i,k in items:
+                i.marked = sk.count(k) > 1
             items = [x[0] for x in items]
+        else:
+            for i in items:
+                i.marked = False
+        if self.marked_only:
+            items = [x for x in items if x.marked]
         self.items = items
         self.ui.set_status("{} items".format(len(self.items)))
 
@@ -337,7 +345,7 @@ class Ctie(object):
             text = text2
         return text
 
-    def setItemsSettings(self, filter, sort_key, notify=True):
+    def setItemsSettings(self, filter, sort_key, marked_only, notify=True):
         f = CQL(filter)
         s = CQL(sort_key)
 
@@ -354,6 +362,7 @@ class Ctie(object):
             ok_sort = True
 
         if ok_filter and ok_sort:
+            self.marked_only = marked_only
             if notify:
                 self._genItems()
                 self.currentIndex = 0
@@ -385,7 +394,7 @@ class Ctie(object):
         self.copy_tags = data['tags']
         self.currentLevel = data.get("currentLevel", 0)
         self.currentIndex = data.get("currentIndex", 0)
-        self.setItemsSettings(data.get("filter", ""), data.get("sort_key", ""), notify=False)
+        self.setItemsSettings(data.get("filter", ""), data.get("sort_key", ""), data.get("marked_only", False), notify=False)
         self._genItems()
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
@@ -409,6 +418,7 @@ class Ctie(object):
             'currentIndex':self.currentIndex,
             'filter': self.filter_text,
             'sort_key': self.sort_key_text,
+            'marked_only': self.marked_only,
         }
         fp = open(path, 'wb')
         pickle.dump(data, fp)
