@@ -19,7 +19,7 @@ class ItemList(QObject):
         def updateUI(self, focus):
             css = []
             css.append("QFrame#"+str(id(self))+" {")
-            if self.item.marked:
+            if "DUP" in self.item.flags:
                 css.append("background: rgba(255,50,50,50);")
             css.append("border-style: outset;")
             css.append("border-width: 3px;")
@@ -39,11 +39,11 @@ class ItemList(QObject):
         self.edit_filter.setPlaceholderText("Filter")
         self.edit_sort_key = QAutoEdit()
         self.edit_sort_key.setPlaceholderText("Sort By")
-        self.chk_marked_only = QCheckBox()
-        self.chk_marked_only.setText("Marked items only")
+        self.chk_dups_only = QCheckBox()
+        self.chk_dups_only.setText("Duplicateds only")
         containerListSettings.addWidget(self.edit_filter)
         containerListSettings.addWidget(self.edit_sort_key)
-        containerListSettings.addWidget(self.chk_marked_only)
+        containerListSettings.addWidget(self.chk_dups_only)
         btnApply.clicked.connect(self.onApply)
         self.uiMap = {}
 
@@ -101,7 +101,7 @@ class ItemList(QObject):
     def onItemTreeChanged(self):
         self.edit_filter.setPlainText(self.ui.core.filter_text)
         self.edit_sort_key.setPlainText(self.ui.core.sort_key_text)
-        self.chk_marked_only.setChecked(self.ui.core.marked_only)
+        self.chk_dups_only.setChecked(self.ui.core.dups_only)
 
     @pyqtSlot(QFrame)
     def onItemSelected(self, widget):
@@ -109,4 +109,4 @@ class ItemList(QObject):
 
     @pyqtSlot(bool)
     def onApply(self, checked):
-        self.ui.core.setItemsSettings(self.edit_filter.toPlainText(), self.edit_sort_key.toPlainText(), self.chk_marked_only.isChecked())
+        self.ui.core.setItemsSettings(self.edit_filter.toPlainText(), self.edit_sort_key.toPlainText(), self.chk_dups_only.isChecked())
