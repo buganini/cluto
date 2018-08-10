@@ -39,6 +39,9 @@ class Image:
 		self.blob = blob
 		self.extension = extension
 
+	def __repr__(self):
+		return "{} ({})".format(super().__repr__(), self.extension)
+
 	def save(self, path):
 		f=open("{}.{}".format(path, self.extension), "wb")
 		f.write(self.blob)
@@ -49,6 +52,9 @@ class PILImage:
 	def __init__(self, im, extension):
 		self.im = im
 		self.extension = extension
+
+	def __repr__(self):
+		return "{} ({})".format(super().__repr__(), self.extension)
 
 	def save(self, path):
 		self.im.save("{}.{}".format(path, self.extension))

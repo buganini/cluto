@@ -53,7 +53,7 @@ class Item(object):
         self.listener = []
 
     def __str__(self):
-        return "{0:X} # {1} ({2},{3},{4},{5})".format(id(self), os.path.basename(self.path), self.x1, self.y1, self.x2, self.y2)
+        return "{0:X} # {1} ({2},{3},{4},{5}) {6}".format(id(self), self.getTitle(), self.x1, self.y1, self.x2, self.y2, self.getType())
 
     def __getstate__(self):
         state = self.__dict__.copy()
