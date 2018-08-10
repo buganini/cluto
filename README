@@ -42,6 +42,7 @@ Query Language:
 		String: "string"
 		Non-negative Integer: 1
 		List: "a", 1
+		Single-item list: 1,
 	Functions:
 		CHILD
 			child(%{this}, 1) -> first child of this item

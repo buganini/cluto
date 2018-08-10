@@ -123,6 +123,13 @@ class CQL(object):
 			if self.lval!=None and not self.lval:
 				self.lval = None
 			self.rval = CQL(tokens[sep+1:])
+		elif t==',':
+			self.lval = CQL(tokens[0:sep])
+			r = tokens[sep+1:]
+			if r:
+				self.rval = CQL(r)
+			else:
+				self.rval = None
 		else:
 			self.lval = CQL(tokens[0:sep])
 			self.rval = CQL(tokens[sep+1:])
@@ -242,7 +249,10 @@ class CQL(object):
 					return None
 		if t==".":
 			return self.rval.eval(self.lval.eval(item))
-		rval = self.rval.eval(item)
+		if self.rval is None:
+			rval = None
+		else:
+			rval = self.rval.eval(item)
 		if re.match('^-+$', t):
 			if type(rval)!=int:
 				return None
@@ -337,7 +347,10 @@ class CQL(object):
 				lval.append(rval)
 				return lval
 			else:
-				return [lval,rval]
+				if rval:
+					return [lval,rval]
+				else:
+					return [lval]
 		if t=='+':
 			if(type(lval)==str or type(rval)==str):
 				return str(lval)+str(rval)
@@ -358,3 +371,8 @@ class CQL(object):
 			return lval > rval
 		if t=='<':
 			return lval < rval
+
+if __name__=="__main__":
+	print(CQL("1,2").eval(None))
+	print(CQL("(1,2),(3,4)").eval(None))
+	print(CQL("1,").eval(None))
