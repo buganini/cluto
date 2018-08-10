@@ -331,6 +331,18 @@ class CQL(object):
 					m = [x.strip() for x in m if x.strip()]
 					return " ".join(m)
 				return ""
+			elif t=="REJECT":
+				blacklist = rval[0]
+				text = rval[1]
+				return "\n".join([x for x in text.split("\n") if x not in blacklist])
+			elif t=="REJECT_FIELD":
+				field = rval[0]
+				text = rval[1]
+				separator = ":"
+				if type(field) is str:
+					field = [field]
+				pat = re.compile(r"^(?:{fields})[ \t]*[{separator}]+[ \t]*(.*?)\s*$".format(fields="|".join([re.escape(x) for x in field]), separator=separator))
+				return "\n".join([x for x in text.split("\n") if not pat.match(x)])
 			elif t=='PRINT':
 				print("{}: {}".format(repr(rval), str(rval)))
 				return rval

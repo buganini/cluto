@@ -80,5 +80,11 @@ Query Language:
 			coalesce(("", "a","b", "", "c")) -> "a"
 		FIELD
 			field("foo", "name:blah\nfoo: bar\nhoho") -> "bar"
+		REJECT_FIELD
+			reject_field("aa", "aa:bb\ncc:dd") -> "cc:dd"
+			reject_field(("aa","ee"), "aa:bb\ncc:dd\nee:ff") -> "cc:dd"
+		REJECT
+			reject_field("aa", "aa\nbb\ncc\ndd") -> "bb\ncc\ndd"
+			reject_field(("aa","cc"), "aa\nbb\ncc\ndd") -> "bb\ndd"
 		PRINT
 			print(x) -> x # output to stdout
