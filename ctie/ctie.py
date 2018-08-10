@@ -27,12 +27,14 @@ import os
 from PIL import Image
 import pickle
 import functools
+import html
 
 from imageItem import *
 from pdfItem import *
 from cql import *
 from helpers import *
 import pdf
+import utils
 
 from worker import WorkerDispatcher
 
@@ -420,6 +422,45 @@ class Ctie(object):
         pickle.dump(data, fp)
         fp.close()
         print("Save to {}".format(path))
+
+    def list_export(self, outputdir, content, handler, cbProgress):
+        content = CQL(content)
+        total = len(self.items)
+        done = 0
+        with open(os.path.join(outputdir, "index.html"), "w") as f:
+            f.write('<!doctype html><html><head><meta charset="UTF-8"/><style type="text/css">table{border-collapse: collapse;} td {border: solid 1px gray; white-space: pre; font-family: monospace;}</style></head><body><table>')
+            cbProgress(done, total, False)
+            idx = 0
+            for i in self.items:
+                idx += 1
+                f.write("<tr>")
+                f.write("<td>{}</td>".format(idx))
+                row = content.eval(i)
+                for c in row:
+                    f.write("<td>")
+                    if hasattr(c, "save"):
+                        os.makedirs(os.path.join(outputdir, "data"), exist_ok=True)
+                        path = c.save(os.path.join(outputdir, "data", str(idx)))
+                        prefix, ext = os.path.splitext(path)
+                        extl = ext[1:].lower()
+                        if extl in ("jpg","jpeg","ppm","png","gif"):
+                            path = utils.image_fallback(path, ("jpg","jpeg","png","gif"), "png")
+                            fn = os.path.basename(path)
+                            f.write('<img src="{}" alt="{}" />'.format(html.escape(os.path.join("data", fn)), html.escape(fn)))
+                        else:
+                            fn = os.path.basename(path)
+                            f.write('<a href="{}" target="_blank">{}</a>'.format(html.escape(os.path.join("data", os.path.basename(path))), html.escape(fn)))
+                    else:
+                        f.write(html.escape(str(c)))
+                    f.write("</td>")
+                f.write("</tr>")
+                if handler.isCanceled():
+                    cbProgress(done, total, True)
+                    break
+                done += 1
+                cbProgress(done, total, False)
+            f.write("</table></body></html>")
+        cbProgress(done, total, True)
 
     def export(self, filter, outputdir, filename, content, overwrite, handler, cbProgress):
         filter = CQL(filter)

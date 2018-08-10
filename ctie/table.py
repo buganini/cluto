@@ -50,7 +50,8 @@ class Table(object):
 			self.maxc = col
 
 	def save(self, path):
-		f = open(path+".csv", "w")
+		fn = path+".csv"
+		f = open(fn, "w")
 		writer = csv.writer(f)
 		for r in range(self.maxr+1):
 			row = []
@@ -58,3 +59,4 @@ class Table(object):
 				row.append(self.data.get((r,c), ""))
 			writer.writerow(row)
 		f.close()
+		return fn

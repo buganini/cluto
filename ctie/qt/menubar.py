@@ -7,6 +7,7 @@ from .edgeDialog import *
 from .denoiseDialog import *
 from .pasteDialog import *
 from .setTagDialog import *
+from .listExportDialog import *
 
 class Menubar(QtCore.QObject):
     progress_signal = QtCore.pyqtSignal(int, int)
@@ -16,35 +17,39 @@ class Menubar(QtCore.QObject):
         self.ui = ui
         self.menubar = menubar
 
-        menuBatch = menubar.addMenu('&Batch')
+        menuList = menubar.addMenu('&List')
 
         batchTrim = QAction('Trim', self.menubar)
         batchTrim.triggered.connect(self.onBatchTrim)
-        menuBatch.addAction(batchTrim)
+        menuList.addAction(batchTrim)
 
         batchShrink = QAction('Shrink', self.menubar)
         batchShrink.triggered.connect(self.onBatchShrink)
-        menuBatch.addAction(batchShrink)
+        menuList.addAction(batchShrink)
 
         batchColsToChildren = QAction('Columns to children', self.menubar)
         batchColsToChildren.triggered.connect(self.onBatchColsToChildren)
-        menuBatch.addAction(batchColsToChildren)
+        menuList.addAction(batchColsToChildren)
 
         batchRowsToChildren = QAction('Rows to children', self.menubar)
         batchRowsToChildren.triggered.connect(self.onBatchRowsToChildren)
-        menuBatch.addAction(batchRowsToChildren)
+        menuList.addAction(batchRowsToChildren)
 
         batchDenoise = QAction('Denoise', self.menubar)
         batchDenoise.triggered.connect(self.onBatchDenoise)
-        menuBatch.addAction(batchDenoise)
+        menuList.addAction(batchDenoise)
 
         batchAutoPaste = QAction('Auto Paste', self.menubar)
         batchAutoPaste.triggered.connect(self.onBatchAutoPaste)
-        menuBatch.addAction(batchAutoPaste)
+        menuList.addAction(batchAutoPaste)
 
         batchSettag = QAction('Set Tag', self.menubar)
         batchSettag.triggered.connect(self.onBatchSetTag)
-        menuBatch.addAction(batchSettag)
+        menuList.addAction(batchSettag)
+
+        listExport = QAction('Export', self.menubar)
+        listExport.triggered.connect(self.onListExport)
+        menuList.addAction(listExport)
 
         menuThis = menubar.addMenu('&This')
 
@@ -110,6 +115,9 @@ class Menubar(QtCore.QObject):
 
     def doBatchSetTag(self, key, value, isFormula):
         self.ui.core.batchSetTag(key, value, isFormula, self.onProgress)
+
+    def onListExport(self):
+        ListExportDialog(self.ui)
 
     def onProgress(self, done, total):
         self.progress_signal.emit(done, total)

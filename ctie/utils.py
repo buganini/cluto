@@ -1,6 +1,7 @@
 import os
 import platform
 import subprocess
+from PIL import Image
 
 def asc(*a):
     return sorted(a)
@@ -51,3 +52,14 @@ def dimension(x1, y1, x2, y2):
     if dx < 0 or dy < 0:
         return -1
     return dx*dy
+
+def image_fallback(path, whitelist, fallback, remove=True):
+    fn, ext = os.path.splitext(path)
+    if ext[1:].lower() not in whitelist:
+        path2 = "{}.{}".format(fn, fallback)
+        im = Image.open(path)
+        im.save(path2)
+        if remove:
+            os.unlink(path)
+        return path2
+    return path
