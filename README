@@ -21,7 +21,9 @@ Query Language:
 		PAGE: page number in pdf file, always 0 for other file type
 		INDEX: index in siblings, started from 1
 		HASH: assigned hash string
-		EXTENSION: recommended file name extension for content
+		TITLE: title (filename and page number, if available)
+		THIS: item itself
+		PARENT: item's parent
 	Operators:
 		[]
 		,
@@ -36,7 +38,13 @@ Query Language:
 		>
 		<=
 		<
+	Data Types:
+		String: "string"
+		Non-negative Integer: 1
+		List: "a", 1
 	Functions:
+		CHILD
+			child(%{this}, 1) -> first child of this item
 		ABS
 			abs(-1) -> 1
 		CONCAT

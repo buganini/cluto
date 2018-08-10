@@ -36,7 +36,7 @@ class CQL(object):
 			return
 		if type(i)!=type([]):
 			try:
-				tokens = re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|[\$@%#]\{.+?\}|(?:"[^"]*\\(?:.[^"]*\\)*.[^"]*")|(?:"[^"]*")|(?:'[^']*\\(?:.[^']*\\)*.[^']*')|(?:'[^']*')|\+|-+|!|[A-Za-z_]\w*\(|\(|\)|\[|\]|\d+|,)""",i)
+				tokens = re.findall(r"""(&&|\|\||!=|==|>=|<=|>|<|\.|[\$@%#]\{.+?\}|(?:"[^"]*\\(?:.[^"]*\\)*.[^"]*")|(?:"[^"]*")|(?:'[^']*\\(?:.[^']*\\)*.[^']*')|(?:'[^']*')|\+|-+|!|[A-Za-z_]\w*\(|\(|\)|\[|\]|\d+|,)""",i)
 			except:
 				return
 			self.tree = self.parse(tokens)
@@ -76,13 +76,16 @@ class CQL(object):
 			if stack:
 				continue
 
-			if level <= 6 and t in ('&&', '||'):
+			if level <= 7 and t in ('&&', '||'):
+				sep = i
+				level = 7
+			elif level <= 6 and t in ('==', '!=','>=','<=','>','<'):
 				sep = i
 				level = 6
-			elif level <= 5 and t in ('==', '!=','>=','<=','>','<'):
+			elif level <= 5 and t==',':
 				sep = i
 				level = 5
-			elif level <= 4 and t==',':
+			elif level <= 4 and t==".":
 				sep = i
 				level = 4
 			elif level <= 3 and ( t=='+' or re.match('^-+$', t) ):
@@ -183,8 +186,17 @@ class CQL(object):
 						return "{0}".format(item.page)
 					else:
 						return "0"
+				elif k=="TITLE":
+					return item.getTitle()
 				elif k=='TYPE':
 					return item.getType()
+				elif k=='THIS':
+					return item
+				elif k=='PARENT':
+					if item:
+						return item.parent
+					else:
+						return None
 				elif k=='CONTENT':
 					return item.getContent()
 				elif k=='WIDTH':
@@ -228,6 +240,8 @@ class CQL(object):
 				else:
 					print("Unknown attribute", t)
 					return None
+		if t==".":
+			return self.rval.eval(self.lval.eval(item))
 		rval = self.rval.eval(item)
 		if re.match('^-+$', t):
 			if type(rval)!=int:
@@ -254,6 +268,8 @@ class CQL(object):
 				return abs(rval)
 			elif t=='TEXT':
 				return str(rval)
+			elif t=='CHILD':
+				return rval[0].children[rval[1]-1]
 			elif t=='JOIN':
 				s = str(rval[0])
 				a = [str(x) if type(x)!=str else x for x in rval[1]]
@@ -306,7 +322,7 @@ class CQL(object):
 					return " ".join(m)
 				return ""
 			elif t=='PRINT':
-				print(repr(rval))
+				print("{}: {}".format(repr(rval), str(rval)))
 				return rval
 			else:
 				print("Unknown function", t)
@@ -328,7 +344,6 @@ class CQL(object):
 			return lval+rval
 		if t=='==':
 			return lval == rval
-
 		if t=='!=':
 			return lval != rval
 		if t=='&&':
