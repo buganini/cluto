@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5 import uic
 from .QAutoEdit import *
+from worker import JobHandler
 import os
 import json
 import re
@@ -233,12 +234,13 @@ class ExportDialog(QtCore.QObject):
         self.ui.core.worker.addFgJob(self)
 
     def __call__(self):
+        self.handler = JobHandler()
         filter = self.edit_filter.text()
         outputdir = self.edit_outputdir.text()
         filename = self.edit_filename.text()
         content = self.edit_content.toPlainText()
         overwrite = self.chk_overwrite.isChecked()
-        self.ui.core.export(filter, outputdir, filename, content, overwrite, self.onProgress)
+        self.ui.core.export(filter, outputdir, filename, content, overwrite, self.handler, self.onProgress)
 
     def onProgress(self, done, total, exported, finished):
         self.progress_signal.emit(done, total, exported, finished)
@@ -260,7 +262,7 @@ class ExportDialog(QtCore.QObject):
             self.progress_dialog.setLabelText("Exporting... ({} exported)".format(exported))
 
     def abort(self):
-        self.ui.core.abort_export()
+        self.handler.cancel()
 
     def onClose(self):
         self.exportui.close()

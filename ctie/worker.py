@@ -1,6 +1,16 @@
 import threading
 import multiprocessing
 
+class JobHandler():
+    def __init__(self):
+        self.canceled = False
+
+    def cancel(self):
+        self.canceled = True
+
+    def isCanceled(self):
+        return self.canceled
+
 class WorkerDispatcher():
     class Worker(threading.Thread):
         def __init__(self, dispatcher):

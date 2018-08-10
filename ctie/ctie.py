@@ -48,8 +48,6 @@ class Ctie(object):
 
         self.reset()
 
-        self.export_canceled = False
-
         pdf.xpdfimport = "/opt/libreoffice5.4/program/xpdfimport"
 
     def reset(self):
@@ -423,8 +421,7 @@ class Ctie(object):
         fp.close()
         print("Save to {}".format(path))
 
-    def export(self, filter, outputdir, filename, content, overwrite, cbProgress):
-        self.export_canceled = False
+    def export(self, filter, outputdir, filename, content, overwrite, handler, cbProgress):
         filter = CQL(filter)
         filename = CQL(filename)
         content = CQL(content)
@@ -442,7 +439,7 @@ class Ctie(object):
 
         cbProgress(done, total, exported, False)
         todo = self.clips
-        while todo and not self.export_canceled:
+        while todo and not handler.isCanceled():
             newtodo = []
             for item in todo:
                 if filter.eval(item):
@@ -478,14 +475,11 @@ class Ctie(object):
                         exported += 1
                 newtodo.extend(item.children)
                 done += 1
-                cbProgress(done, total, exported, self.export_canceled)
-                if self.export_canceled:
+                cbProgress(done, total, exported, handler.isCanceled())
+                if handler.isCanceled():
                     break
             todo = newtodo
         cbProgress(done, total, exported, True)
-
-    def abort_export(self):
-        self.export_canceled = True
 
     def copy(self):
         if not self.selections:
