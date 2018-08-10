@@ -84,7 +84,7 @@ Query Language:
 			reject_field("aa", "aa:bb\ncc:dd") -> "cc:dd"
 			reject_field(("aa","ee"), "aa:bb\ncc:dd\nee:ff") -> "cc:dd"
 		REJECT
-			reject_field("aa", "aa\nbb\ncc\ndd") -> "bb\ncc\ndd"
-			reject_field(("aa","cc"), "aa\nbb\ncc\ndd") -> "bb\ndd"
+			reject("aa", "aa\nbb\ncc\ndd") -> "bb\ncc\ndd"
+			reject(("aa","cc"), "aa\nbb\ncc\ndd") -> "bb\ndd"
 		PRINT
 			print(x) -> x # output to stdout
