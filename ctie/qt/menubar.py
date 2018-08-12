@@ -27,6 +27,14 @@ class Menubar(QtCore.QObject):
         batchShrink.triggered.connect(self.onBatchShrink)
         menuList.addAction(batchShrink)
 
+        batchDetectColSeparator = QAction('Detect column separator', self.menubar)
+        batchDetectColSeparator.triggered.connect(self.onBatchDetectColSeparator)
+        menuList.addAction(batchDetectColSeparator)
+
+        batchDetectRowSeparator = QAction('Detect row separator', self.menubar)
+        batchDetectRowSeparator.triggered.connect(self.onBatchDetectRowSeparator)
+        menuList.addAction(batchDetectRowSeparator)
+
         batchColsToChildren = QAction('Columns to children', self.menubar)
         batchColsToChildren.triggered.connect(self.onBatchColsToChildren)
         menuList.addAction(batchColsToChildren)
@@ -61,6 +69,14 @@ class Menubar(QtCore.QObject):
         thisShrink.triggered.connect(self.onThisShrink)
         menuThis.addAction(thisShrink)
 
+        thisDetectColSeparator = QAction('Detect column separator', self.menubar)
+        thisDetectColSeparator.triggered.connect(self.onThisDetectColSeparator)
+        menuThis.addAction(thisDetectColSeparator)
+
+        thisDetectRowSeparator = QAction('Detect row separator', self.menubar)
+        thisDetectRowSeparator.triggered.connect(self.onThisDetectRowSeparator)
+        menuThis.addAction(thisDetectRowSeparator)
+
         thisColsToChildren = QAction('Columns to children', self.menubar)
         thisColsToChildren.triggered.connect(self.onThisColsToChildren)
         menuThis.addAction(thisColsToChildren)
@@ -86,6 +102,12 @@ class Menubar(QtCore.QObject):
 
     def doBatchTrim(self, left, top, right, bottom, margin):
         self.ui.core.batchTrim(left, top, right, bottom, margin, self.onProgress)
+
+    def onBatchDetectColSeparator(self):
+        self.ui.core.batchDetectColSeparator(self.onProgress)
+
+    def onBatchDetectRowSeparator(self):
+        self.ui.core.batchDetectRowSeparator(self.onProgress)
 
     def onBatchColsToChildren(self):
         self.ui.core.batchColsToChildren(self.onProgress)
@@ -156,6 +178,18 @@ class Menubar(QtCore.QObject):
         item = self.ui.core.getCurrentItem()
         if item:
             item.shrink(left, top, right, bottom, amount)
+
+    def onThisDetectColSeparator(self):
+        item = self.ui.core.getCurrentItem()
+        if item:
+            item.detectColSeparator()
+            self.ui.onContentChanged()
+
+    def onThisDetectRowSeparator(self):
+        item = self.ui.core.getCurrentItem()
+        if item:
+            item.detectRowSeparator()
+            self.ui.onContentChanged()
 
     def onThisColsToChildren(self):
         item = self.ui.core.getCurrentItem()

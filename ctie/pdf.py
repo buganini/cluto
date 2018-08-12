@@ -540,6 +540,8 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 
 	return table
 
+
+@functools.lru_cache(maxsize=4)
 def getLines(file, page, bx1, by1, bx2, by2):
 	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 

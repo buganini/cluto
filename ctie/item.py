@@ -339,6 +339,12 @@ class Item(object):
         self.x2 = x2
         self.y2 = y2
 
+    def detectRowSeparator(self):
+        pass
+
+    def detectColSeparator(self):
+        pass
+
     def rowsToChildren(self):
         pass
 

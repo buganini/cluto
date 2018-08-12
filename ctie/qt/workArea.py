@@ -249,7 +249,6 @@ class WorkArea():
                 painter.drawText(_x, _y, _w, _h, QtCore.Qt.AlignRight|QtCore.Qt.AlignBottom, index)
 
             if item.getType()=="Table":
-                print(self.focusColSep, self.focusRowSep)
                 for i,x in enumerate(item.colSep):
                     if i == self.focusColSep:
                         pen.setColor(QtGui.QColor(0x00, 0xa5, 0xff))

@@ -728,6 +728,32 @@ class Ctie(object):
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
+    def batchDetectColSeparator(self, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchDetectColSeparator, cbProgress))
+
+    def _batchDetectColSeparator(self, cbProgress):
+        done = 0
+        total = len(self.items)
+        cbProgress(done, total)
+        for item in self.items:
+            item.detectColSeparator()
+            done += 1
+            cbProgress(done, total)
+        self.ui.onContentChanged()
+
+    def batchDetectRowSeparator(self, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchDetectRowSeparator, cbProgress))
+
+    def _batchDetectRowSeparator(self, cbProgress):
+        done = 0
+        total = len(self.items)
+        cbProgress(done, total)
+        for item in self.items:
+            item.detectRowSeparator()
+            done += 1
+            cbProgress(done, total)
+        self.ui.onContentChanged()
+
     def batchColsToChildren(self, cbProgress):
         self.ui.core.worker.addFgJob(functools.partial(self._batchColsToChildren, cbProgress))
 
