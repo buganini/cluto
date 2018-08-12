@@ -1,3 +1,4 @@
+from PyQt5 import QtCore
 import threading
 import multiprocessing
 
@@ -12,9 +13,9 @@ class JobHandler():
         return self.canceled
 
 class WorkerDispatcher():
-    class Worker(threading.Thread):
+    class Worker(QtCore.QThread):
         def __init__(self, dispatcher):
-            threading.Thread.__init__(self)
+            QtCore.QThread.__init__(self)
             self.dispatcher = dispatcher
             self.go = True
 
