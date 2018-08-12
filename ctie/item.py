@@ -51,6 +51,8 @@ class Item(object):
 
         self.hash = str(uuid.uuid4())
         self.listener = []
+        self.rowSep = []
+        self.colSep = []
 
     def __str__(self):
         return "{0:X} # {1} ({2},{3},{4},{5}) {6}".format(id(self), self.getTitle(), self.x1, self.y1, self.x2, self.y2, self.getType())
@@ -172,6 +174,20 @@ class Item(object):
         if self.parent:
             self.parent.children.remove(self)
             ctie.instance.ui.onItemTreeChanged()
+
+    def addRowSep(self, pos):
+        self.rowSep.append(pos)
+        self.rowSep.sort()
+
+    def removeRowSep(self, index):
+        self.rowSep.pop(index)
+
+    def addColSep(self, pos):
+        self.colSep.append(pos)
+        self.colSep.sort()
+
+    def removeColSep(self, index):
+        self.colSep.pop(index)
 
     def move(self, index, xoff, yoff):
         xoff = int(xoff)

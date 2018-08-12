@@ -16,6 +16,8 @@ class WorkArea():
             self.selstart = (None, None)
             self.selend = (None, None)
             self.mode = None
+            self.focusRowSep = None
+            self.focusColSep = None
 
         def mousePressEvent(self, event):
             x = event.x()/self.scale
@@ -36,7 +38,36 @@ class WorkArea():
 
         def mouseMoveEvent(self, event):
             self.selend = (event.x()/self.scale, event.y()/self.scale)
+
+            item = self.item
+            self.focusColSep = None
+            self.focusRowSep = None
+            if item.getType()=="Table":
+                if self.ui.core.tableColumnSplitter:
+                    mind = None
+                    for i,x in enumerate(item.colSep):
+                        d = abs(x - self.selend[0])/item.scaleFactor
+                        if d < 2:
+                            if self.focusColSep is None or d < mind:
+                                mind = d
+                                self.focusColSep = i
+
+                if self.ui.core.tableRowSplitter:
+                    mind = None
+                    for i,y in enumerate(item.rowSep):
+                        d = abs(y - self.selend[1])/item.scaleFactor
+                        if d < 2:
+                            if self.focusRowSep is None or d < mind:
+                                mind = d
+                                self.focusRowSep = i
+
+            if self.focusColSep is None and self.focusRowSep is None:
+                QtGui.QGuiApplication.restoreOverrideCursor()
+            else:
+                QtGui.QGuiApplication.setOverrideCursor(QtCore.Qt.ForbiddenCursor)
+
             self.update()
+
             coord = []
             if self.selstart[0]:
                 coord.append("({:.2f}, {:.2f})".format(self.selstart[0], self.selstart[1]))
@@ -109,11 +140,19 @@ class WorkArea():
                         item.addChild(x1 = item.x1, y1 = item.y1+y, x2 = item.x2, y2 = item.y2)
                 if item.getType()=="Table":
                     if self.ui.core.tableRowSplitter:
-                        y = self.selend[1]
-                        item.addRowSep(y)
+                        if self.focusRowSep is None:
+                            y = self.selend[1]
+                            item.addRowSep(y)
+                        else:
+                            item.removeRowSep(self.focusRowSep)
+                            self.focusRowSep = None
                     if self.ui.core.tableColumnSplitter:
-                        x = self.selend[0]
-                        item.addColSep(x)
+                        if self.focusColSep is None:
+                            x = self.selend[0]
+                            item.addColSep(x)
+                        else:
+                            item.removeColSep(self.focusColSep)
+                            self.focusColSep = None
 
             self.selstart = (None, None)
             self.selend = (None, None)
@@ -210,11 +249,20 @@ class WorkArea():
                 painter.drawText(_x, _y, _w, _h, QtCore.Qt.AlignRight|QtCore.Qt.AlignBottom, index)
 
             if item.getType()=="Table":
-                pen.setColor(QtGui.QColor(0xff, 0xa5, 0x00))
-                painter.setPen(pen)
-                for x in item.colSep:
+                print(self.focusColSep, self.focusRowSep)
+                for i,x in enumerate(item.colSep):
+                    if i == self.focusColSep:
+                        pen.setColor(QtGui.QColor(0x00, 0xa5, 0xff))
+                    else:
+                        pen.setColor(QtGui.QColor(0xff, 0xa5, 0x00))
+                    painter.setPen(pen)
                     painter.drawLine(x, 0.0, x, item.y2-item.y1)
-                for y in item.rowSep:
+                for i,y in enumerate(item.rowSep):
+                    if i == self.focusRowSep:
+                        pen.setColor(QtGui.QColor(0x00, 0xa5, 0xff))
+                    else:
+                        pen.setColor(QtGui.QColor(0xff, 0xa5, 0x00))
+                    painter.setPen(pen)
                     painter.drawLine(0.0, y, item.x2-item.x1, y)
 
             pen.setColor(QtCore.Qt.magenta)
@@ -225,13 +273,14 @@ class WorkArea():
             if self.ui.core.horizontalSplitter and self.selend!=(None, None):
                 painter.drawLine(0.0, self.selend[1], item.x2-item.x1, self.selend[1])
 
-            pen.setColor(QtCore.Qt.green)
-            painter.setPen(pen)
-            if self.ui.core.tableRowSplitter and self.selend!=(None, None):
-                painter.drawLine(0.0, self.selend[1], item.x2-item.x1, self.selend[1])
+            if self.focusRowSep is None and self.focusColSep is None:
+                pen.setColor(QtCore.Qt.green)
+                painter.setPen(pen)
+                if self.ui.core.tableRowSplitter and self.selend!=(None, None):
+                    painter.drawLine(0.0, self.selend[1], item.x2-item.x1, self.selend[1])
 
-            if self.ui.core.tableColumnSplitter and self.selend!=(None, None):
-                painter.drawLine(self.selend[0], 0.0, self.selend[0], item.y2-item.y1)
+                if self.ui.core.tableColumnSplitter and self.selend!=(None, None):
+                    painter.drawLine(self.selend[0], 0.0, self.selend[0], item.y2-item.y1)
 
         def resizeEvent(self, event):
             pass
@@ -249,6 +298,9 @@ class WorkArea():
             self.updateGeometry()
 
         def onItemChanged(self):
+            self.focusColSep = None
+            self.focusRowSep = None
+
             zoomFit = False
             if not self.item:
                 zoomFit = True
@@ -262,6 +314,9 @@ class WorkArea():
                 self.updateGeometry()
 
         def reset(self):
+            self.focusColSep = None
+            self.focusRowSep = None
+
             self.resize(0, 0)
             self.update()
 

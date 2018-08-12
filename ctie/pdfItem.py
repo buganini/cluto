@@ -58,19 +58,9 @@ class PdfItem(BaseItem):
             cache_pdf[self.path] = doc
         if self.x2==-1 or self.y2==-1:
             self.x2, self.y2 = pdf.getPageSize(self.getFullPath(), self.page)
-        self.rowSep = []
-        self.colSep = []
 
     def getTitle(self):
         return "{} p{}".format(os.path.basename(self.path), self.page+1)
-
-    def addRowSep(self, pos):
-        self.rowSep.append(pos)
-        self.rowSep.sort()
-
-    def addColSep(self, pos):
-        self.colSep.append(pos)
-        self.colSep.sort()
 
     def getTypes(self):
         return ("Text", "Image", "Images", "Table")
