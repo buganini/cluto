@@ -339,6 +339,12 @@ class Item(object):
         self.x2 = x2
         self.y2 = y2
 
+    def getTableItem(self):
+        tableItem = self
+        while not tableItem.getType()!="Table" and tableItem.parent:
+            tableItem = tableItem.parent
+        return tableItem
+
     def detectRowSeparator(self):
         pass
 

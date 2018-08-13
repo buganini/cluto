@@ -132,17 +132,6 @@ class PdfItem(BaseItem):
             cache_pdf_page[self.path][self.page] = cache_pdf[self.path].page(self.page)
         return cache_pdf_page[self.path][self.page]
 
-    def getBounds(self):
-        return pdf.getBounds(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
-
-    def getTableItem(self):
-        tableItem = self
-        while not tableItem.getType()!="Table" and tableItem.parent:
-            tableItem = tableItem.parent
-        if tableItem is None:
-            return self
-        return tableItem
-
     def detectRowSeparator(self):
         vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
         self.rowSep = hs
@@ -153,6 +142,8 @@ class PdfItem(BaseItem):
 
     def rowsToChildren(self):
         tableItem = self.getTableItem()
+        if tableItem is None:
+            return
         if not tableItem.rowSep:
             tableItem.detectRowSeparator()
         if len(tableItem.rowSep)==0:
@@ -163,6 +154,8 @@ class PdfItem(BaseItem):
 
     def colsToChildren(self):
         tableItem = self.getTableItem()
+        if tableItem is None:
+            return
         if not tableItem.colSep:
             tableItem.detectColSeparator()
         if len(tableItem.colSep)==0:
