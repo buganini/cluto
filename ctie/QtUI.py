@@ -7,13 +7,6 @@ from ctie import *
 from qt import *
 import utils
 
-class Clicked(QtCore.QObject):
-    def __init__(self, action):
-        action.triggered.connect(self.triggered)
-
-    def triggered(self):
-        pass
-
 # http://www.noobslab.com/2014/03/give-new-looks-to-gimp-image-editor.html
 
 clear_tempdir = True
@@ -229,62 +222,77 @@ class CtieUI():
     def clear_tag(self, obj, data):
         item, key = data
 
+    @UI
     def onItemListChanged(self):
         self.uiItemList.onItemListChanged()
 
+    @UI
     def onItemChanged(self):
         self.uiWorkArea.onItemChanged()
         self.uiCollationView.onItemChanged()
         self.uiTagManager.onItemChanged()
         self.uiToolBar.onItemChanged()
 
+    @UI
     def onSelectionChanged(self):
         self.uiTagManager.onSelectionChanged()
         self.uiWorkArea.onSelectionChanged()
         self.uiCollationView.onSelectionChanged()
 
+    @UI
     def onItemTreeChanged(self):
         self.uiLevelSelector.onItemTreeChanged()
         self.uiItemList.onItemTreeChanged()
         if self.core.bulkMode:
             return
 
+    @UI
     def onContentChanged(self):
         self.uiWorkArea.onContentChanged()
         self.uiCollationView.onContentChanged()
         self.uiToolBar.onContentChanged()
 
+    @UI
     def onTagChanged(self):
         self.uiTagManager.onTagChanged()
 
+    @UI
     def onItemFocused(self):
         item = self.core.getCurrentItem()
         if not item:
             return
         self.uiItemList.onItemFocused(item)
 
+    @UI
     def onItemBlurred(self, item):
         if not item:
             return
         self.uiItemList.onItemBlurred(item)
 
+    @UI
     def onSetCollationMode(self):
         self.uiCollationView.onSetCollationMode()
 
+    @UI
     def onSetFocusTag(self):
         self.uiCollationView.onSetFocusTag()
 
+    @UI
     def updateToolBar(self):
         self.uiToolBar.updateUI()
 
+    @UI
     def setHorizontalSplitter(self, enable):
         self.uiToolBar.setHorizontalSplitter(enable)
 
+    @UI
     def setVerticalSplitter(self, enable):
         self.uiToolBar.setVerticalSplitter(enable)
 
+    @UI
     def setTableRowSplitter(self, enable):
         self.uiToolBar.setTableRowSplitter(enable)
 
+    @UI
     def setTableColumnSplitter(self, enable):
         self.uiToolBar.setTableColumnSplitter(enable)

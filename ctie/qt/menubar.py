@@ -8,10 +8,9 @@ from .denoiseDialog import *
 from .pasteDialog import *
 from .setTagDialog import *
 from .listExportDialog import *
+from .helper import *
 
 class Menubar(QtCore.QObject):
-    progress_signal = QtCore.pyqtSignal(int, int)
-
     def __init__(self, ui, menubar):
         QtCore.QObject.__init__(self)
         self.ui = ui
@@ -95,7 +94,6 @@ class Menubar(QtCore.QObject):
         menuOCR.addAction(ocrRegex)
 
         self.progress_dialog = None
-        self.progress_signal.connect(self._onProgress)
 
     def onBatchTrim(self):
         EdgeDialog(self.ui, "Batch Trim", "Margin", 5, self.doBatchTrim)
@@ -141,10 +139,8 @@ class Menubar(QtCore.QObject):
     def onListExport(self):
         ListExportDialog(self.ui)
 
+    @UI
     def onProgress(self, done, total):
-        self.progress_signal.emit(done, total)
-
-    def _onProgress(self, done, total):
         if done==total:
             if self.progress_dialog and not self.progress_dialog.wasCanceled():
                 self.progress_dialog.setValue(done)
