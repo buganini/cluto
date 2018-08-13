@@ -9,6 +9,7 @@ from .pasteDialog import *
 from .setTagDialog import *
 from .listExportDialog import *
 from .helper import *
+import time
 
 class Menubar(QtCore.QObject):
     def __init__(self, ui, menubar):
@@ -153,6 +154,7 @@ class Menubar(QtCore.QObject):
                 self.progress_dialog.setAutoClose(False)
                 self.progress_dialog.setWindowModality(QtCore.Qt.WindowModal)
                 self.progress_dialog.show()
+                time.sleep(0.05)
             self.progress_dialog.setValue(done)
 
     def onOcrRegex(self):

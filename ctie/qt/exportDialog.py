@@ -6,6 +6,8 @@ from worker import JobHandler
 import os
 import json
 import re
+import time
+from datetime import datetime
 
 class ExportDialog(QtCore.QObject):
     # http://apocalyptech.com/linux/qt/qtableview/
@@ -231,6 +233,7 @@ class ExportDialog(QtCore.QObject):
             self.commit()
 
     def onApply(self):
+        self.message.setText("Exporting...")
         self.ui.core.worker.addFgJob(self)
 
     def __call__(self):
@@ -250,6 +253,7 @@ class ExportDialog(QtCore.QObject):
             if self.progress_dialog and not self.progress_dialog.wasCanceled():
                 self.progress_dialog.hide()
             self.progress_dialog = None
+            self.message.setText("Export finished at {}".format(datetime.now()))
         else:
             if self.progress_dialog is None:
                 self.progress_dialog = QProgressDialog("Exporting...", "Abort", done, total, self.exportui)
@@ -258,6 +262,7 @@ class ExportDialog(QtCore.QObject):
                 self.progress_dialog.setAutoClose(False)
                 self.progress_dialog.setWindowModality(QtCore.Qt.WindowModal)
                 self.progress_dialog.show()
+                time.sleep(0.05)
             self.progress_dialog.setValue(done)
             self.progress_dialog.setLabelText("Exporting... ({} exported)".format(exported))
 

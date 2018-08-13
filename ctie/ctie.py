@@ -427,6 +427,7 @@ class Ctie(object):
         content = CQL(content)
         total = len(self.items)
         done = 0
+        cbProgress(done, total, False)
         with open(os.path.join(outputdir, "index.html"), "w") as f:
             f.write('<!doctype html><html><head><meta charset="UTF-8"/><style type="text/css">table{border-collapse: collapse;} td {border: solid 1px gray; white-space: pre; font-family: monospace;}</style></head><body><table>')
             cbProgress(done, total, False)
