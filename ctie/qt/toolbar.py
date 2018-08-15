@@ -11,11 +11,9 @@ class Toolbar():
         # http://drive.noobslab.com/data/themes/gimp/flat-themes.tar.gz
         resourcePath = os.path.join(os.path.dirname(__file__), "..", "icons")
 
-        self.tbProject = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-open.png")), "&Project")
         self.tbLoad = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-open.png")), "&Load")
         self.tbSave = toolBar.addAction(QtGui.QIcon(os.path.join(resourcePath, "gtk-save.png")), "&Save")
 
-        self.tbProject.triggered.connect(self.openProject)
         self.tbLoad.triggered.connect(self.load)
         self.tbSave.triggered.connect(self.save)
 
@@ -93,21 +91,16 @@ class Toolbar():
         self.tbOcrMode.toggled.connect(self.toggleOcrMode)
         self.tbCollationMode.toggled.connect(self.toggleCollationMode)
 
-        self.tbLoad.setEnabled(False)
         self.tbSave.setEnabled(False)
         self.tbAddFiles.setEnabled(False)
         self.tbAddFolder.setEnabled(False)
         self.tbDelete.setEnabled(False)
 
     def onProjectChanged(self):
-        self.tbLoad.setEnabled(True)
         self.tbSave.setEnabled(True)
         self.tbAddFiles.setEnabled(True)
         self.tbAddFolder.setEnabled(True)
         self.tbDelete.setEnabled(True)
-
-    def openProject(self):
-        self.ui.openProject()
 
     def load(self):
         self.ui.load()

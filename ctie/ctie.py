@@ -83,49 +83,11 @@ class Ctie(object):
         self.ocrMode = False
         self.collationMode = False
 
-    def openProject(self, path, confirm=False):
-        workspace = os.path.abspath(path)
+    def getStorageDir(self, workspace=None):
+        if workspace is None:
+            workspace = self.workspace
         storage = os.path.join(workspace, ".ctie")
-        if not os.path.exists(storage) and not confirm:
-            self.ui.onProjectInitConfirm(path)
-            return
-
-        self.reset()
-        self.workspace = workspace
-        self.storage = storage
-        if not os.path.exists(self.storage):
-            os.makedirs(self.storage)
-
-        self.regex_path = os.path.join(self.storage, "regex")
-        self.exports_path = os.path.join(self.storage, "export")
-
-        self.savedir = os.path.join(self.storage, "save")
-        if not os.path.exists(self.savedir):
-            os.makedirs(self.savedir)
-
-        self.tempdir = os.path.join(self.storage, "tmp")
-        if not os.path.exists(self.tempdir):
-            os.makedirs(self.tempdir)
-
-        try:
-            with open(self.regex_path,'rb') as fp:
-                data = pickle.load(fp)
-                self.regex = data["regex"]
-                self.tests = data["tests"]
-        except:
-            self.regex = []
-            self.tests = []
-
-        try:
-            with open(self.exports_path,'rb') as fp:
-                self.exports = pickle.load(fp)
-        except:
-            self.exports = []
-
-        print("Open project at {}".format(self.workspace))
-        self.ui.onProjectChanged()
-        if self.hasSavedData():
-            self.ui.load()
+        return storage
 
     def getLevel(self):
         l = 0
@@ -375,32 +337,69 @@ class Ctie(object):
                 failed.append("sort")
             self.ui.set_status('Failed parsing '+"/".join(failed))
 
-    def hasSavedData(self):
-        return bool(os.listdir(self.savedir))
+    def load(self, workspace, savepoint):
+        self.workspace = workspace
 
-    def load(self, path):
-        path = os.path.join(self.savedir, path)
-        fp = open(path,'rb')
+        self.storage = self.getStorageDir()
+        if not os.path.exists(self.storage):
+            os.makedirs(self.storage)
+
+        self.savedir = os.path.join(self.storage, "save")
+        if not os.path.exists(self.savedir):
+            os.makedirs(self.savedir)
+
+        self.regex_path = os.path.join(self.storage, "regex")
+        self.exports_path = os.path.join(self.storage, "export")
+
+        self.tempdir = os.path.join(self.storage, "tmp")
+        if not os.path.exists(self.tempdir):
+            os.makedirs(self.tempdir)
+
         try:
-            data = pickle.load(fp)
+            with open(self.getRegexPath(),'rb') as fp:
+                data = pickle.load(fp)
+                self.regex = data["regex"]
+                self.tests = data["tests"]
         except:
-            return False
-        finally:
-            fp.close()
-        self.clips = data['clips']
-        self.tags = data['tags']
-        self.copy_tags = data['tags']
-        self.currentLevel = data.get("currentLevel", 0)
-        self.currentIndex = data.get("currentIndex", 0)
-        self.setItemsSettings(data.get("filter", ""), data.get("sort_key", ""), data.get("dups_only", False), notify=False)
-        self._genItems()
+            self.regex = []
+            self.tests = []
+
+        try:
+            with open(self.exports_path,'rb') as fp:
+                self.exports = pickle.load(fp)
+        except:
+            self.exports = []
+
+        print("Open workspace at {}".format(self.workspace))
+        self.ui.onProjectChanged()
+        if self.hasSavedData():
+            self.ui.load()
+
+        if savepoint:
+            savepoint = os.path.join(self.savedir, savepoint)
+            print("Load from {}".format(savepoint))
+            fp = open(savepoint,'rb')
+            try:
+                data = pickle.load(fp)
+            except:
+                return False
+            finally:
+                fp.close()
+
+            self.clips = data['clips']
+            self.tags = data['tags']
+            self.copy_tags = data['tags']
+            self.currentLevel = data.get("currentLevel", 0)
+            self.currentIndex = data.get("currentIndex", 0)
+            self.setItemsSettings(data.get("filter", ""), data.get("sort_key", ""), data.get("dups_only", False), notify=False)
+            self._genItems()
+            self.worker.reset()
+            self.worker.addBgJobs(self.clips)
+
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
         self.ui.onItemChanged()
         self.ui.zoomFit()
-        print("Load from {}".format(path))
-        self.worker.reset()
-        self.worker.addBgJobs(self.clips)
         return True
 
     def save(self, path, confirm=False):

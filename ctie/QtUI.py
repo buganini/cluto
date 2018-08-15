@@ -54,7 +54,7 @@ class CtieUI():
         )
 
         timer = QtCore.QTimer(app)
-        timer.singleShot(1, self.openProject)
+        timer.singleShot(1, self.load)
 
         self.onSetCollationMode()
 
@@ -62,16 +62,7 @@ class CtieUI():
         self.core.worker.stop()
         sys.exit(r)
 
-    def openProject(self):
-        project = QFileDialog.getExistingDirectory(self.ui, u"Select Project Folder")
-        if project:
-            self.core.openProject(project)
-
-    def onProjectInitConfirm(self, path):
-        ret = QMessageBox.question(self.ui, 'New Project', "Selected folder is not a ctie project folder, configure it as a project?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if ret == QMessageBox.Yes:
-            self.core.openProject(path, True)
-
+    @UI
     def onProjectChanged(self):
         self.uiToolBar.onProjectChanged()
         self.uiItemList.onProjectChanged()
@@ -80,9 +71,11 @@ class CtieUI():
         self.uiTagManager.onProjectChanged()
         self.uiCollationView.onProjectChanged()
 
+    @UI
     def onLevelChanged(self):
         self.uiItemList.onLevelChanged()
 
+    @UI
     def set_status(self, s):
         self.uiStatusBar.showMessage(s)
 
