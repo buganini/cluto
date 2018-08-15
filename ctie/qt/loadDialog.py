@@ -87,7 +87,6 @@ class LoadDialog(QtCore.QObject):
             self.label_not_configured.hide()
             self.model = self.TableModel(os.path.join(storagedir, "save"))
             self.table.setModel(self.model)
-            self.table.selectionModel().select(QtCore.QItemSelection(self.model.index(0, 0), self.model.index(0, 1)), QtCore.QItemSelectionModel.Select)
 
             header = self.table.horizontalHeader()
             header.setSectionResizeMode(0, QHeaderView.Stretch)
@@ -107,6 +106,8 @@ class LoadDialog(QtCore.QObject):
             if selected:
                 fn = self.model.data[selected[0].row()]
                 self.ui.core.load(self.workspace_path.text(), fn)
+            else:
+                self.ui.core.load(self.workspace_path.text(), None)
         else:
             self.ui.core.load(self.workspace_path.text(), None)
         self.close()
