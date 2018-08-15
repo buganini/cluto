@@ -133,10 +133,14 @@ class PdfItem(BaseItem):
         return cache_pdf_page[self.path][self.page]
 
     def detectRowSeparator(self):
+        if not self.getType()=="Table":
+            return
         vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
         self.rowSep = hs
 
     def detectColSeparator(self):
+        if not self.getType()=="Table":
+            return
         vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
         self.colSep = vs
 

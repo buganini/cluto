@@ -626,36 +626,36 @@ def getLines(file, page, bx1, by1, bx2, by2):
 				y1, y2 = utils.asc(y1, y2)
 
 				# contentBounds.append((x1, y1, x2, y2))
-			elif cmd in ("strokePath", "fillPath", "eoFillPath"):
+			elif cmd in ("strokePath", "fillPath", "eoFillPath", "eoClipPath"):
 				if pagen!=page:
 					continue
-				pts = []
+				straight = True
+				ps = []
 				while l:
 					token = l.readToken()
 					if token == "subpath":
-						isBorder = True
+						if ps and straight:
+							polygons.append(ps)
+						straight = True
 						closed_flag = l.readBool()
 						ps = []
 					else:
 						l.unshift(token)
-						if ps and isBorder:
-							pts.extend(ps)
 					try:
 						x = l.readFloat()
 						y = l.readFloat()
 						curve = l.readBool()
 						if curve:
-							isBorder = False
+							straight = False
 							break
 						x, y = translate(ctm[-1], x, y)
 						ps.append((x,y))
 					except:
 						break
 
-				if ps and isBorder:
-					pts.extend(ps)
+				if ps and straight:
+					polygons.append(ps)
 
-				polygons.append(pts)
 		if end:
 			break
 
@@ -684,9 +684,29 @@ def getLines(file, page, bx1, by1, bx2, by2):
 		if dx == 0 or dy == 0:
 			continue
 
-		if dx > dy:
-			hsep.append(miny)
-		elif dx < dy:
-			vsep.append(minx)
+		thresx = (bx2-bx1)/3
+		thresy = (by2-by1)/3
+		isLine = False
+		if dy < 5000:
+			isLine = True
+			if dx > thresx:
+				if utils.between(by1, miny, by2):
+					hsep.append(miny)
+		if dx < 5000:
+			isLine = True
+			if dy > thresy:
+				if utils.between(bx1, minx, bx2):
+					vsep.append(minx)
+		if not isLine:
+			if maxx-minx > thresx:
+				if utils.between(by1, miny, by2):
+					hsep.append(miny)
+				if utils.between(by1, maxy, by2):
+					hsep.append(maxy)
+			if maxy-miny > thresy:
+				if utils.between(bx1, minx, bx2):
+					vsep.append(minx)
+				if utils.between(bx1, maxx, bx2):
+					vsep.append(maxx)
 
 	return sorted(set(vsep)), sorted(set(hsep))

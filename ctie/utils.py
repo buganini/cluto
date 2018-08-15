@@ -15,6 +15,9 @@ def open_path(path):
     else:
         subprocess.Popen(["xdg-open", path])
 
+def between(lower_inc, value, upper_exc):
+    return lower_inc <= value and value < upper_exc
+
 def rect_overlap(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2):
     if in_rect(ax1, ay1, bx1, by1, bx2, by2):
         return True
