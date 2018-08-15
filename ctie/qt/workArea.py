@@ -46,6 +46,7 @@ class WorkArea():
                 if self.ui.core.tableColumnSplitter:
                     mind = None
                     for i,x in enumerate(item.colSep):
+                        x = x - item.x1
                         d = abs(x - self.selend[0])/item.scaleFactor
                         if d < 2:
                             if self.focusColSep is None or d < mind:
@@ -55,6 +56,7 @@ class WorkArea():
                 if self.ui.core.tableRowSplitter:
                     mind = None
                     for i,y in enumerate(item.rowSep):
+                        y = y - item.y1
                         d = abs(y - self.selend[1])/item.scaleFactor
                         if d < 2:
                             if self.focusRowSep is None or d < mind:
@@ -142,14 +144,14 @@ class WorkArea():
                     if self.ui.core.tableRowSplitter:
                         if self.focusRowSep is None:
                             y = self.selend[1]
-                            item.addRowSep(y)
+                            item.addRowSep(y + item.y1)
                         else:
                             item.removeRowSep(self.focusRowSep)
                             self.focusRowSep = None
                     if self.ui.core.tableColumnSplitter:
                         if self.focusColSep is None:
                             x = self.selend[0]
-                            item.addColSep(x)
+                            item.addColSep(x + item.x1)
                         else:
                             item.removeColSep(self.focusColSep)
                             self.focusColSep = None
@@ -250,6 +252,7 @@ class WorkArea():
 
             if item.getType()=="Table":
                 for i,x in enumerate(item.colSep):
+                    x = x - item.x1
                     if i == self.focusColSep:
                         pen.setColor(QtGui.QColor(0x00, 0xa5, 0xff))
                     else:
@@ -257,6 +260,7 @@ class WorkArea():
                     painter.setPen(pen)
                     painter.drawLine(x, 0.0, x, item.y2-item.y1)
                 for i,y in enumerate(item.rowSep):
+                    y = y - item.y1
                     if i == self.focusRowSep:
                         pen.setColor(QtGui.QColor(0x00, 0xa5, 0xff))
                     else:
