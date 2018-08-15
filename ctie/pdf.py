@@ -662,10 +662,12 @@ def getLines(file, page, bx1, by1, bx2, by2):
 	vsep = []
 	hsep = []
 	for ps in polygons:
-		minx = min([p[0] for p in ps])
-		miny = min([p[1] for p in ps])
-		maxx = max([p[0] for p in ps])
-		maxy = max([p[1] for p in ps])
+		xs = [p[0] for p in ps]
+		ys = [p[1] for p in ps]
+		minx = min(xs)
+		maxx = max(xs)
+		miny = min(ys)
+		maxy = max(ys)
 
 		if not utils.intersect(minx, miny, maxx, maxy, bx1, by1, bx2, by2):
 			continue
@@ -684,29 +686,23 @@ def getLines(file, page, bx1, by1, bx2, by2):
 		if dx == 0 or dy == 0:
 			continue
 
-		thresx = (bx2-bx1)/3
-		thresy = (by2-by1)/3
 		isLine = False
 		if dy < 5000:
 			isLine = True
-			if dx > thresx:
-				if utils.between(by1, miny, by2):
-					hsep.append(miny)
+			if utils.between(by1, miny, by2):
+				hsep.append((miny, dx))
 		if dx < 5000:
 			isLine = True
-			if dy > thresy:
-				if utils.between(bx1, minx, bx2):
-					vsep.append(minx)
+			if utils.between(bx1, minx, bx2):
+				vsep.append((minx, dy))
 		if not isLine:
-			if maxx-minx > thresx:
-				if utils.between(by1, miny, by2):
-					hsep.append(miny)
-				if utils.between(by1, maxy, by2):
-					hsep.append(maxy)
-			if maxy-miny > thresy:
-				if utils.between(bx1, minx, bx2):
-					vsep.append(minx)
-				if utils.between(bx1, maxx, bx2):
-					vsep.append(maxx)
+			if utils.between(by1, miny, by2):
+				hsep.append((miny, dx))
+			if utils.between(by1, maxy, by2):
+				hsep.append((maxy, dx))
+			if utils.between(bx1, minx, bx2):
+				vsep.append((minx, dy))
+			if utils.between(bx1, maxx, bx2):
+				vsep.append((maxx, dy))
 
-	return sorted(set(vsep)), sorted(set(hsep))
+	return sorted(set(vsep), key=lambda x:x[0]), sorted(set(hsep), key=lambda x:x[0])

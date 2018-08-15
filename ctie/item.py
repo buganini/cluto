@@ -345,10 +345,7 @@ class Item(object):
             tableItem = tableItem.parent
         return tableItem
 
-    def detectRowSeparator(self):
-        pass
-
-    def detectColSeparator(self):
+    def detectTableSeparator(self, detectRowSep, minRowSep, detectColSep, minColSep):
         pass
 
     def rowsToChildren(self):

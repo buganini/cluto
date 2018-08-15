@@ -4,6 +4,7 @@ from PyQt5 import QtGui
 from .QChrootFileDirDialog import *
 from .regexManager import *
 from .edgeDialog import *
+from .tableSeparatorDialog import *
 from .denoiseDialog import *
 from .pasteDialog import *
 from .setTagDialog import *
@@ -27,13 +28,9 @@ class Menubar(QtCore.QObject):
         batchShrink.triggered.connect(self.onBatchShrink)
         menuList.addAction(batchShrink)
 
-        batchDetectColSeparator = QAction('Detect column separator', self.menubar)
-        batchDetectColSeparator.triggered.connect(self.onBatchDetectColSeparator)
-        menuList.addAction(batchDetectColSeparator)
-
-        batchDetectRowSeparator = QAction('Detect row separator', self.menubar)
-        batchDetectRowSeparator.triggered.connect(self.onBatchDetectRowSeparator)
-        menuList.addAction(batchDetectRowSeparator)
+        batchDetectTableSeparator = QAction('Detect table separator', self.menubar)
+        batchDetectTableSeparator.triggered.connect(self.onBatchDetectTableSeparator)
+        menuList.addAction(batchDetectTableSeparator)
 
         batchColsToChildren = QAction('Columns to children', self.menubar)
         batchColsToChildren.triggered.connect(self.onBatchColsToChildren)
@@ -69,13 +66,9 @@ class Menubar(QtCore.QObject):
         thisShrink.triggered.connect(self.onThisShrink)
         menuThis.addAction(thisShrink)
 
-        thisDetectColSeparator = QAction('Detect column separator', self.menubar)
-        thisDetectColSeparator.triggered.connect(self.onThisDetectColSeparator)
-        menuThis.addAction(thisDetectColSeparator)
-
-        thisDetectRowSeparator = QAction('Detect row separator', self.menubar)
-        thisDetectRowSeparator.triggered.connect(self.onThisDetectRowSeparator)
-        menuThis.addAction(thisDetectRowSeparator)
+        thisDetectTableSeparator = QAction('Detect table separator', self.menubar)
+        thisDetectTableSeparator.triggered.connect(self.onThisDetectTableSeparator)
+        menuThis.addAction(thisDetectTableSeparator)
 
         thisColsToChildren = QAction('Columns to children', self.menubar)
         thisColsToChildren.triggered.connect(self.onThisColsToChildren)
@@ -102,11 +95,11 @@ class Menubar(QtCore.QObject):
     def doBatchTrim(self, left, top, right, bottom, margin):
         self.ui.core.batchTrim(left, top, right, bottom, margin, self.onProgress)
 
-    def onBatchDetectColSeparator(self):
-        self.ui.core.batchDetectColSeparator(self.onProgress)
+    def onBatchDetectTableSeparator(self):
+        TableSeparatorDialog(self.ui, "Detect Table Separator", self.doBatchDetectTableSeparator)
 
-    def onBatchDetectRowSeparator(self):
-        self.ui.core.batchDetectRowSeparator(self.onProgress)
+    def doBatchDetectTableSeparator(self, detectRowSep, minRowSep, detectColSep, minColSep):
+        self.ui.core.batchDetectTableSeparator(detectRowSep, minRowSep, detectColSep, minColSep, self.onProgress)
 
     def onBatchColsToChildren(self):
         self.ui.core.batchColsToChildren(self.onProgress)
@@ -177,16 +170,13 @@ class Menubar(QtCore.QObject):
         if item:
             item.shrink(left, top, right, bottom, amount)
 
-    def onThisDetectColSeparator(self):
-        item = self.ui.core.getCurrentItem()
-        if item:
-            item.detectColSeparator()
-            self.ui.onContentChanged()
+    def onThisDetectTableSeparator(self):
+        TableSeparatorDialog(self.ui, "Detect Table Separator", self.doThisDetectTableSeparator)
 
-    def onThisDetectRowSeparator(self):
+    def doThisDetectTableSeparator(self, detectRowSep, minRowSep, detectColSep, minColSep):
         item = self.ui.core.getCurrentItem()
         if item:
-            item.detectRowSeparator()
+            item.detectTableSeparator(detectRowSep, minRowSep, detectColSep, minColSep)
             self.ui.onContentChanged()
 
     def onThisColsToChildren(self):

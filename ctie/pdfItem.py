@@ -132,17 +132,16 @@ class PdfItem(BaseItem):
             cache_pdf_page[self.path][self.page] = cache_pdf[self.path].page(self.page)
         return cache_pdf_page[self.path][self.page]
 
-    def detectRowSeparator(self):
+    def detectTableSeparator(self, detectRowSep, minRowSep, detectColSep, minColSep):
         if not self.getType()=="Table":
             return
         vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
-        self.rowSep = hs
-
-    def detectColSeparator(self):
-        if not self.getType()=="Table":
-            return
-        vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
-        self.colSep = vs
+        if detectRowSep:
+            thres = (self.x2 - self.x1) * minRowSep / 100
+            self.rowSep = [p for p,l in hs if l >= thres]
+        if detectColSep:
+            thres = (self.y2 - self.y1) * minColSep / 100
+            self.colSep = [p for p,l in vs if l >= thres]
 
     def rowsToChildren(self):
         tableItem = self.getTableItem()
