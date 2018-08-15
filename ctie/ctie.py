@@ -372,8 +372,6 @@ class Ctie(object):
 
         print("Open workspace at {}".format(self.workspace))
         self.ui.onProjectChanged()
-        if self.hasSavedData():
-            self.ui.load()
 
         if savepoint:
             savepoint = os.path.join(self.savedir, savepoint)
