@@ -253,7 +253,7 @@ class Ctie(object):
         self._genItems()
         self.ui.onItemListChanged()
         self.ui.onItemTreeChanged()
-        if len(self.clips)==1:
+        if self.getCurrentItemIndex() is None:
             self.selectItemByIndex(0)
 
     def removeItem(self, item):
