@@ -152,7 +152,7 @@ class Toolbar():
         item = self.ui.core.getCurrentItem()
         if item is None:
             return
-        self.ui.utils.open_path(item.getWorkdir())
+        self.ui.core.open_path(item.getWorkdir())
 
     def onItemChanged(self):
         self.updateUI()

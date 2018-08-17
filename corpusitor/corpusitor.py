@@ -40,7 +40,7 @@ from worker import WorkerDispatcher
 
 instance = None
 
-class Ctie(object):
+class Corpusitor(object):
     def __init__(self, ui, path = None):
         global instance
         instance = self
@@ -854,3 +854,6 @@ class Ctie(object):
     def setFocusTag(self, tag):
         self.focusTag = tag
         self.ui.onSetFocusTag()
+
+    def open_path(self, path):
+        utils.open_path(path)

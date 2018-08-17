@@ -30,7 +30,7 @@ import uuid
 import os
 import utils
 
-import ctie
+import corpusitor
 from cql import *
 
 class Item(object):
@@ -83,13 +83,13 @@ class Item(object):
             pass
 
     def getFullPath(self):
-        return os.path.join(ctie.instance.workspace, self.path)
+        return os.path.join(corpusitor.instance.workspace, self.path)
 
     def getTitle(self):
         return os.path.basename(self.path)
 
     def getWorkdir(self):
-        path = os.path.join(ctie.instance.tempdir, self.hash)
+        path = os.path.join(corpusitor.instance.tempdir, self.hash)
         if not os.path.exists(path):
             os.makedirs(path)
         return path
@@ -98,7 +98,7 @@ class Item(object):
         if self.parent:
             return self.parent.children.index(self)
         else:
-            return ctie.instance.clips.index(self)
+            return corpusitor.instance.clips.index(self)
 
     def getTypes(self):
         return False
@@ -152,7 +152,7 @@ class Item(object):
 
     def unsetTag(self, key):
         del(self.tags[key])
-        ctie.ui.onTagChanged()
+        corpusitor.ui.onTagChanged()
 
     def contains(self, x, y):
         return x>self.x1 and x<self.x2 and y>self.y1 and y<self.y2
@@ -161,19 +161,19 @@ class Item(object):
         k = self.__class__
         child = k(parent = self, **arg)
         self.children.append(child)
-        ctie.instance.ui.onItemTreeChanged()
-        ctie.instance.worker.addBgJob(child)
+        corpusitor.instance.ui.onItemTreeChanged()
+        corpusitor.instance.worker.addBgJob(child)
         return child
 
     def removeChild(self, child):
         self.children.remove(child)
-        ctie.instance.ui.onItemTreeChanged()
+        corpusitor.instance.ui.onItemTreeChanged()
 
     def remove(self):
-        ctie.instance.removeItem(self)
+        corpusitor.instance.removeItem(self)
         if self.parent:
             self.parent.children.remove(self)
-            ctie.instance.ui.onItemTreeChanged()
+            corpusitor.instance.ui.onItemTreeChanged()
 
     def addRowSep(self, pos):
         self.rowSep.append(pos)

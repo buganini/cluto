@@ -28,7 +28,6 @@ from popplerqt5 import Poppler as QtPoppler
 import pdf
 import os
 
-import ctie
 from item import Item as BaseItem
 
 cache_pdf = {}

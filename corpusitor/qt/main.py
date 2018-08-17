@@ -3,22 +3,30 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import uic, QtCore
 from helpers import *
-from ctie import *
-from qt import *
-import utils
+from .keyBinding import *
+from .loadDialog import *
+from .saveDialog import *
+from .regexManager import *
+from .menubar import *
+from .toolbar import *
+from .itemList import *
+from .levelSelector import *
+from .collationView import *
+from .workArea import *
+from .tagManager import *
+from .helper import *
 
 # http://www.noobslab.com/2014/03/give-new-looks-to-gimp-image-editor.html
 
 clear_tempdir = True
 
-class CtieUI():
-    def __init__(self):
-        self.utils = utils
-        self.core = Ctie(self)
+class MainUI():
+    def __init__(self, klass):
+        self.core = klass(self)
         self.uiref = {}
         self.app_path = os.path.abspath(os.path.dirname(__file__))
 
-        uiFile = "ctie.ui"
+        uiFile = "main.ui"
 
         app = QApplication(sys.argv)
         ui = uic.loadUi(os.path.join(self.app_path, uiFile))
