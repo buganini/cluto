@@ -108,9 +108,6 @@ class ImageItem(Item):
         im = self.get_pil_l()
         return imglib.boundary_check(im, x1, y1, x2, y2)
 
-    def _prepare_ocr(self):
-        return tmpfile
-
     def ocr(self):
         if 'text' in self.tags:
             return
@@ -180,3 +177,6 @@ class ImageItem(Item):
         self.y2 = y2
 
         corpusitor.instance.worker.addBgJob(self)
+
+    def _getLines(self):
+        return imglib.getLines(self.getFullPath(), self.x1, self.y1, self.x2, self.y2)

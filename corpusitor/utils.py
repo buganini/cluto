@@ -1,7 +1,10 @@
 import os
 import platform
 import subprocess
+
 from PIL import Image
+
+from ranges import CRanges
 
 def asc(*a):
     return sorted(a)
@@ -66,3 +69,15 @@ def image_fallback(path, whitelist, fallback, remove=True):
             os.unlink(path)
         return path2
     return path
+
+def merge_lines(lines, distance=5):
+    m = {}
+    for p,a,b in lines:
+        for k in m:
+            if abs(p-k) < distance:
+                break
+        else:
+            k = p
+            m[p] = CRanges()
+        m[k].add(a,b)
+    return m

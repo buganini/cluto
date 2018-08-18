@@ -21,7 +21,7 @@ class CRanges(object):
 		if a==b:
 			return
 		pos = -1
-		for i in  range(len(self.ranges)):
+		for i in range(len(self.ranges)):
 			if a <= self.ranges[i][1] or a <= self.ranges[i][0]:
 				pos = i
 				break
@@ -52,15 +52,24 @@ class CRanges(object):
 			return 1
 		return 0
 
+	def length(self):
+		t = 0
+		for a,b in self.ranges:
+			t += b-a
+		return t
+
 if __name__ == "__main__":
 	r = CRanges()
 	assert r == []
+	assert r.length() == 0
 
 	r.add(0, 0)
 	assert r == []
+	assert r.length() == 0
 
 	r.add(1, 11)
 	assert r == [[1,11]]
+	assert r.length() == 10
 
 	r.add(3, 12)
 	assert r == [[1,12]]

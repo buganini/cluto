@@ -64,12 +64,8 @@ class PdfItem(BaseItem):
     def getTypes(self):
         return ("Text", "Image", "Images", "Table")
 
-    def getType(self):
-        if self.parent:
-            default = self.parent.getType()
-        else:
-            default = "Text"
-        return self.tags.get("_type", default)
+    def getDefaultType(self):
+        return "Text"
 
     def getImage(self):
         image = self.cache.get("image")
@@ -131,16 +127,8 @@ class PdfItem(BaseItem):
             cache_pdf_page[self.path][self.page] = cache_pdf[self.path].page(self.page)
         return cache_pdf_page[self.path][self.page]
 
-    def detectTableSeparator(self, detectRowSep, minRowSep, detectColSep, minColSep):
-        if not self.getType()=="Table":
-            return
-        vs, hs = pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
-        if detectRowSep:
-            thres = (self.x2 - self.x1) * minRowSep / 100
-            self.rowSep = [p for p,l in hs if l >= thres]
-        if detectColSep:
-            thres = (self.y2 - self.y1) * minColSep / 100
-            self.colSep = [p for p,l in vs if l >= thres]
+    def _getLines(self):
+        return pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
 
     def rowsToChildren(self):
         tableItem = self.getTableItem()

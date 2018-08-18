@@ -101,10 +101,17 @@ class Item(object):
             return corpusitor.instance.clips.index(self)
 
     def getTypes(self):
-        return False
+        return ("Text", "Image", "Table")
 
     def getType(self):
-        return self.tags.get("_type", None)
+        if self.parent:
+            default = self.parent.getType()
+        else:
+            default = self.getDefaultType()
+        return self.tags.get("_type", default)
+
+    def getDefaultType(self):
+        return "Image"
 
     def setType(self, t):
         self.tags["_type"] = t
@@ -345,8 +352,33 @@ class Item(object):
             tableItem = tableItem.parent
         return tableItem
 
+    def _getLines(self):
+        return [], []
+
     def detectTableSeparator(self, detectRowSep, minRowSep, detectColSep, minColSep):
-        pass
+        if not self.getType()=="Table":
+            return
+        vs, hs = self._getLines()
+        vs = sorted(set(vs), key=lambda x:x[0])
+        hs = sorted(set(hs), key=lambda x:x[0])
+        if detectRowSep:
+            mr = utils.merge_lines(hs)
+            ps = sorted(mr.keys())
+            sep = []
+            thres = (self.x2 - self.x1) * (minRowSep / 100)
+            for p in ps:
+                if mr[p].length() >= thres:
+                    sep.append(p)
+            self.rowSep = sep
+        if detectColSep:
+            mr = utils.merge_lines(vs)
+            ps = sorted(mr.keys())
+            sep = []
+            thres = (self.y2 - self.y1) * (minColSep / 100)
+            for p in ps:
+                if mr[p].length() >= thres:
+                    sep.append(p)
+            self.colSep = sep
 
     def rowsToChildren(self):
         pass

@@ -1,5 +1,5 @@
 """
- Copyright (c) 2012-2015 Kuan-Chung Chiu <buganini@gmail.com>
+ Copyright (c) 2012-2018 Kuan-Chung Chiu <buganini@gmail.com>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -22,6 +22,13 @@
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 """
+
+import functools
+
+import cv2
+
+import utils
+
 default_threshold = 30
 default_margin = 5
 
@@ -117,3 +124,27 @@ def boundary_check(im, x1, y1, x2, y2, threshold=default_threshold):
 				return False
 			lastpixel = pixel
 	return True
+
+@functools.lru_cache(maxsize=4)
+def getLines(file, bx1, by1, bx2, by2):
+	img = cv2.imread(file)
+	gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+	edges = cv2.Canny(gray, 50, 500, apertureSize = 5)
+	minLineLength = 75
+	maxLineGap = 5
+	lines = cv2.HoughLinesP(edges, 1, 0.5*3.1415926/180, int(minLineLength*0.65), minLineLength, maxLineGap)
+
+	vsep = []
+	hsep = []
+	for line in lines:
+		for x1,y1,x2,y2 in line:
+			x1, x2 = utils.asc(x1, x2)
+			y1, y2 = utils.asc(y1, y2)
+			dx = x2-x1
+			dy = y2-y1
+		if dy < 5 and dx > 5:
+			hsep.append((y1, x1, x2))
+		if dx < 5 and dy > 5:
+			vsep.append((x1, y1, y2))
+
+	return vsep, hsep

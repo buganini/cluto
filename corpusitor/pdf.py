@@ -690,19 +690,19 @@ def getLines(file, page, bx1, by1, bx2, by2):
 		if dy < 5000:
 			isLine = True
 			if utils.between(by1, miny, by2):
-				hsep.append((miny, dx))
+				hsep.append((miny, minx, maxx))
 		if dx < 5000:
 			isLine = True
 			if utils.between(bx1, minx, bx2):
-				vsep.append((minx, dy))
+				vsep.append((minx, miny, maxy))
 		if not isLine:
 			if utils.between(by1, miny, by2):
-				hsep.append((miny, dx))
+				hsep.append((miny, minx, maxx))
 			if utils.between(by1, maxy, by2):
-				hsep.append((maxy, dx))
+				hsep.append((maxy, minx, maxx))
 			if utils.between(bx1, minx, bx2):
-				vsep.append((minx, dy))
+				vsep.append((minx, miny, maxy))
 			if utils.between(bx1, maxx, bx2):
-				vsep.append((maxx, dy))
+				vsep.append((maxx, miny, maxy))
 
-	return sorted(set(vsep), key=lambda x:x[0]), sorted(set(hsep), key=lambda x:x[0])
+	return vsep, hsep
