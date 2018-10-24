@@ -129,27 +129,3 @@ class PdfItem(BaseItem):
 
     def _getLines(self):
         return pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
-
-    def rowsToChildren(self):
-        tableItem = self.getTableItem()
-        if tableItem is None:
-            return
-        if not tableItem.rowSep:
-            tableItem.detectRowSeparator()
-        if len(tableItem.rowSep)==0:
-            return
-        hs = [self.y1] + tableItem.rowSep + [self.y2]
-        for i in range(len(hs) - 1):
-            self.addChild(x1 = self.x1, y1 = hs[i], x2 = self.x2, y2 = hs[i+1])
-
-    def colsToChildren(self):
-        tableItem = self.getTableItem()
-        if tableItem is None:
-            return
-        if not tableItem.colSep:
-            tableItem.detectColSeparator()
-        if len(tableItem.colSep)==0:
-            return
-        vs = [self.x1] + tableItem.colSep + [self.x2]
-        for i in range(len(vs) - 1):
-            self.addChild(x1 = vs[i], y1 = self.y1, x2 = vs[i+1], y2 = self.y2)
