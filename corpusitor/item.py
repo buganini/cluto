@@ -348,7 +348,7 @@ class Item(object):
 
     def getTableItem(self):
         tableItem = self
-        while not tableItem.getType()!="Table" and tableItem.parent:
+        while tableItem.getType()!="Table" and tableItem.parent:
             tableItem = tableItem.parent
         return tableItem
 
