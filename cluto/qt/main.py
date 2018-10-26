@@ -21,7 +21,7 @@ from .helper import *
 clear_tempdir = True
 
 class MainUI():
-    def __init__(self, klass):
+    def __init__(self, klass, argv):
         self.core = klass(self)
         self.uiref = {}
         self.app_path = os.path.abspath(os.path.dirname(__file__))
@@ -60,6 +60,8 @@ class MainUI():
             ui.findChild(QGridLayout, "item_tags"),
             ui.findChild(QGridLayout, "child_tags"),
         )
+
+        self.core.workspace = argv.get("workspace")
 
         timer = QtCore.QTimer(app)
         timer.singleShot(1, self.load)
