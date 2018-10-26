@@ -40,7 +40,7 @@ from worker import WorkerDispatcher
 
 instance = None
 
-class Corpusitor(object):
+class Cluto(object):
     def __init__(self, ui, path = None):
         global instance
         instance = self
@@ -86,7 +86,7 @@ class Corpusitor(object):
     def getStorageDir(self, workspace=None):
         if workspace is None:
             workspace = self.workspace
-        storage = os.path.join(workspace, ".ctie")
+        storage = os.path.join(workspace, ".cluto")
         return storage
 
     def getLevel(self):

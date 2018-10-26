@@ -30,7 +30,7 @@ import uuid
 import os
 import utils
 
-import corpusitor
+import cluto
 from cql import *
 
 class Item(object):
@@ -83,13 +83,13 @@ class Item(object):
             pass
 
     def getFullPath(self):
-        return os.path.join(corpusitor.instance.workspace, self.path)
+        return os.path.join(cluto.instance.workspace, self.path)
 
     def getTitle(self):
         return os.path.basename(self.path)
 
     def getWorkdir(self):
-        path = os.path.join(corpusitor.instance.tempdir, self.hash)
+        path = os.path.join(cluto.instance.tempdir, self.hash)
         if not os.path.exists(path):
             os.makedirs(path)
         return path
@@ -98,7 +98,7 @@ class Item(object):
         if self.parent:
             return self.parent.children.index(self)
         else:
-            return corpusitor.instance.clips.index(self)
+            return cluto.instance.clips.index(self)
 
     def getTypes(self):
         return ("Text", "Image", "Table")
@@ -159,7 +159,7 @@ class Item(object):
 
     def unsetTag(self, key):
         del(self.tags[key])
-        corpusitor.ui.onTagChanged()
+        cluto.ui.onTagChanged()
 
     def contains(self, x, y):
         return x>self.x1 and x<self.x2 and y>self.y1 and y<self.y2
@@ -168,19 +168,19 @@ class Item(object):
         k = self.__class__
         child = k(parent = self, **arg)
         self.children.append(child)
-        corpusitor.instance.ui.onItemTreeChanged()
-        corpusitor.instance.worker.addBgJob(child)
+        cluto.instance.ui.onItemTreeChanged()
+        cluto.instance.worker.addBgJob(child)
         return child
 
     def removeChild(self, child):
         self.children.remove(child)
-        corpusitor.instance.ui.onItemTreeChanged()
+        cluto.instance.ui.onItemTreeChanged()
 
     def remove(self):
-        corpusitor.instance.removeItem(self)
+        cluto.instance.removeItem(self)
         if self.parent:
             self.parent.children.remove(self)
-            corpusitor.instance.ui.onItemTreeChanged()
+            cluto.instance.ui.onItemTreeChanged()
 
     def addRowSep(self, pos):
         self.rowSep.append(pos)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from qt import MainUI
-from corpusitor import Corpusitor
+from cluto import Cluto
 
 if __name__ == "__main__":
-	app = MainUI(Corpusitor)
+	app = MainUI(Cluto)

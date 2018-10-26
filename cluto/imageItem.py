@@ -31,7 +31,7 @@ import subprocess
 import weakref
 import xml.dom.minidom
 
-import corpusitor
+import cluto
 from helpers import *
 from item import Item
 import imglib
@@ -96,7 +96,7 @@ class ImageItem(Item):
 
     def __call__(self):
         self.get_cropped()
-        corpusitor.instance.worker.addBgJobs(self.children)
+        cluto.instance.worker.addBgJobs(self.children)
 
     def drawQT(self, painter, xoff, yoff, scale=1):
         pixmap = QtGui.QPixmap(self.get_cropped())
@@ -123,10 +123,10 @@ class ImageItem(Item):
         text = self.tesseract_ocr(tmpfile)
 
         self.tags['ocr_raw'] = text
-        text = corpusitor.instance.evalRegex(text)
+        text = cluto.instance.evalRegex(text)
         self.tags['text'] = text
-        corpusitor.instance.addTag('ocr_raw')
-        corpusitor.instance.addTag('text')
+        cluto.instance.addTag('ocr_raw')
+        cluto.instance.addTag('text')
 
     def tesseract_ocr(self, tmpfile):
         env = os.environ.copy()
@@ -176,7 +176,7 @@ class ImageItem(Item):
         self.x2 = x2
         self.y2 = y2
 
-        corpusitor.instance.worker.addBgJob(self)
+        cluto.instance.worker.addBgJob(self)
 
     def _getLines(self):
         return imglib.getLines(self.getFullPath(), self.x1, self.y1, self.x2, self.y2)
