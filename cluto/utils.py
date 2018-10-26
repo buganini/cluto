@@ -48,7 +48,7 @@ def intersect(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2):
     y1 = max(ay1, by1)
     x2 = min(ax2, bx2)
     y2 = min(ay2, by2)
-    if x2 > x1 and y2 > y1:
+    if x2 >= x1 and y2 >= y1:
         return x1, y1, x2, y2
     return None
 

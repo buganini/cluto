@@ -683,7 +683,7 @@ def getLines(file, page, bx1, by1, bx2, by2):
 
 		dx = maxx - minx
 		dy = maxy - miny
-		if dx == 0 or dy == 0:
+		if dx == 0 and dy == 0:
 			continue
 
 		isLine = False
