@@ -257,7 +257,7 @@ def getPageSizes(file):
 		cmd_queue=[]
 		while True:
 			try:
-				ls = pdf.stdout.readline().decode("utf-8").rstrip("\r\n")
+				ls = pdf.stdout.readline().decode("utf-8", "ignore").rstrip("\r\n")
 				if not ls:
 					end = True
 					break
@@ -295,7 +295,7 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 		cmd_queue=[]
 		while True:
 			try:
-				ls = pdf.stdout.readline().decode("utf-8").rstrip("\r\n")
+				ls = pdf.stdout.readline().decode("utf-8", "ignore").rstrip("\r\n")
 				if not ls:
 					end = True
 					break
@@ -408,7 +408,7 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 		cmd_queue=[]
 		while True:
 			try:
-				ls = pdf.stdout.readline().decode("utf-8").rstrip("\r\n")
+				ls = pdf.stdout.readline().decode("utf-8", "ignore").rstrip("\r\n")
 				if not ls:
 					end = True
 					break
@@ -562,7 +562,7 @@ def getLines(file, page, bx1, by1, bx2, by2):
 		cmd_queue=[]
 		while True:
 			try:
-				ls = pdf.stdout.readline().decode("utf-8").rstrip("\r\n")
+				ls = pdf.stdout.readline().decode("utf-8", "ignore").rstrip("\r\n")
 				if not ls:
 					end = True
 					break
