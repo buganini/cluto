@@ -31,29 +31,23 @@ class TagManager():
 
     def refresh_tags(self):
         self.blockFocus = True
-        tbd = []
         for r in range(self.item_tags.rowCount()):
             for c in range(self.item_tags.columnCount()):
                 item = self.item_tags.itemAtPosition(r, c)
                 if item:
                     widget = item.widget()
                     if widget:
-                        tbd.append(widget)
-        for widget in tbd:
-            self.item_tags.removeWidget(widget)
-            widget.deleteLater()
+                        widget.setParent(None)
+                        widget.deleteLater()
 
-        tbd = []
         for r in range(self.child_tags.rowCount()):
             for c in range(self.child_tags.columnCount()):
                 item = self.child_tags.itemAtPosition(r, c)
                 if item:
                     widget = item.widget()
                     if widget:
-                        tbd.append(widget)
-        for widget in tbd:
-            self.child_tags.removeWidget(widget)
-            widget.deleteLater()
+                        widget.setParent(None)
+                        widget.deleteLater()
 
         if self.item:
             self.item.removeListener(self.onItemUpdated)
