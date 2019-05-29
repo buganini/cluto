@@ -69,7 +69,10 @@ Query Language:
 			list_has(("a","b"),"a") -> true
 			list_has(("a","b"),"c") -> false
 		SPLIT
-			split(";","a;b") -> ["a","b"]
+			split(";","a;b") -> ("a","b")
+		SLICE
+			slice(("a","b","c","d"),1) -> ("b","c","d")
+			slice(("a","b","c","d"),1,2) -> ("b","c")
 		REPLACE
 			replace("a","b","abc") -> "bbc"
 		REGEX_REPLACE

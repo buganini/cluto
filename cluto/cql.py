@@ -312,7 +312,13 @@ class CQL(object):
 			elif t=='LIST_HAS':
 				return rval[1] in rval[0]
 			elif t=='SPLIT':
-				return rval[1].split(rval[0])
+				return tuple(rval[1].split(rval[0]))
+			elif t=='SLICE':
+				l = len(rval) - 1
+				if l == 1:
+					return rval[0][rval[1]:]
+				else l == 2:
+					return rval[0][rval[1]:rval[2]]
 			elif t=='LEN':
 				return len(rval)
 			elif t=='REPLACE':
