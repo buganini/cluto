@@ -317,7 +317,7 @@ class CQL(object):
 				l = len(rval) - 1
 				if l == 1:
 					return rval[0][rval[1]:]
-				else l == 2:
+				elif l == 2:
 					return rval[0][rval[1]:rval[2]]
 			elif t=='LEN':
 				return len(rval)
