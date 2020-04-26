@@ -44,6 +44,10 @@ class Menubar(QtCore.QObject):
         batchDenoise.triggered.connect(self.onBatchDenoise)
         menuList.addAction(batchDenoise)
 
+        batchOCR = QAction('OCR', self.menubar)
+        batchOCR.triggered.connect(self.onBatchOCR)
+        menuList.addAction(batchOCR)
+
         batchAutoPaste = QAction('Auto Paste', self.menubar)
         batchAutoPaste.triggered.connect(self.onBatchAutoPaste)
         menuList.addAction(batchAutoPaste)
@@ -117,6 +121,9 @@ class Menubar(QtCore.QObject):
         item = self.ui.core.getCurrentItem()
         if item:
             DenoiseDialog(self.ui, 5 * item.scaleFactor, 5 * item.scaleFactor, self.doBatchDenoise)
+
+    def onBatchOCR(self):
+        self.ui.core.batchOCR(self.onProgress)
 
     def doBatchDenoise(self, min_width, min_height):
         self.ui.core.batchDenoise(min_width, min_height, self.onProgress)

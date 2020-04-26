@@ -784,6 +784,21 @@ class Cluto(object):
         self.ui.onItemChanged()
         self.ui.onItemListChanged()
 
+    def batchOCR(self, cbProgress):
+        self.ui.core.worker.addFgJob(functools.partial(self._batchOCR, cbProgress))
+
+    def _batchOCR(self, cbProgress):
+        done = 0
+        total = len(self.items)
+        cbProgress(done, total)
+        for item in self.items:
+            item.ocr()
+            done += 1
+            cbProgress(done, total)
+        self.ui.onContentChanged()
+        self.ui.onItemChanged()
+        self.ui.onItemListChanged()
+
     def edge_limiter(self, todo):
         while todo:
             delete = []
