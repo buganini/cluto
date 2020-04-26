@@ -89,5 +89,7 @@ Query Language:
 		REJECT
 			reject("aa", "aa\nbb\ncc\ndd") -> "bb\ncc\ndd"
 			reject(("aa","cc"), "aa\nbb\ncc\ndd") -> "bb\ndd"
+		LOOKUP
+			lookup("k,v.csv", k) -> v
 		PRINT
 			print(x) -> x # output to stdout

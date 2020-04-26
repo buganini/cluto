@@ -26,6 +26,10 @@
 import os
 import re
 import json
+import csv
+import cluto
+
+__cql_cache__ = {}
 
 class CQL(object):
 	def __init__(self, i):
@@ -349,6 +353,18 @@ class CQL(object):
 					field = [field]
 				pat = re.compile(r"^(?:{fields})[ \t]*[{separator}]+[ \t]*(.*?)\s*$".format(fields="|".join([re.escape(x) for x in field]), separator=separator))
 				return "\n".join([x for x in text.split("\n") if not pat.match(x)])
+			elif t=='LOOKUP':
+				tablefn = rval[0]
+				tbkey = "table_"+tablefn
+				if not tbkey in __cql_cache__:
+					m = {}
+					with open(os.path.join(cluto.instance.workspace, tablefn), newline='') as csvfile:
+						reader = csv.reader(csvfile)
+						for row in reader:
+							m[row[0]] = row[1]
+					__cql_cache__[tbkey] = m
+				table = __cql_cache__[tbkey]
+				return table.get(rval[1], "")
 			elif t=='PRINT':
 				print("{}: {}".format(repr(rval), str(rval)))
 				return rval
