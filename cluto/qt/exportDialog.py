@@ -154,7 +154,7 @@ class ExportDialog(QtCore.QObject):
         self.btn_browse.clicked.connect(self.onBrowse)
 
         self.edit_filename = self.exportui.findChild(QLineEdit, "edit_filename")
-        self.edit_filename.setText("""PREFIX(BASENAME(%{FILE}))+"#"+%{PAGE}+"-"+%{LEVEL}+"-"+%{INDEX}+"."+%{EXTENSION}""")
+        self.edit_filename.setText("""PREFIX(BASENAME(%{FILE}))+"#"+%{PAGE}+"-"+%{LEVEL}+"-"+%{INDEX}""")
 
         self.edit_content = QAutoEdit()
         self.edit_content.setPlainText("%{CONTENT}")
