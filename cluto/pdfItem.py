@@ -28,6 +28,7 @@ from popplerqt5 import Poppler as QtPoppler
 import pdf
 import os
 
+import cluto
 from item import Item as BaseItem
 
 cache_pdf = {}
@@ -129,3 +130,23 @@ class PdfItem(BaseItem):
 
     def _getLines(self):
         return pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
+
+    def ocr(self):
+        if 'text' in self.tags:
+            return
+        tempdir = os.path.join(self.getWorkdir(), "ocr")
+        if not os.path.exists(tempdir):
+            os.makedirs(tempdir)
+        im = self.getPdfImage(1)
+        tmpfile = os.path.join(tempdir, "clip.bmp")
+        im.save(tmpfile)
+        del(im)
+        os.chdir(tempdir)
+
+        text = self.tesseract_ocr(tmpfile)
+
+        self.tags['ocr_raw'] = text
+        text = cluto.instance.evalRegex(text)
+        self.tags['text'] = text
+        cluto.instance.addTag('ocr_raw')
+        cluto.instance.addTag('text')

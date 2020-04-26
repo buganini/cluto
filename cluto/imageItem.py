@@ -128,33 +128,6 @@ class ImageItem(Item):
         cluto.instance.addTag('ocr_raw')
         cluto.instance.addTag('text')
 
-    def tesseract_ocr(self, tmpfile):
-        env = os.environ.copy()
-        subprocess.call(["tesseract", tmpfile, "out"])
-        text = open("out.txt").read().rstrip()
-        return text
-
-    def abbyy_ocr(self, tmpfile):
-        import time
-        import requests
-        from requests.auth import HTTPBasicAuth
-
-        auth = HTTPBasicAuth('xxxx', 'xxxxx')
-        xmlResponse = requests.post("https://cloud.ocrsdk.com/processImage", {"exportFormat":"txtUnstructured"}, auth=auth, files={"file":open(tmpfile, "rb")}).text
-        dom = xml.dom.minidom.parseString(xmlResponse)
-        taskNode = dom.getElementsByTagName("task")[0]
-        taskId = taskNode.getAttribute("id")
-        while True:
-            time.sleep(0.5)
-            xmlResponse = requests.get("https://cloud.ocrsdk.com/getTaskStatus", {"taskId":taskId}, auth=auth).text
-            dom = xml.dom.minidom.parseString(xmlResponse)
-            taskNode = dom.getElementsByTagName("task")[0]
-            status = taskNode.getAttribute("status")
-            if status=="Completed":
-                url = taskNode.getAttribute("resultUrl")
-                break
-        return requests.get(url).text
-
     def trim(self, left, top, right, bottom, margin=0):
         x1 = self.x1
         y1 = self.y1

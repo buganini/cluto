@@ -28,6 +28,7 @@ from PIL import Image
 import weakref
 import uuid
 import os
+import subprocess
 import utils
 
 import cluto
@@ -307,6 +308,41 @@ class Item(object):
 
     def ocr(self):
         pass
+
+    def tesseract_ocr(self, tmpfile):
+        env = os.environ.copy()
+        subprocess.call([
+            "tesseract",
+            tmpfile,
+            "out",
+            "--psm", "4"
+            "--oem", "1"
+            # "-c", "tessedit_write_images=true",
+            # "-c", "textord_heavy_nr=1"
+        ], env=env)
+        text = open("out.txt").read().rstrip()
+        return text
+
+    def abbyy_ocr(self, tmpfile):
+        import time
+        import requests
+        from requests.auth import HTTPBasicAuth
+
+        auth = HTTPBasicAuth('xxxx', 'xxxxx')
+        xmlResponse = requests.post("https://cloud.ocrsdk.com/processImage", {"exportFormat":"txtUnstructured"}, auth=auth, files={"file":open(tmpfile, "rb")}).text
+        dom = xml.dom.minidom.parseString(xmlResponse)
+        taskNode = dom.getElementsByTagName("task")[0]
+        taskId = taskNode.getAttribute("id")
+        while True:
+            time.sleep(0.5)
+            xmlResponse = requests.get("https://cloud.ocrsdk.com/getTaskStatus", {"taskId":taskId}, auth=auth).text
+            dom = xml.dom.minidom.parseString(xmlResponse)
+            taskNode = dom.getElementsByTagName("task")[0]
+            status = taskNode.getAttribute("status")
+            if status=="Completed":
+                url = taskNode.getAttribute("resultUrl")
+                break
+        return requests.get(url).text
 
     def trim(self, *args):
         pass
