@@ -50,7 +50,7 @@ class Cluto(object):
 
         self.reset()
 
-        pdf.xpdfimport = "/opt/libreoffice5.4/program/xpdfimport"
+        pdf.xpdfimport = "/usr/lib/libreoffice/program/xpdfimport"
 
     def reset(self):
         self.exports = []

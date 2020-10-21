@@ -23,8 +23,11 @@ import utils
 import PIL.Image
 import io
 import functools
+import os
 
 xpdfimport = "./xpdfimport"
+
+tmpfile = "/tmp/cluto_pdf"
 
 class Bundle():
     def __init__(self, items):
@@ -244,7 +247,13 @@ def getPageSize(file, page):
 
 @functools.lru_cache(maxsize=4)
 def getPageSizes(file):
-	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	try:
+		os.unlink(tmpfile)
+	except:
+		pass
+	os.symlink(file, tmpfile)
+
+	pdf=subprocess.Popen([xpdfimport,"-f","blob",tmpfile,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
 	pdf.stdin.write(b"\n")
 	pdf.stdin.flush()
@@ -275,7 +284,13 @@ def getPageSizes(file):
 	return ret
 
 def _getContent(file, page, bx1, by1, bx2, by2):
-	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	try:
+		os.unlink(tmpfile)
+	except:
+		pass
+	os.symlink(file, tmpfile)
+
+	pdf=subprocess.Popen([xpdfimport,"-f","blob",tmpfile,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
 	pdf.stdin.write(b"\n")
 	pdf.stdin.flush()
@@ -387,7 +402,13 @@ def _getContent(file, page, bx1, by1, bx2, by2):
 	return (text, imgs)
 
 def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
-	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	try:
+		os.unlink(tmpfile)
+	except:
+		pass
+	os.symlink(file, tmpfile)
+
+	pdf=subprocess.Popen([xpdfimport,"-f","blob",tmpfile,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
 	pdf.stdin.write(b"\n")
 	pdf.stdin.flush()
@@ -543,7 +564,13 @@ def getTable(file, page, bx1, by1, bx2, by2, rSep=[], cSep=[]):
 
 @functools.lru_cache(maxsize=4)
 def getLines(file, page, bx1, by1, bx2, by2):
-	pdf=subprocess.Popen([xpdfimport,"-f","blob",file,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	try:
+		os.unlink(tmpfile)
+	except:
+		pass
+	os.symlink(file, tmpfile)
+
+	pdf=subprocess.Popen([xpdfimport,"-f","blob",tmpfile,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
 	pdf.stdin.write(b"\n")
 	pdf.stdin.flush()
