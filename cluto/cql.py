@@ -286,7 +286,7 @@ class CQL(object):
 				return rval[0].children[rval[1]-1]
 			elif t=='JOIN':
 				s = str(rval[0])
-				a = [str(x) if type(x)!=str else x for x in rval[1]]
+				a = [str(x) for x in rval[1]]
 				return s.join(a)
 			elif t=='COALESCE':
 				for i in rval:
@@ -381,7 +381,7 @@ class CQL(object):
 				lval.append(rval)
 				return lval
 			else:
-				if rval:
+				if not rval is None:
 					return [lval,rval]
 				else:
 					return [lval]
