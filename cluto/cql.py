@@ -365,6 +365,25 @@ class CQL(object):
 					__cql_cache__[tbkey] = m
 				table = __cql_cache__[tbkey]
 				return table.get(rval[1], "")
+			elif t=='ENSURE':
+				token = rval[0]
+				text = rval[1]
+				line = rval[2]
+				if re.match(r"\b{}\b".format(re.escape(token)), text, re.IGNORECASE):
+					return text
+				else:
+					lines = text.split("\n")
+					if line < len(lines):
+						if lines[line]:
+							if lines[line][0] in " ":
+								lines[line] = token + lines[line]
+							else:
+								lines[line] = f"{token} {lines[line]}"
+						else:
+							lines[line] = token
+					else:
+						lines.append(token)
+					return "\n".join(lines)
 			elif t=='PRINT':
 				print("{}: {}".format(repr(rval), str(rval)))
 				return rval

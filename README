@@ -91,5 +91,8 @@ Query Language:
 			reject(("aa","cc"), "aa\nbb\ncc\ndd") -> "bb\ndd"
 		LOOKUP
 			lookup("k,v.csv", k) -> v
+		ENSURE
+			ensure("foo", "a\nb", 1) -> "a\nfoo b"
+			ensure("foo", "foo a\nb", 1) -> "foo a\nb"
 		PRINT
 			print(x) -> x # output to stdout
