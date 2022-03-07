@@ -169,7 +169,7 @@ class CQL(object):
 				return r
 			elif t[0]=='@':
 				r = item.getTag(key)
-				if r is None:
+				if not r:
 					r = item.getTagFromParent(key)
 				if r is None:
 					r = ""
