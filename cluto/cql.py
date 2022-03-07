@@ -369,7 +369,7 @@ class CQL(object):
 				token = rval[0]
 				text = rval[1]
 				line = rval[2]
-				if re.match(r"\b{}\b".format(re.escape(token)), text, re.IGNORECASE):
+				if re.search(r"\b{}\b".format(re.escape(token)), text, re.IGNORECASE):
 					return text
 				else:
 					lines = text.split("\n")
