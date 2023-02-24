@@ -64,11 +64,11 @@ class QAutoEdit(QPlainTextEdit):
     def updateHeight(self):
         currText = self.toPlainText()
         if currText:
-            self.setFixedHeight(self.getContentHeight())
+            self.setFixedHeight(int(self.getContentHeight()))
         else:
             self.blocked = True
             QPlainTextEdit.setPlainText(self, self.placeholderText())
-            self.setFixedHeight(self.getContentHeight())
+            self.setFixedHeight(int(self.getContentHeight()))
             QPlainTextEdit.setPlainText(self, "")
             self.blocked = False
 
