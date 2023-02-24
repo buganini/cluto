@@ -1,11 +1,20 @@
-Dependencies:
+# macOS
+```
+brew install sip-install
+pip install -r requirements.txt
+```
+
+# Dependencies
+```
 	Python3
 	PyQT5
 	PyQT5-Poppler
 	PIL
 	xpdfimport from LibreOffice/OpenOffice.org
+```
 
-Query Language:
+# Query Language
+```
 	${KEY}: local variable
 	@{KEY}: lexical variable (inherit from parent)
 	#{KEY}: list of children's local variable
@@ -96,3 +105,4 @@ Query Language:
 			ensure("foo", "foo a\nb", 1) -> "foo a\nb"
 		PRINT
 			print(x) -> x # output to stdout
+```
