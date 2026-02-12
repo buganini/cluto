@@ -555,10 +555,11 @@ class Cluto(object):
             x2 = min(x2, item.x2-item.x1)
             y2 = min(y2, item.y2-item.y1)
             if x2-x1>1 and y2-y1>1:
-                self.selections.append(len(item.children))
+                idx = len(item.children)
                 if (x1,y1,x2,y2) in cs:
                     continue
                 item.addChild(x1 = x1+item.x1, y1 = y1+item.y1, x2 = x2+item.x1, y2 = y2+item.y1, tags = p['tags'])
+                self.selections.append(idx)
         self.ui.onContentChanged()
 
     def batchPaste(self, chk_empty, chk_overlap, chk_overlap_aon, chk_boundary, chk_boundary_aon):

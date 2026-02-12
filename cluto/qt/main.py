@@ -101,6 +101,7 @@ class MainUI():
             return
         self.core.selectNextItem()
 
+    """ Obsolete
     def key_press(self, obj, evt):
         collation_mode = self.toggle_collation.get_active()
         if evt.keyval==Gdk.KEY_Page_Down:
@@ -123,6 +124,7 @@ class MainUI():
             self.copy()
         elif (evt.keyval==Gdk.KEY_V or evt.keyval==Gdk.KEY_v) and evt.state & Gdk.ModifierType.CONTROL_MASK and self.canvas.has_focus():
             self.paste()
+    """
 
     def load(self):
         LoadDialog(self)
@@ -141,8 +143,10 @@ class MainUI():
         else:
             self.core.disableCopyTag(key)
 
+    """ Obsolete
     def delete(self, *arg):
         self.core.deleteSelectedChildren()
+    """
 
     def zoomFit(self, *arg):
         self.uiWorkArea.zoomFit()
