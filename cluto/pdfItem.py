@@ -49,7 +49,7 @@ class PdfItem(BaseItem):
             item = PdfItem(doc = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
             core.clips.append(item)
 
-    unit = 96/72
+    unit = 96 / 72
     def __init__(self, doc=None, page=None, **args):
         global cache_pdf
         super(PdfItem, self).__init__(**args)
@@ -121,7 +121,7 @@ class PdfItem(BaseItem):
             w = page.get_width() * self.unit
             h = page.get_height() * self.unit
             pil_image = page.render(
-                scale=scale,
+                scale=scale * self.unit,
                 rotation=0,
                 crop=(self.x1/self.unit, (h - self.y2)/self.unit, (w - self.x2)/self.unit, self.y1/self.unit)
             ).to_pil().convert("RGBA")
