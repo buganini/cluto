@@ -121,7 +121,7 @@ class Cluto(object):
         item = self.getCurrentItem()
         if item is None:
             return
-        self.selections = range(0, len(item.children))
+        self.selections = list(range(0, len(item.children)))
         self.onSelectionChanged()
 
     def deselectAllChildren(self):
