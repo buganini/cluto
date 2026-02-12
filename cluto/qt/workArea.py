@@ -40,6 +40,8 @@ class WorkArea():
             self.selend = (event.x()/self.scale, event.y()/self.scale)
 
             item = self.item
+            if not item:
+                return
             self.focusColSep = None
             self.focusRowSep = None
             if item.getType()=="Table":
@@ -228,7 +230,7 @@ class WorkArea():
                     if self.mode=='move':
                         _x = x1 + xoff
                         _y = y1 + yoff
-                        painter.drawRect(_x, _y, x2-x1, y2-y1)
+                        painter.drawRect(int(_x), int(_y), int(x2-x1), int(y2-y1))
                     elif self.mode=='resize':
                         ex1, ex2 = asc(x1, x2+xoff)
                         ey1, ey2 = asc(y1, y2+yoff)
@@ -236,19 +238,19 @@ class WorkArea():
                         _y = ey1
                         _w = ex2-ex1
                         _h = ey2-ey1
-                        painter.drawRect(_x, _y, _w, _h)
+                        painter.drawRect(int(_x), int(_y), int(_w), int(_h))
                     else:
-                        painter.drawRect(x1, y1, x2-x1, y2-y1)
+                        painter.drawRect(int(x1), int(y1), int(x2-x1), int(y2-y1))
                 else:
                     pen.setColor(QtCore.Qt.red)
                     painter.setPen(pen)
-                    painter.drawRect(x1, y1, x2-x1, y2-y1)
+                    painter.drawRect(int(x1), int(y1), int(x2-x1), int(y2-y1))
                 _x += padding
                 _y += padding
                 _w -= 2*padding
                 _h -= 2*padding
-                painter.drawText(_x, _y, _w, _h, QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop, index)
-                painter.drawText(_x, _y, _w, _h, QtCore.Qt.AlignRight|QtCore.Qt.AlignBottom, index)
+                painter.drawText(int(_x), int(_y), int(_w), int(_h), QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop, index)
+                painter.drawText(int(_x), int(_y), int(_w), int(_h), QtCore.Qt.AlignRight|QtCore.Qt.AlignBottom, index)
 
             if item.getType()=="Table":
                 for i,x in enumerate(item.colSep):
@@ -258,7 +260,7 @@ class WorkArea():
                     else:
                         pen.setColor(QtGui.QColor(0xff, 0xa5, 0x00))
                     painter.setPen(pen)
-                    painter.drawLine(x, 0.0, x, item.y2-item.y1)
+                    painter.drawLine(int(x), 0, int(x), int(item.y2-item.y1))
                 for i,y in enumerate(item.rowSep):
                     y = y - item.y1
                     if i == self.focusRowSep:
@@ -266,24 +268,24 @@ class WorkArea():
                     else:
                         pen.setColor(QtGui.QColor(0xff, 0xa5, 0x00))
                     painter.setPen(pen)
-                    painter.drawLine(0.0, y, item.x2-item.x1, y)
+                    painter.drawLine(0, int(y), int(item.x2-item.x1), int(y))
 
             pen.setColor(QtCore.Qt.magenta)
             painter.setPen(pen)
             if self.ui.core.verticalSplitter and self.selend!=(None, None):
-                painter.drawLine(self.selend[0], 0.0, self.selend[0], item.y2-item.y1)
+                painter.drawLine(int(self.selend[0]), 0, int(self.selend[0]), int(item.y2-item.y1))
 
             if self.ui.core.horizontalSplitter and self.selend!=(None, None):
-                painter.drawLine(0.0, self.selend[1], item.x2-item.x1, self.selend[1])
+                painter.drawLine(0, int(self.selend[1]), int(item.x2-item.x1), int(self.selend[1]))
 
             if self.focusRowSep is None and self.focusColSep is None:
                 pen.setColor(QtCore.Qt.green)
                 painter.setPen(pen)
                 if self.ui.core.tableRowSplitter and self.selend!=(None, None):
-                    painter.drawLine(0.0, self.selend[1], item.x2-item.x1, self.selend[1])
+                    painter.drawLine(0, int(self.selend[1]), int(item.x2-item.x1), int(self.selend[1]))
 
                 if self.ui.core.tableColumnSplitter and self.selend!=(None, None):
-                    painter.drawLine(self.selend[0], 0.0, self.selend[0], item.y2-item.y1)
+                    painter.drawLine(int(self.selend[0]), 0, int(self.selend[0]), int(item.y2-item.y1))
 
         def resizeEvent(self, event):
             pass
