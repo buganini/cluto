@@ -1,4 +1,4 @@
 PyQt5
 opencv-python
 Pillow
-python-poppler-qt5
+pypdfium2>=5.4.0

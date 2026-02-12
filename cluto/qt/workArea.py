@@ -168,7 +168,7 @@ class WorkArea():
             self.updateGeometry()
 
         def updateGeometry(self):
-            self.resize(self.w*self.scale, self.h*self.scale)
+            self.resize(int(self.w*self.scale), int(self.h*self.scale))
             self.update()
 
         def editRect(self):
@@ -209,7 +209,7 @@ class WorkArea():
                 if len(self.ui.core.selections)==0: # new rect
                     pen.setColor(QtCore.Qt.blue)
                     painter.setPen(pen)
-                    painter.drawRect(sx0,sy0,xoff,yoff)
+                    painter.drawRect(int(sx0),int(sy0),int(xoff),int(yoff))
             else:
                 xoff = 0
                 yoff = 0

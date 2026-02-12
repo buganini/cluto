@@ -20,7 +20,7 @@ class CollationView():
             self.updateGeometry()
 
         def updateGeometry(self):
-            self.resize(self.w*self.scale, self.h*self.scale)
+            self.resize(int(self.w*self.scale), int(self.h*self.scale))
             self.update()
 
         def paintEvent(self, event):

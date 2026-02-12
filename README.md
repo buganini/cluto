@@ -8,7 +8,7 @@ pip install -r requirements.txt
 ```
 	Python3
 	PyQT5
-	PyQT5-Poppler
+	pypdfium2
 	PIL
 	xpdfimport from LibreOffice/OpenOffice.org
 ```

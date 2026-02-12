@@ -239,50 +239,6 @@ def getText(file, page, bx1, by1, bx2, by2):
 	content = _getContent(file, page, bx1, by1, bx2, by2)
 	return content[0]
 
-def getPageSize(file, page):
-	sizes = getPageSizes(file)
-	if 0 <= page and page < len(sizes):
-		return sizes[page]
-	return -1, -1
-
-@functools.lru_cache(maxsize=4)
-def getPageSizes(file):
-	try:
-		os.unlink(tmpfile)
-	except:
-		pass
-	os.symlink(file, tmpfile)
-
-	pdf=subprocess.Popen([xpdfimport,"-f","blob",tmpfile,"errdoc.pdf"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-
-	pdf.stdin.write(b"\n")
-	pdf.stdin.flush()
-
-	ret = []
-
-	end = False
-	while True:
-		#pager
-		cmd_queue=[]
-		while True:
-			try:
-				ls = pdf.stdout.readline().decode("utf-8", "ignore").rstrip("\r\n")
-				if not ls:
-					end = True
-					break
-			except :
-				end=True
-				break
-			l = Line(ls)
-			cmd = l.readToken()
-			if cmd=='startPage':
-				page_width = l.readFloat()
-				page_height = l.readFloat()
-				ret.append((page_width, page_height))
-		if end:
-			break
-	return ret
-
 def _getContent(file, page, bx1, by1, bx2, by2):
 	try:
 		os.unlink(tmpfile)

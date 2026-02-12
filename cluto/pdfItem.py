@@ -24,9 +24,10 @@
 """
 
 from PyQt5 import QtGui
-from popplerqt5 import Poppler as QtPoppler
+import pypdfium2 as pdfium
 import pdf
 import os
+import traceback
 
 import cluto
 from item import Item as BaseItem
@@ -42,12 +43,13 @@ class PdfItem(BaseItem):
 
     @staticmethod
     def addItem(core, path):
-        pdf = QtPoppler.Document.load(os.path.join(core.workspace, path))
-        for i in range(pdf.numPages()):
+        pdf = pdfium.PdfDocument(os.path.join(core.workspace, path))
+        pages = len(pdf)
+        for i in range(pages):
             item = PdfItem(doc = pdf, page = i, path = path, x1 = 0, y1 = 0, x2 = -1, y2 = -1)
             core.clips.append(item)
 
-    scaleFactor = 100
+    unit = 96/72
     def __init__(self, doc=None, page=None, **args):
         global cache_pdf
         super(PdfItem, self).__init__(**args)
@@ -57,7 +59,8 @@ class PdfItem(BaseItem):
         if doc:
             cache_pdf[self.path] = doc
         if self.x2==-1 or self.y2==-1:
-            self.x2, self.y2 = pdf.getPageSize(self.getFullPath(), self.page)
+            self.x2 = self.getPdfPage().get_width() * self.unit
+            self.y2 = self.getPdfPage().get_height() * self.unit
 
     def getTitle(self):
         return "{} p{}".format(os.path.basename(self.path), self.page+1)
@@ -112,20 +115,36 @@ class PdfItem(BaseItem):
         image = self.getPdfImage(scale)
         painter.drawImage(xoff, yoff, image)
 
-    def getPdfImage(self, scale):
-        return self.getPdfPage().renderToImage(7200*scale, 7200*scale, self.x1*scale, self.y1*scale, (self.x2-self.x1)*scale, (self.y2-self.y1)*scale)
+    def getPdfImage(self, scale) -> QtGui.QImage:
+        try:
+            page = self.getPdfPage()
+            w = page.get_width() * self.unit
+            h = page.get_height() * self.unit
+            pil_image = page.render(
+                scale=scale,
+                rotation=0,
+                crop=(self.x1/self.unit, (h - self.y2)/self.unit, (w - self.x2)/self.unit, self.y1/self.unit)
+            ).to_pil().convert("RGBA")
+            qimage = QtGui.QImage(
+                pil_image.tobytes(),
+                pil_image.width,
+                pil_image.height,
+                QtGui.QImage.Format.Format_RGBA8888
+            )
+            return qimage
+        except:
+            traceback.print_exc()
+            return None
 
     def getPdfPage(self):
         global cache_pdf, cache_pdf_page
         if self.path not in cache_pdf:
-            doc = QtPoppler.Document.load(self.getFullPath())
-            doc.setRenderHint(QtPoppler.Document.Antialiasing)
-            doc.setRenderHint(QtPoppler.Document.TextAntialiasing)
+            doc = pdfium.PdfDocument(self.getFullPath())
             cache_pdf[self.path] = doc
         if self.path not in cache_pdf_page:
             cache_pdf_page[self.path]={}
         if self.page not in cache_pdf_page[self.path]:
-            cache_pdf_page[self.path][self.page] = cache_pdf[self.path].page(self.page)
+            cache_pdf_page[self.path][self.page] = cache_pdf[self.path][self.page]
         return cache_pdf_page[self.path][self.page]
 
     def _getLines(self):

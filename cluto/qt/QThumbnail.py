@@ -14,7 +14,7 @@ class QThumbnail(QWidget):
         xscale = self.th_width / self.w
         yscale = self.th_height / self.h
         self.scale = min(xscale, yscale)
-        self.setFixedSize(self.w*self.scale+self.padding*2, self.h*self.scale+self.padding*2)
+        self.setFixedSize(int(self.w*self.scale+self.padding*2), int(self.h*self.scale+self.padding*2))
 
     def paintEvent(self, event):
         QWidget.paintEvent(self, event)
