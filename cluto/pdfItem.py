@@ -30,10 +30,9 @@ import os
 import traceback
 
 import cluto
+import pillib
 from item import Item as BaseItem
 
-cache_pdf = {}
-cache_pdf_page = {}
 lastRender = None
 
 class PdfItem(BaseItem):
@@ -51,16 +50,15 @@ class PdfItem(BaseItem):
 
     unit = 96 / 72
     def __init__(self, doc=None, page=None, **args):
-        global cache_pdf
         super(PdfItem, self).__init__(**args)
         self.page = page
         if self.page is None:
             self.page = self.parent.page
-        if doc:
-            cache_pdf[self.path] = doc
         if self.x2==-1 or self.y2==-1:
-            self.x2 = self.getPdfPage().get_width() * self.unit
-            self.y2 = self.getPdfPage().get_height() * self.unit
+            page = self.getPdfPage()
+            self.x2 = page.get_width() * self.unit
+            self.y2 = page.get_height() * self.unit
+            page.close()
 
     def getTitle(self):
         return "{} p{}".format(os.path.basename(self.path), self.page+1)
@@ -125,6 +123,7 @@ class PdfItem(BaseItem):
                 rotation=0,
                 crop=(self.x1/self.unit, (h - self.y2)/self.unit, (w - self.x2)/self.unit, self.y1/self.unit)
             ).to_pil().convert("RGBA")
+            page.close()
             qimage = QtGui.QImage(
                 pil_image.tobytes(),
                 pil_image.width,
@@ -137,18 +136,45 @@ class PdfItem(BaseItem):
             return None
 
     def getPdfPage(self):
-        global cache_pdf, cache_pdf_page
-        if self.path not in cache_pdf:
-            doc = pdfium.PdfDocument(self.getFullPath())
-            cache_pdf[self.path] = doc
-        if self.path not in cache_pdf_page:
-            cache_pdf_page[self.path]={}
-        if self.page not in cache_pdf_page[self.path]:
-            cache_pdf_page[self.path][self.page] = cache_pdf[self.path][self.page]
-        return cache_pdf_page[self.path][self.page]
+        return pdfium.PdfDocument(self.getFullPath())[self.page]
 
     def _getLines(self):
         return pdf.getLines(self.getFullPath(), self.page, self.x1, self.y1, self.x2, self.y2)
+
+    def get_pil_l(self):
+        page = self.getPdfPage()
+        w = page.get_width() * self.unit
+        h = page.get_height() * self.unit
+        o = page.render(
+            scale=1 * self.unit,
+            rotation=0,
+            crop=(0, 0, 0, 0)
+        ).to_pil().convert("L")
+        page.close()
+        return o
+
+    def trim(self, left, top, right, bottom, margin=0):
+        x1 = self.x1
+        y1 = self.y1
+        x2 = self.x2
+        y2 = self.y2
+        im = self.get_pil_l()
+
+        if left:
+            x1 = pillib.leftTrim(im, x1, y1, x2, y2, margin)
+        if top:
+            y1 = pillib.topTrim(im, x1, y1, x2, y2, margin)
+        if right:
+            x2 = pillib.rightTrim(im, x1, y1, x2, y2, margin)
+        if bottom:
+            y2 = pillib.bottomTrim(im, x1, y1, x2, y2, margin)
+
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+
+        cluto.instance.worker.addBgJob(self)
 
     def ocr(self):
         if 'text' in self.tags:
