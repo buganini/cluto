@@ -34,7 +34,7 @@ import xml.dom.minidom
 import cluto
 from helpers import *
 from item import Item
-import imglib
+import pillib
 
 cache_pil_rgb = {}
 cache_pil_l = {}
@@ -106,7 +106,7 @@ class ImageItem(Item):
 
     def check_boundary(self, x1, y1, x2, y2):
         im = self.get_pil_l()
-        return imglib.boundary_check(im, x1, y1, x2, y2)
+        return pillib.boundary_check(im, x1, y1, x2, y2)
 
     def ocr(self):
         if 'text' in self.tags:
@@ -136,13 +136,13 @@ class ImageItem(Item):
         im = self.get_pil_l()
 
         if left:
-            x1 = imglib.leftTrim(im, x1, y1, x2, y2, margin)
+            x1 = pillib.leftTrim(im, x1, y1, x2, y2, margin)
         if top:
-            y1 = imglib.topTrim(im, x1, y1, x2, y2, margin)
+            y1 = pillib.topTrim(im, x1, y1, x2, y2, margin)
         if right:
-            x2 = imglib.rightTrim(im, x1, y1, x2, y2, margin)
+            x2 = pillib.rightTrim(im, x1, y1, x2, y2, margin)
         if bottom:
-            y2 = imglib.bottomTrim(im, x1, y1, x2, y2, margin)
+            y2 = pillib.bottomTrim(im, x1, y1, x2, y2, margin)
 
         self.x1 = x1
         self.y1 = y1
@@ -152,4 +152,4 @@ class ImageItem(Item):
         cluto.instance.worker.addBgJob(self)
 
     def _getLines(self):
-        return imglib.getLines(self.getFullPath(), self.x1, self.y1, self.x2, self.y2)
+        return pillib.getLines(self.getFullPath(), self.x1, self.y1, self.x2, self.y2)
