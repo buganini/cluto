@@ -309,18 +309,27 @@ class Item(object):
     def ocr(self):
         pass
 
+    def paddle_ocr(self, tmpfile):
+        from paddleocr import PaddleOCR
+        ocr = PaddleOCR(
+            text_recognition_model_name="latin_PP-OCRv5_mobile_rec",
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False)
+
+        # Run OCR inference on a sample image
+        result = ocr.predict(
+            input=tmpfile)
+
+        text = "\n".join(["\n".join(r["rec_texts"]) for r in result])
+
+        return text
+
     def tesseract_ocr(self, tmpfile):
-        env = os.environ.copy()
-        subprocess.call([
-            "tesseract",
-            tmpfile,
-            "out",
-            "--psm", "4"
-            "--oem", "1"
-            # "-c", "tessedit_write_images=true",
-            # "-c", "textord_heavy_nr=1"
-        ], env=env)
-        text = open("out.txt").read().rstrip()
+        print("tesseract_ocr", tmpfile)
+        import pytesseract
+        from PIL import Image
+        text = pytesseract.image_to_string(Image.open(tmpfile))
         return text
 
     def abbyy_ocr(self, tmpfile):

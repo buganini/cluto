@@ -120,7 +120,7 @@ class ImageItem(Item):
         del(im)
         os.chdir(tempdir)
 
-        text = self.tesseract_ocr(tmpfile)
+        text = self.paddle_ocr(tmpfile)
 
         self.tags['ocr_raw'] = text
         text = cluto.instance.evalRegex(text)
