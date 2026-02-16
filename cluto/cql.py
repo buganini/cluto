@@ -168,9 +168,7 @@ class CQL(object):
 					r = ""
 				return r
 			elif t[0]=='@':
-				r = item.getTag(key)
-				if not r:
-					r = item.getTagFromParent(key)
+				r = item.getInheritedTag(key)
 				if r is None:
 					r = ""
 				return r

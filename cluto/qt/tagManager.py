@@ -82,7 +82,7 @@ class TagManager():
 
             edit = QAutoEdit()
             edit.setPlainText(item.getTag(tag))
-            edit.setPlaceholderText(item.getTagFromParent(tag))
+            edit.setPlaceholderText(item.getInheritedTag(tag))
             edit.textChanged.connect(partial(self.set_tag, item, tag, edit))
 
             self.item_tags.addWidget(label, r, 0)
@@ -120,7 +120,7 @@ class TagManager():
 
                 edit = QAutoEdit()
                 edit.setPlainText(child.getTag(tag))
-                edit.setPlaceholderText(child.getTagFromParent(tag))
+                edit.setPlaceholderText(child.getInheritedTag(tag))
                 edit.textChanged.connect(partial(self.set_tag, child, tag, edit))
 
                 self.child_tags.addWidget(label, r, 0)

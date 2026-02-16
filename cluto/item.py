@@ -150,10 +150,10 @@ class Item(object):
     def getTag(self, key):
         return self.tags.get(key)
 
-    def getTagFromParent(self, key):
-        t = self.parent
+    def getInheritedTag(self, key):
+        t = self
         r = None
-        while r is None and t:
+        while not r and t:
             r = t.tags.get(key, None)
             t = t.parent
         return r
