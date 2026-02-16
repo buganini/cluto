@@ -102,7 +102,7 @@ class Item(object):
             return cluto.instance.clips.index(self)
 
     def getTypes(self):
-        return ("Text", "Image", "Table")
+        return ("Text", "Image", "ObjectImage", "Table")
 
     def getType(self):
         if self.parent:

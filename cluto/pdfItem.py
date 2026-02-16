@@ -156,21 +156,21 @@ class PdfItem(BaseItem):
         return "{} p{}".format(os.path.basename(self.path), self.page+1)
 
     def getTypes(self):
-        return ("Text", "Image", "Images", "Table")
+        return ("Text", "Image", "Images", "ObjectImage", "Table")
 
     def getDefaultType(self):
         return "Text"
 
-    def getImage(self):
+    def getImage(self, scale=4):
         page = self.getPdfPage()
         if is_image_page(page):
             w = page.get_width() * self.unit
             h = page.get_height() * self.unit
             pil_image = page.render(
-                scale=4 * self.unit,
+                scale=scale * self.unit,
                 rotation=0,
                 crop=(self.x1/self.unit, (h - self.y2)/self.unit, (w - self.x2)/self.unit, self.y1/self.unit)
-            ).to_pil().convert("RGBA")
+            ).to_pil().convert("RGB")
             page.close()
             return pil_image
         else:
@@ -180,16 +180,16 @@ class PdfItem(BaseItem):
             else:
                 return images[0]
 
-    def getImages(self):
+    def getImages(self, scale=4):
         page = self.getPdfPage()
         if is_image_page(page):
             w = page.get_width() * self.unit
             h = page.get_height() * self.unit
             pil_image = page.render(
-                scale=4 * self.unit,
+                scale=scale * self.unit,
                 rotation=0,
                 crop=(self.x1/self.unit, (h - self.y2)/self.unit, (w - self.x2)/self.unit, self.y1/self.unit)
-            ).to_pil().convert("RGBA")
+            ).to_pil().convert("RGB")
             page.close()
             return pil_image
         else:
@@ -272,16 +272,39 @@ class PdfItem(BaseItem):
         y1 = self.y1
         x2 = self.x2
         y2 = self.y2
-        im = self.get_pil_l()
 
-        if left:
-            x1 = pillib.leftTrim(im, x1, y1, x2, y2, margin)
-        if top:
-            y1 = pillib.topTrim(im, x1, y1, x2, y2, margin)
-        if right:
-            x2 = pillib.rightTrim(im, x1, y1, x2, y2, margin)
-        if bottom:
-            y2 = pillib.bottomTrim(im, x1, y1, x2, y2, margin)
+        if self.getType() == "ObjectImage":
+            im = self.getImage(scale=1)
+            from rembg import remove, new_session
+            im = remove(im)
+            im = im.convert("L")
+            w, h = im.size
+
+            if left:
+                nx1 = pillib.leftTrim(im, 0, 0, w, h, margin)
+            if top:
+                ny1 = pillib.topTrim(im, 0, 0, w, h, margin)
+            if right:
+                nx2 = pillib.rightTrim(im, 0, 0, w, h, margin)
+            if bottom:
+                ny2 = pillib.bottomTrim(im, 0, 0, w, h, margin)
+
+            x1 += nx1
+            y1 += ny1
+            x2 -= w - nx2
+            y2 -= h - ny2
+
+        else:
+            im = self.get_pil_l()
+
+            if left:
+                x1 = pillib.leftTrim(im, x1, y1, x2, y2, margin)
+            if top:
+                y1 = pillib.topTrim(im, x1, y1, x2, y2, margin)
+            if right:
+                x2 = pillib.rightTrim(im, x1, y1, x2, y2, margin)
+            if bottom:
+                y2 = pillib.bottomTrim(im, x1, y1, x2, y2, margin)
 
         self.x1 = x1
         self.y1 = y1
