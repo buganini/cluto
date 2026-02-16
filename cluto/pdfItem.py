@@ -30,6 +30,7 @@ import os
 import traceback
 
 import cluto
+import rembg
 import pillib
 from item import Item as BaseItem
 
@@ -180,6 +181,27 @@ class PdfItem(BaseItem):
             else:
                 return images[0]
 
+    def getObjectImage(self, scale=4):
+        page = self.getPdfPage()
+        if is_image_page(page):
+            w = page.get_width() * self.unit
+            h = page.get_height() * self.unit
+            pil_image = page.render(
+                scale=scale * self.unit,
+                rotation=0,
+                crop=(self.x1/self.unit, (h - self.y2)/self.unit, (w - self.x2)/self.unit, self.y1/self.unit)
+            ).to_pil().convert("RGB")
+            page.close()
+            im = rembg.remove(pil_image)
+            return im
+        else:
+            images = find_images_in_rect(page, (self.x1, self.y1, self.x2, self.y2))
+            if len(images) == 0:
+                return DummyImage()
+            else:
+                im = rembg.remove(images[0])
+                return im
+
     def getImages(self, scale=4):
         page = self.getPdfPage()
         if is_image_page(page):
@@ -220,6 +242,8 @@ class PdfItem(BaseItem):
             return self.getText()
         elif self.getType()=="Image":
             return self.getImage()
+        elif self.getType()=="ObjectImage":
+            return self.getObjectImage()
         elif self.getType()=="Images":
             return self.getImages()
         elif self.getType()=="Table":
@@ -275,8 +299,7 @@ class PdfItem(BaseItem):
 
         if self.getType() == "ObjectImage":
             im = self.getImage(scale=1)
-            from rembg import remove, new_session
-            im = remove(im)
+            im = rembg.remove(im)
             im = im.convert("L")
             w, h = im.size
 
