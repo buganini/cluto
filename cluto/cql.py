@@ -109,7 +109,7 @@ class CQL(object):
 		t = self.op = tokens[sep]
 		if (len(t)>3 and t[0] in ('$','@','%','#') and t[1]=='{' and t[-1]=='}') or (t[0]==t[-1] and t[0] in ("'", '"')):
 			pass
-		elif re.match('^\d+$',t):
+		elif re.match(r'^\d+$',t):
 			pass
 		elif t=='(':
 			self.op = '='
@@ -156,7 +156,7 @@ class CQL(object):
 		if not self.loaded:
 			return None
 		t = self.op
-		if re.match('^\d+$',t):
+		if re.match(r'^\d+$',t):
 			return int(t)
 		if (t[0]==t[-1] and t[0] in ("'", '"')):
 			return json.loads(t)
@@ -267,6 +267,10 @@ class CQL(object):
 			else:
 				lval = 0
 			if len(t) % 2 == 0:
+				if lval is None:
+					return rval
+				if rval is None:
+					return lval
 				return lval+rval
 			return lval-rval
 		if t=='!':
@@ -286,13 +290,16 @@ class CQL(object):
 				return rval[0].children[rval[1]-1]
 			elif t=='JOIN':
 				s = str(rval[0])
-				a = [str(x) for x in rval[1]]
+				a = [str(x) for x in rval[1] if x is not None]
 				return s.join(a)
 			elif t=='COALESCE':
 				for i in rval:
 					if i:
 						return i
 				return ""
+			elif t=='IF':
+				rval += [None]
+				return rval[1] if rval[0] else rval[2]
 			elif t=='BASENAME':
 				return os.path.basename(rval)
 			elif t=='DIRNAME':
@@ -313,6 +320,8 @@ class CQL(object):
 					return ["".join(x) for x in zip(*rval)]
 				else:
 					return "".join(rval)
+			elif t=='PREPEND':
+				return [rval[0]+x for x in rval[1]]
 			elif t=='LIST_HAS':
 				return rval[1] in rval[0]
 			elif t=='SPLIT':
@@ -412,7 +421,7 @@ class CQL(object):
 					return [lval]
 		if t=='+':
 			if(type(lval)==str or type(rval)==str):
-				return str(lval)+str(rval)
+				return str("" if lval is None else lval)+str("" if rval is None else rval)
 			return lval+rval
 		if t=='==':
 			return lval == rval
