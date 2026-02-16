@@ -317,6 +317,12 @@ class CQL(object):
 				return rval[1] in rval[0]
 			elif t=='SPLIT':
 				return tuple(rval[1].split(rval[0]))
+			elif t=='CSV':
+				import io
+				output = io.StringIO()
+				writer = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
+				writer.writerow(rval)
+				return output.getvalue()
 			elif t=='SLICE':
 				l = len(rval) - 1
 				if l == 1:

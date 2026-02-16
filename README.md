@@ -103,6 +103,8 @@ pip install -r requirements.txt
 		ENSURE
 			ensure("foo", "a\nb", 1) -> "a\nfoo b"
 			ensure("foo", "foo a\nb", 1) -> "foo a\nb"
+		CSV
+			csv(x,y,z) => "x,y,z" # with CSV escaping
 		PRINT
 			print(x) -> x # output to stdout
 ```

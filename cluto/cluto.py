@@ -498,18 +498,24 @@ class Cluto(object):
                     pdir = os.path.dirname(path)
                     if not os.path.exists(pdir):
                         os.makedirs(pdir)
-                    if os.path.exists(path):
-                        print("Exists:", path)
-                        if not overwrite:
-                            continue
-                    cnt = content.eval(item)
-                    if hasattr(cnt, "save"):
-                        ok = cnt.save(path)
-                    else:
-                        f = open(path+".txt",'w')
-                        f.write(cnt)
+                    if path.lower().endswith(".csv"):
+                        f = open(path, 'a')
+                        f.write(content.eval(item))
                         f.close()
                         ok = True
+                    else:
+                        if os.path.exists(path):
+                            print("Exists:", path)
+                            if not overwrite:
+                                continue
+                        cnt = content.eval(item)
+                        if hasattr(cnt, "save"):
+                            ok = cnt.save(path)
+                        else:
+                            f = open(path+".txt",'w')
+                            f.write(cnt)
+                            f.close()
+                            ok = True
                     if ok:
                         exported += 1
                 newtodo.extend(item.children)
