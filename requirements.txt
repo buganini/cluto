@@ -2,4 +2,4 @@ PyQt5
 opencv-python
 Pillow
 pypdfium2>=5.4.0
-paddleocr[all]
+paddleocr[all]==3.4.0
